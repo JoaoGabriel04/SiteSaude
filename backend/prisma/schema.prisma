@@ -45,17 +45,10 @@ model Agenda {
   paciente Patient @relation(fields: [patientId], references: [id])
   medico   Doctor  @relation(fields: [docId], references: [userId])
 
-<<<<<<< HEAD
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
   @@map("agendas")
-=======
-    createdAt DateTime @default(now())
-    updatedAt DateTime @updatedAt
-
-    @@map("agendas")
->>>>>>> c46ab09abd4539dcf274967641aea1355149122b
 }
 
 model User {
@@ -73,17 +66,10 @@ model User {
   medico    Doctor?
   atendente Attend?
 
-<<<<<<< HEAD
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
   @@map("users")
-=======
-    createdAt DateTime @default(now())
-    updatedAt DateTime @updatedAt
-
-    @@map("users")
->>>>>>> c46ab09abd4539dcf274967641aea1355149122b
 }
 
 model Doctor {
@@ -93,15 +79,9 @@ model Doctor {
 
   user User @relation(fields: [userId], references: [id])
 
-<<<<<<< HEAD
   agendas Agenda[]
 
   @@map("doctors")
-=======
-    agendas Agenda[]
-
-    @@map("doctors")
->>>>>>> c46ab09abd4539dcf274967641aea1355149122b
 }
 
 model Patient {
@@ -115,28 +95,17 @@ model Patient {
 
   agendas Agenda[]
 
-<<<<<<< HEAD
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
-=======
-    createdAt DateTime @default(now())
-    updatedAt DateTime @updatedAt
 
-    @@map("patients")
->>>>>>> c46ab09abd4539dcf274967641aea1355149122b
+  @@map("patients")
 }
 
 model Attend {
   userId String @id
   setor  String
 
-<<<<<<< HEAD
   user User @relation(fields: [userId], references: [id])
 
   @@map("attends")
-=======
-    user Users @relation(fields: [userId], references: [id])
-
-    @@map("attends")
->>>>>>> c46ab09abd4539dcf274967641aea1355149122b
 }
