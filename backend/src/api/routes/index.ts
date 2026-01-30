@@ -1,9 +1,11 @@
-import {Router} from "express";
-import users from "../../modules/users/user.controller.js";
+import { Router } from "express";
+import { AuthController } from "../../modules/users/user.controller.js";
+import authToken from "../../modules/auth/auth.controller.js";
 
 const router = Router();
+const controller = new AuthController();
 
-// Example route
-router.get("/", users.index);
+router.post("/registerU", controller.registerUser)
+router.post("/loginU", controller.loginCredentials)
 
 export default router;

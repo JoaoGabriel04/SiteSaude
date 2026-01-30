@@ -5,10 +5,105 @@
 // Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
 
 generator client {
-  provider = "prisma-client"
-  output   = "../src/generated/prisma"
+  provider = "prisma-client-js"
+  output   = "../generated/prisma"
 }
 
 datasource db {
   provider = "postgresql"
+}
+
+enum StatusUrgencia {
+  URGENTE
+  MODERADO
+  BAIXO
+}
+
+enum StatusAtendimento {
+  AGENDADO
+  CONFIRMADO
+  CANCELADO
+  FINALIZADO
+}
+
+enum Role {
+  MEDICO
+  ATENDENTE
+  ADMIN
+}
+
+model Agenda {
+  id            String   @id @default(uuid())
+  horario_atend DateTime
+
+  statusUrgencia StatusUrgencia    @default(BAIXO)
+  status         StatusAtendimento @default(AGENDADO)
+
+  patientId String
+  docId     String
+
+  paciente Patient @relation(fields: [patientId], references: [id])
+  medico   Doctor  @relation(fields: [docId], references: [userId])
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("agendas")
+}
+
+model User {
+  id         String   @id @default(uuid())
+  nome       String   @db.VarChar(100)
+  cpf        String   @unique @db.VarChar(11)
+  nascimento DateTime
+  fone       String   @db.VarChar(11)
+  email      String   @unique
+  password   String   @db.VarChar(60)
+  avatar     String?
+
+  role Role
+
+  medico    Doctor?
+  atendente Attend?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("users")
+}
+
+model Doctor {
+  userId        String @id
+  crm           String @unique
+  especialidade String
+
+  user User @relation(fields: [userId], references: [id])
+
+  agendas Agenda[]
+
+  @@map("doctors")
+}
+
+model Patient {
+  id         String   @id @default(uuid())
+  nome       String
+  cpf        String   @unique
+  nascimento DateTime
+  fone       String
+  email      String?
+  cartaoSus  String   @unique
+
+  agendas Agenda[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Attend {
+  userId String @id
+  setor  String
+
+  user User @relation(fields: [userId], references: [id])
+
+  @@map("attends")
 }
