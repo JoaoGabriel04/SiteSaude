@@ -5,104 +5,105 @@
 // Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
 
 generator client {
-    provider = "prisma-client-js"
-    output   = "../generated/prisma"
+  provider = "prisma-client-js"
+  output   = "../generated/prisma"
 }
 
 datasource db {
-    provider = "postgresql"
+  provider = "postgresql"
 }
 
 enum StatusUrgencia {
-    URGENTE
-    MODERADO
-    BAIXO
+  URGENTE
+  MODERADO
+  BAIXO
 }
 
 enum StatusAtendimento {
-    AGENDADO
-    CONFIRMADO
-    CANCELADO
-    FINALIZADO
+  AGENDADO
+  CONFIRMADO
+  CANCELADO
+  FINALIZADO
 }
 
 enum Role {
-    MEDICO
-    ATENDENTE
-    ADMIN
+  MEDICO
+  ATENDENTE
+  ADMIN
 }
 
 model Agenda {
-    id            String   @id @default(uuid())
-    horario_atend DateTime
+  id            String   @id @default(uuid())
+  horario_atend DateTime
 
-    statusUrgencia StatusUrgencia    @default(BAIXO)
-    status         StatusAtendimento @default(AGENDADO)
+  statusUrgencia StatusUrgencia    @default(BAIXO)
+  status         StatusAtendimento @default(AGENDADO)
 
-    pantId Int
-    docId  Int
+  patientId String
+  docId     String
 
-    paciente Patient @relation(fields: [pantId], references: [id])
-    medico   Doctor   @relation(fields: [docId], references: [userId])
+  paciente Patient @relation(fields: [patientId], references: [id])
+  medico   Doctor  @relation(fields: [docId], references: [userId])
 
-    createdAt DateTime @default(now())
-    updatedAt DateTime @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
-    @@map("agendas")
+  @@map("agendas")
 }
 
-model Users {
-    id           Int      @id @default(autoincrement())
-    nome         String   @db.VarChar(100)
-    cpf          String   @unique @db.VarChar(11)
-    nascimento   DateTime
-    fone         String   @db.VarChar(11)
-    email        String   @unique
-    passwordHash String   @map("password") @db.VarChar(60)
+model User {
+  id         String   @id @default(uuid())
+  nome       String   @db.VarChar(100)
+  cpf        String   @unique @db.VarChar(11)
+  nascimento DateTime
+  fone       String   @db.VarChar(11)
+  email      String   @unique
+  password   String   @db.VarChar(60)
+  avatar     String?
 
-    role Role
+  role Role
 
-    medico    Doctor?
-    atendente Attend?
+  medico    Doctor?
+  atendente Attend?
 
-    createdAt DateTime @default(now())
-    updatedAt DateTime @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
-    @@map("users")
+  @@map("users")
 }
 
 model Doctor {
-    userId        Int    @id
-    crm           String @unique
-    especialidade String
+  userId        String @id
+  crm           String @unique
+  especialidade String
 
-    user Users @relation(fields: [userId], references: [id])
+  user User @relation(fields: [userId], references: [id])
 
-    agendas Agenda[]
+  agendas Agenda[]
 
-    @@map("doctors")
+  @@map("doctors")
 }
 
 model Patient {
-    id         Int      @id @default(autoincrement())
-    nome       String
-    cpf        String   @unique
-    nascimento DateTime
-    fone       String
-    email      String?
-    cartaoSus  String   @unique
+  id         String   @id @default(uuid())
+  nome       String
+  cpf        String   @unique
+  nascimento DateTime
+  fone       String
+  email      String?
+  cartaoSus  String   @unique
 
-    agendas Agenda[]
+  agendas Agenda[]
 
-    createdAt DateTime @default(now())
-    updatedAt DateTime @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
 
 model Attend {
-    userId Int    @id
-    setor  String
+  userId String @id
+  setor  String
 
-    user Users @relation(fields: [userId], references: [id])
+  user User @relation(fields: [userId], references: [id])
 
-    @@map("attends")
+  @@map("attends")
 }

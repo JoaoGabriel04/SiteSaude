@@ -2,8 +2,6 @@ import Joi, { CustomHelpers } from "joi"
 import { Role } from "../../generated/prisma/index.js"
 import { cpf } from "cpf-cnpj-validator"
 
-
-
 export function regUserJoi(data: unknown) {
     const schema = Joi.object({
 
@@ -122,11 +120,9 @@ export function regAtend(data: unknown){
         
         horario_atend: Joi.date().iso().required()
 
-
     })
 
 }
-
 
 function validationCPF(values: string, helpers: CustomHelpers) {
 
@@ -153,4 +149,3 @@ function validarCNS(values: string, helpers: CustomHelpers) {
 
     return cnsNormalized
 }
-

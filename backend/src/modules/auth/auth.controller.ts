@@ -5,16 +5,15 @@ import { Role } from "../../../generated/prisma/index.js"
 function authToken(req: Request, res: Response, next: NextFunction) {
 
     const cookieToken = req.cookies.access_token
-    const secretKey = process.env.JWT_TOKEN
+    const secretKey = process.env.JWT_SECRET
 
     if (!secretKey) {
-        return res.status(500).json({ error: "JWT_TOKEN não definido" })
+        return res.status(500).json({ error: "AccessToken não definido" })
     }
 
     if (!cookieToken) {
         return res.status(401).json({ error: "Acesso negado" })
     }
-
 
     try {
         const userVerifed = jwt.verify(cookieToken, secretKey)
@@ -32,7 +31,5 @@ function authToken(req: Request, res: Response, next: NextFunction) {
         return res.status(400).json({ error: "Token inválido" })
     }
 }
-
-
 
 export default authToken

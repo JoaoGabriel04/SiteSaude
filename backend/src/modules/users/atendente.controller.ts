@@ -3,7 +3,6 @@ import { regPant } from "../validate.js"
 import { prisma } from "../../lib/prisma.js"
 import { Role } from "../../../generated/prisma/index.js"
 
-
 export async function registerPant(req: Request, res: Response) {
 
     if (req.user?.role === Role.ATENDENTE || req.user?.role == Role.ADMIN) {
