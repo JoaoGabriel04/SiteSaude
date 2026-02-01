@@ -1,8 +1,21 @@
 import jwt from "jsonwebtoken";
 import bcrypt from "bcryptjs";
 import UserRepository from "../repositories/UserRepository.js";
-import { lgUserJoi, regUserJoi } from "../modules/validate.js";
+import { lgUserJoi, regUserJoi } from "../api/middlewares/validate.js";
 import { Role } from "../../generated/prisma/index.js";
+
+const secret = process.env.JWT_SECRET;
+
+if (!secret) {
+  throw new Error("Secret not found");
+}
+
+export const generateAccessToken = (payload: object) => {
+  return jwt.sign(payload, secret, { expiresIn: "15m" });
+}
+export const generateRefreshToken = (payload: object) => {
+  return jwt.sign(payload, secret, { expiresIn: "7d" });
+}
 
 export class AuthService {
   constructor(private userRepo: UserRepository) {}
@@ -66,11 +79,13 @@ export class AuthService {
         throw new Error("Invalid Role");
       }
 
-      const token = jwt.sign(
-        { id: user.id, role: user.role },
-        process.env.JWT_SECRET!,
-        { expiresIn: "15m" },
-      );
+      const accessToken = generateAccessToken({ sub: user.id, role: user.role });
+      const refreshToken = generateRefreshToken({ sub: user.id, role: user.role });
+
+      const token = {
+        accessToken,
+        refreshToken,
+      };
 
       return { user, token };
     } catch (err) {
@@ -97,14 +112,46 @@ export class AuthService {
       throw new Error("Invalid email or password");
     }
 
-    const token = jwt.sign(
-      { sub: user.id, role: user.role },
-      process.env.JWT_SECRET!,
-      {
-        expiresIn: "15m",
-      },
-    );
+    const accessToken = generateAccessToken({ sub: user.id, role: user.role });
+    const refreshToken = generateRefreshToken({ sub: user.id, role: user.role });
+
+    const token = {
+      accessToken,
+      refreshToken,
+    };
 
     return { user, token };
   }
+
+  async refreshToken(oldRefreshToken: string) {
+    try {
+
+      const jwtSecret = process.env.JWT_SECRET;
+      if (!jwtSecret) {
+        throw new Error("JWT secret not found");
+      }
+
+      const decoded = jwt.verify(oldRefreshToken, jwtSecret) as jwt.JwtPayload;
+
+      const userId = decoded.sub;
+      const userRole = decoded.role;
+
+      if (!userId || !userRole) {
+        throw new Error("Invalid token payload");
+      }
+
+      const accessToken = generateAccessToken({ sub: userId, role: userRole });
+      const refreshToken = generateRefreshToken({ sub: userId, role: userRole });
+
+      return {
+        token: {
+          accessToken,
+          refreshToken,
+        },
+      };
+    } catch (err) {
+      throw new Error("Invalid refresh token");
+    }
+  }
+ 
 }

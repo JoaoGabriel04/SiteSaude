@@ -1,5 +1,5 @@
 import { Request, Response } from "express"
-import { regPant } from "../validate.js"
+import { regPant } from "../../api/middlewares/validate.js"
 import { prisma } from "../../lib/prisma.js"
 import { Role } from "../../../generated/prisma/index.js"
 

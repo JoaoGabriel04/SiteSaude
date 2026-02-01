@@ -90,6 +90,16 @@ export default class UserRepository {
     });
   }
 
+  async findById(id: string) {
+    return prisma.user.findFirst({
+      where: { id },
+      include: {
+        medico: true,
+        atendente: true,
+      },
+    });
+  }
+
   async updateByEmail(email: string, data: any) {
     return prisma.user.update({
       where: { email },

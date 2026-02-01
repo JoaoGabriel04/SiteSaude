@@ -1,35 +1,101 @@
-import { Request, Response, NextFunction } from "express"
-import jwt from "jsonwebtoken"
-import { Role } from "../../../generated/prisma/index.js"
+import { Request, Response } from "express";
+import { AuthService } from "../../services/AuthService.js";
+import UserRepository from "../../repositories/UserRepository.js";
 
-function authToken(req: Request, res: Response, next: NextFunction) {
+const authService = new AuthService(new UserRepository());
 
-    const cookieToken = req.cookies.access_token
-    const secretKey = process.env.JWT_SECRET
+export class AuthController {
 
-    if (!secretKey) {
-        return res.status(500).json({ error: "AccessToken não definido" })
-    }
-
-    if (!cookieToken) {
-        return res.status(401).json({ error: "Acesso negado" })
-    }
-
+  async registerUser(req: Request, res: Response) {
     try {
-        const userVerifed = jwt.verify(cookieToken, secretKey)
+      const { nome, email, password, cpf, nascimento, role, fone, crm, especialidade, setor } = req.body;
 
-        if (typeof userVerifed !== "object" || userVerifed === null) {
-            return res.status(401).json({ error: "Token Invalido" })
-        }
+      const result = await authService.registerUser({
+        nome,
+        email,
+        password,
+        cpf,
+        nascimento,
+        role,
+        fone,
+        crm,
+        especialidade,
+        setor
+      });
 
-        req.user = {
-            id: userVerifed.id as number,
-            role: userVerifed.role as Role
-        }
-        next()
+      res.cookie("refresh_token", result.token.refreshToken, {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === "production",
+        sameSite: "strict",
+        path: "/api/auth/refresh",
+        maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
+      });
+
+      res.json({
+        accessToken: result.token.accessToken,
+        user: result.user,
+      });
     } catch (error) {
-        return res.status(400).json({ error: "Token inválido" })
+      res.status(400).json({ error: (error as Error).message });
     }
-}
+  }
 
-export default authToken
+  async loginCredentials(req: Request, res: Response) {
+    try {
+      const { email, password } = req.body;
+
+      const result = await authService.loginCredentials(email, password);
+
+      res.cookie("refresh_token", result.token.refreshToken, {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === "production",
+        sameSite: "strict",
+        path: "/api/auth/refresh",
+        maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
+      });
+
+      res.json({
+        accessToken: result.token.accessToken,
+        user: result.user,
+      });
+    } catch (error) {
+      res.status(400).json({ error: (error as Error).message });
+    }
+  }
+  
+  async refreshToken(req: Request, res: Response) {
+    try {
+      const { refreshToken } = req.cookies;
+
+      if (!refreshToken) {
+        throw new Error("Refresh token not found");
+      }
+
+      const result = await authService.refreshToken(refreshToken);
+
+      res.cookie("refresh_token", result.token.refreshToken, {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === "production",
+        sameSite: "strict",
+        path: "/api/auth/refresh",
+        maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
+      });
+
+      res.json({
+        accessToken: result.token.accessToken,
+      });
+    } catch (error) {
+      res.status(400).json({ error: (error as Error).message });
+    }
+  }
+
+  async logout(req: Request, res: Response) {
+    res.clearCookie("refresh_token", {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+      sameSite: "strict",
+      path: "/api/auth/refresh",
+    });
+    res.status(200).json({ message: "Logged out successfully" });
+  }
+}

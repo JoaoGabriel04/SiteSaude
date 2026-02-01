@@ -1,5 +1,5 @@
 import Joi, { CustomHelpers } from "joi"
-import { Role } from "../../generated/prisma/index.js"
+import { Role } from "../../../generated/prisma/index.js"
 import { cpf } from "cpf-cnpj-validator"
 
 export function regUserJoi(data: unknown) {

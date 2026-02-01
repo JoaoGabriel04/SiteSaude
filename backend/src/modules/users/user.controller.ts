@@ -1,53 +1,24 @@
 import { Request, Response } from "express";
-import { AuthService } from "../../services/AuthService.js";
 import UserRepository from "../../repositories/UserRepository.js";
+import { UserService } from "../../services/UserService.js";
 
-const authService = new AuthService(new UserRepository());
+const userService = new UserService(new UserRepository());
 
-export class AuthController {
+export class UserController {
 
-  async registerUser(req: Request, res: Response) {
+  async getProfile(req: Request, res: Response) {
+
+    const { userId } = req.params as { userId: string };
+
     try {
-      const { nome, email, password, cpf, nascimento, role, fone, crm, especialidade, setor } = req.body;
-
-      const result = await authService.registerUser({
-        nome,
-        email,
-        password,
-        cpf,
-        nascimento,
-        role,
-        fone,
-        crm,
-        especialidade,
-        setor
-      });
-
-      res.cookie("access_token", result.token, {
-        httpOnly: true,
-        secure: false,
-        sameSite: "strict",
-        maxAge: 24 * 60 * 60 * 1000, // 1 day
-      });
-
-      res.json(result);
+      const user = await userService.getUserById(userId);
+      if (!user) {
+        return res.status(404).json({ error: "User not found" });
+      }
+      res.json(user);
     } catch (error) {
-      res.status(400).json({ error: (error as Error).message });
+      res.status(404).json({ error: (error as Error).message });
     }
-  }
 
-  async loginCredentials(req: Request, res: Response) {
-    try {
-      const { email, password } = req.body;
-
-      const result = await authService.loginCredentials(email, password);
-
-      res.json(result);
-    } catch (error) {
-      res.status(400).json({ error: (error as Error).message });
-    }
   }
 }
-
-
-
