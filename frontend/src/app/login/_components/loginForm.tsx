@@ -2,8 +2,6 @@
 
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { LoginFormData, loginFormSchema } from "@/schemas/loginSchema";
@@ -11,6 +9,7 @@ import { signIn, useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import { toast } from "react-toastify";
 import { useEffect } from "react";
+import { InputField } from "./inputField";
 
 export default function LoginForm() {
   const router = useRouter();
@@ -39,7 +38,7 @@ export default function LoginForm() {
       console.log(session?.accessToken);
       router.replace("/dashboard");
     }
-  }, [status, router]);
+  }, [status, router, session]);
 
   return (
     <main className="w-full flex flex-col items-center">
@@ -49,36 +48,28 @@ export default function LoginForm() {
           onSubmit={form.handleSubmit(onSubmit)}
           className="w-full flex flex-col items-center space-y-4"
         >
-          <div className="w-full">
-            <Label htmlFor="email" className="mb-2">
-              Enter your Email
-            </Label>
-            <div>
-              <Input placeholder="Email" {...form.register("email")} />
-              {form.formState.errors.email && (
-                <p className="text-red-500">
-                  {form.formState.errors.email.message}
-                </p>
-              )}
-            </div>
-          </div>
-          <div className="w-full">
-            <Label htmlFor="password" className="mb-2">
-              Enter your Password
-            </Label>
-            <div>
-              <Input
-                type="password"
-                placeholder="Password"
-                {...form.register("password")}
-              />
-              {form.formState.errors.password && (
-                <p className="text-red-500">
-                  {form.formState.errors.password.message}
-                </p>
-              )}
-            </div>
-          </div>
+          <InputField
+            id="email"
+            type="email"
+            placeholder="Email"
+            label="Email"
+            description="Enter your email"
+            className="w-full"
+            register={form.register("email")}
+            errorInvalid={form.formState.errors.email !== undefined}
+            errorMessage={form.formState.errors.email?.message}
+          />
+          <InputField
+            id="password"
+            type="password"
+            placeholder="Password"
+            label="Password"
+            description="Enter your password"
+            className="w-full"
+            register={form.register("password")}
+            errorInvalid={form.formState.errors.password !== undefined}
+            errorMessage={form.formState.errors.password?.message}
+          />
           <Button disabled={isSubmitting} className="w-3/4 cursor-pointer">
             Login
           </Button>
