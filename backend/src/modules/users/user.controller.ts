@@ -8,16 +8,27 @@ export class UserController {
 
   async getProfile(req: Request, res: Response) {
 
-    const { userId } = req.params as { userId: string };
+    if (!req.user) return res.status(401).json({ error: "Unauthorized" });
 
     try {
-      const user = await userService.getUserById(userId);
+      const user = await userService.getUserById(req.user.id);
       if (!user) {
         return res.status(404).json({ error: "User not found" });
       }
-      res.json(user);
+      return res.json({
+        id: user.id,
+        nome: user.nome,
+        email: user.email,
+        cpf: user.cpf,
+        nascimento: user.nascimento,
+        fone: user.fone,
+        avatar: user.avatar,
+        role: user.role,
+        medico: user.medico,
+        atendente: user.atendente,
+      });
     } catch (error) {
-      res.status(404).json({ error: (error as Error).message });
+      res.status(500).json({ error: (error as Error).message });
     }
 
   }

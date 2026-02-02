@@ -8,7 +8,7 @@ import { UserController } from "../../modules/users/user.controller.js";
 const userRoute = Router();
 const controller = new UserController();
 
-userRoute.get("/profile/:userId", authToken, controller.getProfile);
+userRoute.get("/profile", authToken, controller.getProfile);
 
 userRoute.post("/registerP", authToken, registerPant)
 
