@@ -28,7 +28,7 @@ export function authToken(req: Request, res: Response, next: NextFunction) {
     }
 
     req.user = {
-      id: payload.id as string,
+      id: payload.sub as string,
       role: payload.role as Role,
     };
 

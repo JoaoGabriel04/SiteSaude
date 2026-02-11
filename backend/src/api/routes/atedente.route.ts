@@ -1,15 +1,15 @@
 import { Router } from "express";
 import {authToken} from "../../api/middlewares/authenticate.js";
-import { registerPant } from "../../modules/users/atendente.controller.js"
-import UserRepository from "../../repositories/UserRepository.js";
-import { UserService } from "../../services/UserService.js";
 import { UserController } from "../../modules/users/user.controller.js";
+import { AttendantController } from "../../modules/users/atendente.controller.js";
 
 const userRoute = Router();
 const controller = new UserController();
+const ctrlAttend = new AttendantController()
 
 userRoute.get("/profile", authToken, controller.getProfile);
 
-userRoute.post("/registerP", authToken, registerPant)
+userRoute.post("/registerP", authToken, ctrlAttend.registerPatient);
+userRoute.post("/agendamento", authToken, ctrlAttend.registerAgenda);
 
 export default userRoute;

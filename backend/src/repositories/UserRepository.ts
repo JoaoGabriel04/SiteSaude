@@ -1,5 +1,6 @@
 import { prisma } from "../lib/prisma.js";
-import { Role } from "../../generated/prisma/index.js";
+import { Role, StatusAtendimento, StatusUrgencia, TipoAtendimento } from "../../generated/prisma/index.js";
+import { connect } from "node:http2";
 
 export default class UserRepository {
   /* =======================
@@ -77,6 +78,76 @@ export default class UserRepository {
   }
 
   /* =======================
+    USER + PACIENTE
+  ======================= */
+
+  async createPatient(data: {
+    nome: string,
+    cpf: string,
+    nascimento: Date,
+    fone: string,
+    email?: string,
+    cartaoSus: string
+  }) {
+    return prisma.patient.create({
+      data: {
+        nome: data.nome,
+        cpf: data.cpf,
+        nascimento: data.nascimento,
+        fone: data.fone,
+        email: data.email,
+        cartaoSus: data.cartaoSus
+      }
+    })
+  }
+
+  /* =======================
+     USER + AGENDA
+  ======================= */
+
+  async createAgenda(
+    data: {
+      horario_atend: Date,
+      duracaoMin: number,
+      statusUrgencia: StatusUrgencia,
+      status: StatusAtendimento,
+      tipo: TipoAtendimento,
+      patientId: string,
+      docId: string,
+      createdById: string,
+      cancelReason?: string,
+      motivo?: string,
+      observacoes?: string
+    }
+  ) {
+    return prisma.agenda.create({
+      data: {
+        horario_atend: data.horario_atend,
+        duracaoMin: data.duracaoMin,
+        statusUrgencia: data.statusUrgencia,
+        status: data.status,
+        tipo: data.tipo,
+        cancelReason: data.cancelReason,
+        motivo: data.motivo,
+        observacoes: data.observacoes,
+
+        paciente: {
+          connect: { id: data.patientId }
+        },
+
+        medico: {
+          connect: { userId: data.docId }
+        },
+
+        createdBy: {
+          connect: { id: data.createdById }
+        }
+      }
+    })
+  }
+
+
+  /* =======================
      QUERIES
   ======================= */
 
@@ -100,10 +171,24 @@ export default class UserRepository {
     });
   }
 
+  async findByIdPatient(id: string) {
+    return prisma.patient.findFirst({
+      where: {
+        id
+      }
+    })
+  }
+
   async updateByEmail(email: string, data: any) {
     return prisma.user.update({
       where: { email },
       data,
     });
   }
+
+  async checkHour(docId: string){
+    return prisma.agenda.findFirst()
+  }
+
+
 }

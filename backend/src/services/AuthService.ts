@@ -37,9 +37,9 @@ export class AuthService {
       throw new Error(error.message);
     }
 
-    const userFinded = await this.userRepo.findByEmail(data.email);
+    const userFound = await this.userRepo.findByEmail(data.email);
 
-    if (userFinded) {
+    if (userFound) {
       throw new Error("Email already registered");
     }
 
@@ -49,13 +49,14 @@ export class AuthService {
       let user;
 
       const nascimentoDate = new Date(data.nascimento);
+      const foneNormalized = data.fone.replace(/\D/g, "")
 
       if (data.role === Role.MEDICO) {
         user = await this.userRepo.createDoctor({
           nome: data.nome,
           cpf: data.cpf,
           nascimento: nascimentoDate,
-          fone: data.fone,
+          fone: foneNormalized,
           email: data.email,
           password: passwordHash,
           role: data.role,
@@ -67,7 +68,7 @@ export class AuthService {
           nome: data.nome,
           cpf: data.cpf,
           nascimento: nascimentoDate,
-          fone: data.fone,
+          fone: foneNormalized,
           email: data.email,
           password: passwordHash,
           role: data.role,

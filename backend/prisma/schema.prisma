@@ -26,6 +26,13 @@ enum StatusAtendimento {
   FINALIZADO
 }
 
+enum TipoAtendimento {
+  CONSULTA
+  EXAME
+  PROCEDIMENTO
+  RETORNO
+}
+
 enum Role {
   MEDICO
   ATENDENTE
@@ -35,15 +42,24 @@ enum Role {
 model Agenda {
   id            String   @id @default(uuid())
   horario_atend DateTime
+  duracaoMin    Int      @default(30)
 
   statusUrgencia StatusUrgencia    @default(BAIXO)
   status         StatusAtendimento @default(AGENDADO)
 
-  patientId String
-  docId     String
+  tipo        TipoAtendimento @default(CONSULTA)
+  motivo      String?
+  observacoes String?
 
-  paciente Patient @relation(fields: [patientId], references: [id])
-  medico   Doctor  @relation(fields: [docId], references: [userId])
+  patientId   String
+  docId       String
+  createdById String
+
+  paciente  Patient @relation(fields: [patientId], references: [id])
+  medico    Doctor  @relation(fields: [docId], references: [userId])
+  createdBy User    @relation(fields: [createdById], references: [id])
+
+  cancelReason String?
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -65,6 +81,7 @@ model User {
 
   medico    Doctor?
   atendente Attend?
+  agendas   Agenda[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
