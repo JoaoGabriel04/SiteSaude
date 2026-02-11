@@ -7,6 +7,8 @@ import { useEffect } from "react";
 import useSWR from "swr";
 import LogoutButton from "./_components/logoutButton";
 import { toast } from "react-toastify";
+import Link from "next/link";
+import { Button } from "@/components/ui/button";
 
 export default function Dashboard() {
   const router = useRouter();
@@ -48,6 +50,9 @@ export default function Dashboard() {
       <p>Email: {session?.user.email}</p>
       <p>Role: {session?.user.role}</p>
       <LogoutButton />
+      <Link href="/">
+        <Button className="w-50 cursor-pointer">Retornar a Página Inicial</Button>
+      </Link>
     </main>
   );
 }
