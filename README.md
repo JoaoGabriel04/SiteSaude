@@ -1,94 +1,154 @@
-````md
 # 🏥 SiteSaude
 
 Sistema para gerenciamento de usuários e atendimentos em uma aplicação de saúde.
-Atualmente o projeto conta apenas com a implementação do backend.
+
+O projeto é composto por:
+
+- 📦 Backend (Node.js + Express + Prisma)
+- 💻 Frontend
+- 🐘 Banco de Dados PostgreSQL
+- 🐳 Ambiente totalmente containerizado com Docker
 
 ---
 
-## ▶️ Como Executar
+# 🚀 Executando o Projeto (Recomendado: WSL/Linux)
 
-### 1️⃣ Clone o repositório
+> ⚠ Recomendado utilizar Linux ou WSL2 no Windows para evitar problemas de permissão e PATH.
+
+---
+
+## 1️⃣ Clone o repositório
+
 ```bash
 git clone https://github.com/RicardoAlSi/SiteSaude.git
-cd SiteSaude/backend
-````
-
-### 2️⃣ Instale as dependências
-
-```bash
-npm install
+cd SiteSaude
 ```
 
-### 3️⃣ Configure as variáveis de ambiente
+---
 
-Crie um arquivo `.env` na pasta backend e adicione:
+## 2️⃣ Configure as variáveis de ambiente
+
+Crie um arquivo `.env` dentro da pasta `backend`:
 
 ```env
-DATABASE_URL=postgresql://user:password@localhost:5432/saude_db
+DATABASE_URL=postgresql://user:password@db:5432/saude_db
 ```
 
-### 4️⃣ Execute as migrations e gere o Prisma Client
+> Observação: quando rodando via Docker, o host do banco deve ser o nome do serviço definido no `docker-compose.yml` (ex: `db`).
+
+---
+
+## 3️⃣ Suba os containers
 
 ```bash
-npx prisma migrate dev
+docker compose up --build
 ```
 
-Ou, se quiser nomear a migration:
+Ou para rodar em background:
 
 ```bash
-npx prisma migrate dev --name nome_da_migration
-```
-npx prisma generate
+docker compose up -d --build
 ```
 
-### 5️⃣ Inicie o servidor
+Isso irá:
+
+- Criar as imagens
+- Subir backend
+- Subir frontend
+- Subir PostgreSQL
+- Conectar tudo automaticamente
+
+---
+
+## 4️⃣ Rodar migrations do Prisma
+
+Com os containers rodando:
 
 ```bash
-npm run dev
+docker compose exec backend npx prisma migrate dev
+```
+
+Ou nomeando a migration:
+
+```bash
+docker compose exec backend npx prisma migrate dev --name nome_da_migration
+```
+
+Gerar Prisma Client:
+
+```bash
+docker compose exec backend npx prisma generate
 ```
 
 ---
 
-## 🛠 Tecnologias Utilizadas
+# 🛠 Tecnologias Utilizadas
 
-* Node.js
-* TypeScript
-* Express
-* Prisma ORM
-* PostgreSQL
-* Joi
-* bcrypt
-
----
-
-## 👤 Funções do Sistema
-
-* **ADMIN**
-* **MEDICO**
-* **ATENDENTE**
-* **PACIENTE**
+- Node.js 24 (LTS)
+- TypeScript
+- Express
+- Prisma ORM
+- PostgreSQL
+- Joi
+- bcrypt
+- Docker
+- Docker Compose
 
 ---
 
-## ✔ Funcionalidades Atuais
+# 👤 Funções do Sistema
 
-* Cadastro de usuários
-* Login de usuários
-* Validação de dados com Joi
-* Banco de dados inicial estruturado com Prisma
-
----
-
-## 🗺 Próximos Passos
-
-* Autenticação com JWT
-* Controle de acesso por roles
-* CRUD de pacientes
-* CRUD de agenda e atendimentos
+- **ADMIN**
+- **MEDICO**
+- **ATENDENTE**
+- **PACIENTE**
 
 ---
 
-## 🚧 Status do Projeto
+# ✔ Funcionalidades Atuais
 
-**Versão 0.1** — Em desenvolvimento 🚀
+- Cadastro de usuários
+- Login de usuários
+- Validação de dados com Joi
+- Estrutura inicial do banco com Prisma
+- Ambiente totalmente containerizado
+
+---
+
+# 🗺 Próximos Passos
+
+- Autenticação com JWT
+- Controle de acesso por Roles (RBAC)
+- CRUD de pacientes
+- CRUD de agenda
+- CRUD de atendimentos
+- Testes automatizados
+- Deploy em ambiente cloud
+
+---
+
+# 🐳 Estrutura Docker
+
+O projeto utiliza:
+
+- `Dockerfile` para backend e frontend
+- `docker-compose.yml` para orquestração
+- Volumes para persistência do banco de dados
+
+---
+
+# 🚧 Status do Projeto
+
+**Versão 0.2** — Ambiente Docker estruturado 🚀
+
+---
+
+# 🧠 Observações Importantes
+
+- Sempre utilize `docker compose up --build` após alterar dependências.
+- Caso ocorra erro de permissão em `node_modules`, verifique se o container está rodando com o mesmo UID do usuário.
+- Recomenda-se manter os projetos dentro do ambiente Linux (`/home/usuario/projetos`) ao utilizar WSL.
+
+---
+
+Desenvolvido para fins acadêmicos e evolução prática em backend com arquitetura containerizada.

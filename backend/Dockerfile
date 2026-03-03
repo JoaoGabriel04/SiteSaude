@@ -1,5 +1,5 @@
 # Usando Node 20
-FROM node:22-alpine
+FROM node:24-alpine
 
 # Diretório dentro do container
 WORKDIR /app
