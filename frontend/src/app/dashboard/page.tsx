@@ -5,18 +5,21 @@ import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import { useEffect } from "react";
 import useSWR from "swr";
-import LogoutButton from "./_components/logoutButton";
 import { toast } from "react-toastify";
-import Link from "next/link";
-import { Button } from "@/components/ui/button";
+import Header from "./_components/Header";
+import { useViewportHeight } from "@/hooks/useViewportHeight";
 
 export default function Dashboard() {
   const router = useRouter();
+  const pageName = "Dashboard";
+  const vh = useViewportHeight();
 
   const { data: session, status } = useSession();
-
   const userId = session?.user?.id;
-
+  const ultimoNome = session?.user.nome
+    .trim()
+    .split(/\s+/)
+    .at(-1)
   const { data, error, isLoading } = useSWR(
     userId ? `/api/atendente/profile/${userId}` : null
   );
@@ -38,21 +41,20 @@ export default function Dashboard() {
 
   if (status === "unauthenticated") {
     toast.error("Você não está logado");
-    setTimeout(()=>{
+    setTimeout(() => {
       router.push("/");
     }, 1000);
   }
 
   return (
-    <main className="w-full min-h-screen flex flex-col justify-center items-center space-y-2">
-      <p>You&apos;re in the Dashboard</p>
-      <p>Hello {session?.user.nome}</p>
-      <p>Email: {session?.user.email}</p>
-      <p>Role: {session?.user.role}</p>
-      <LogoutButton />
-      <Link href="/">
-        <Button className="w-50 cursor-pointer">Retornar a Página Inicial</Button>
-      </Link>
+    <main style={{ height: vh }} className="w-full flex flex-col">
+
+      <Header session={session} current={pageName} />
+
+      <section className="flex-1 w-full px-4 py-2 bg-zinc-300/50 overflow-y-auto">
+        <span className="text-sm text-zinc-800 font-semibold ml-1">Boa Noite, {session?.user.nome.split(" ")[0] + " " + ultimoNome + "!"}</span>
+      </section>
+
     </main>
   );
 }

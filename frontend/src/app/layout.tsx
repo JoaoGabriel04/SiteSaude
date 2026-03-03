@@ -1,8 +1,8 @@
 import React from "react";
 import type { Metadata } from "next";
-import { ToastContainer } from "react-toastify";
 import "./globals.css";
 import NextAuthSessionProvider from "@/providers/sessionProvider";
+import ToastProvider from "@/toast/ToastProvider";
 
 export const metadata: Metadata = {
   title: "Site Saúde",
@@ -17,8 +17,9 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body>
-        <ToastContainer />
-        <NextAuthSessionProvider>{children}</NextAuthSessionProvider>
+        <ToastProvider>
+          <NextAuthSessionProvider>{children}</NextAuthSessionProvider>
+        </ToastProvider>
       </body>
     </html>
   );

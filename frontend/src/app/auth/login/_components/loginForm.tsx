@@ -7,9 +7,11 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { LoginFormData, loginFormSchema } from "@/schemas/loginSchema";
 import { signIn, useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
-import { toast } from "react-toastify";
+import { toast } from "@/toast/toastManager";
 import { useEffect } from "react";
 import { InputField } from "./inputField";
+import Image from "next/image";
+import Link from "next/link";
 
 export default function LoginForm() {
   const router = useRouter();
@@ -42,18 +44,21 @@ export default function LoginForm() {
 
   return (
     <main className="w-full flex flex-col items-center">
-      <Card className="lg:w-1/4 w-100 flex flex-col items-center space-y-2 py-3 px-4">
-        <h1>Login</h1>
+      <Card className="lg:w-1/4 w-full flex flex-col items-center space-y-2 py-3 px-4">
+        <header className="flex flex-col items-center space-y-1">
+          <Image src="/images/logo.png" alt="Logo" width={100} height={100} className="w-20 h-20" />
+          <h1 className="text-lg font-bold text-zinc-800">Sistema de Gestão</h1>
+          <p className="text-sm text-zinc-600">Entre com suas credenciais para continuar</p>
+        </header>
         <form
           onSubmit={form.handleSubmit(onSubmit)}
-          className="w-full flex flex-col items-center space-y-4"
+          className="w-full flex flex-col items-center space-y-4 px-2"
         >
           <InputField
             id="email"
             type="email"
-            placeholder="Email"
+            placeholder="email@exemplo.com"
             label="Email"
-            description="Enter your email"
             className="w-full"
             register={form.register("email")}
             errorInvalid={form.formState.errors.email !== undefined}
@@ -62,9 +67,8 @@ export default function LoginForm() {
           <InputField
             id="password"
             type="password"
-            placeholder="Password"
-            label="Password"
-            description="Enter your password"
+            placeholder="••••••••"
+            label="Senha"
             className="w-full"
             register={form.register("password")}
             errorInvalid={form.formState.errors.password !== undefined}
@@ -73,7 +77,8 @@ export default function LoginForm() {
           <Button disabled={isSubmitting} className="w-3/4 cursor-pointer">
             Login
           </Button>
-        </form>
+          </form>
+          <Link href="/" className="text-sm text-zinc-600 underline cursor-pointer">Voltar para a página inicial</Link>
       </Card>
     </main>
   );
