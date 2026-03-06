@@ -13,7 +13,7 @@ export const nextAuthOptions: NextAuthOptions = {
         password: { label: "Password", type: "password" },
       },
       async authorize(credentials) {
-        const res = await fetch("http://localhost:7000/api/auth/loginU", {
+        const res = await fetch("http://backend:7000/api/auth/loginU", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
@@ -27,19 +27,7 @@ export const nextAuthOptions: NextAuthOptions = {
         const data = await res.json();
 
         return {
-          id: data.user.id,
-          nome: data.user.nome,
-          cpf: data.user.cpf,
-          nascimento: data.user.nascimento,
-          fone: data.user.fone,
-          email: data.user.email,
-          avatar: data.user.avatar,
-          role: data.user.role,
-          crm: data.user.crm,
-          especialidade: data.user.especialidade,
-          setor: data.user.setor,
-          medico: data.user.medico,
-          atendente: data.user.atendente,
+          ...data.user,
           accessToken: data.accessToken,
         };
       },
@@ -92,6 +80,7 @@ export const nextAuthOptions: NextAuthOptions = {
 
   pages: {
     signIn: "/auth/login",
+    signOut: "/"
   },
 };
 

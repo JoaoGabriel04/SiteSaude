@@ -1,6 +1,5 @@
 import { prisma } from "../lib/prisma.js";
 import { Role, StatusAtendimento, StatusUrgencia, TipoAtendimento } from "../../generated/prisma/index.js";
-import { connect } from "node:http2";
 
 export default class UserRepository {
   /* =======================
@@ -150,6 +149,15 @@ export default class UserRepository {
   /* =======================
      QUERIES
   ======================= */
+
+  async getAll() {
+    return prisma.user.findMany({
+      include: {
+        medico: true,
+        atendente: true,
+      },
+    });
+  }
 
   async findByEmail(email: string) {
     return prisma.user.findUnique({

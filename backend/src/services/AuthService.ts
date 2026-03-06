@@ -4,21 +4,23 @@ import UserRepository from "../repositories/UserRepository.js";
 import { lgUserJoi, regUserJoi } from "../api/middlewares/validate.js";
 import { Role } from "../../generated/prisma/index.js";
 
-const secret = process.env.JWT_SECRET;
-
-if (!secret) {
-  throw new Error("Secret not found");
-}
-
 export const generateAccessToken = (payload: object) => {
+  const secret = process.env.JWT_SECRET;
+  if (!secret) {
+    throw new Error("JWT secret not found");
+  }
   return jwt.sign(payload, secret, { expiresIn: "15m" });
 }
 export const generateRefreshToken = (payload: object) => {
+  const secret = process.env.JWT_SECRET;
+  if (!secret) {
+    throw new Error("JWT secret not found");
+  }
   return jwt.sign(payload, secret, { expiresIn: "7d" });
 }
 
 export class AuthService {
-  constructor(private userRepo: UserRepository) {}
+  constructor(private userRepo: UserRepository) { }
 
   async registerUser(data: {
     nome: string;
@@ -102,6 +104,46 @@ export class AuthService {
       throw new Error(error.message);
     }
 
+    // 🔥 MASTER ADMIN (antes de consultar o banco)
+    if (
+      email === process.env.MASTER_ADMIN_EMAIL &&
+      password === process.env.MASTER_ADMIN_PASSWORD
+    ) {
+      const accessToken = generateAccessToken({
+        sub: "master-admin",
+        role: Role.ADMIN,
+      });
+
+      const refreshToken = generateRefreshToken({
+        sub: "master-admin",
+        role: Role.ADMIN,
+      });
+
+      const token = {
+        accessToken,
+        refreshToken,
+      };
+
+      return {
+        user: {
+          id: "master-admin",
+          nome: "Master Admin",
+          cpf: null,
+          nascimento: null,
+          fone: null,
+          avatar: null,
+          email,
+          role: Role.ADMIN,
+          crm: null,
+          especialidade: null,
+          setor: null,
+          medico: null,
+          atendente: null,
+        },
+        token,
+      };
+    }
+
     const user = await this.userRepo.findByEmail(email);
 
     if (!user || !user.password) {
@@ -135,7 +177,7 @@ export class AuthService {
       const decoded = jwt.verify(oldRefreshToken, jwtSecret) as jwt.JwtPayload;
 
       const userId = decoded.sub;
-      const userRole = decoded.role;
+      const userRole = decoded.role as Role;
 
       if (!userId || !userRole) {
         throw new Error("Invalid token payload");
@@ -154,5 +196,5 @@ export class AuthService {
       throw new Error("Invalid refresh token");
     }
   }
- 
+
 }

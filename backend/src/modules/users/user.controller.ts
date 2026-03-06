@@ -6,6 +6,15 @@ const userService = new UserService(new UserRepository());
 
 export class UserController {
 
+  async getAll(req: Request, res: Response) {
+    try {
+      const users = await userService.getAll();
+      return res.json(users);
+    } catch (error) {
+      return res.status(500).json({ error: (error as Error).message });
+    }
+  }
+  
   async getProfile(req: Request, res: Response) {
 
     if (!req.user) return res.status(401).json({ error: "Unauthorized" });

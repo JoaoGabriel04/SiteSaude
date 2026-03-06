@@ -16,7 +16,7 @@ COPY . .
 RUN npm run build
 
 # Expõe porta
-EXPOSE 3000
+EXPOSE 7000
 
 # Comando para rodar
 CMD ["npm", "run", "start"]

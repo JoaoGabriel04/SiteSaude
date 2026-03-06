@@ -1,10 +1,18 @@
-import UserRepository from "../repositories/UserRepository.js";
+  import UserRepository from "../repositories/UserRepository.js";
 import { regPant } from "../api/middlewares/validate.js";
 import { StatusAtendimento, StatusUrgencia, TipoAtendimento } from "../../generated/prisma/index.js";
 import { Prisma } from "../../generated/prisma/index.js";
 
 export class UserService {
   constructor(private userRepo: UserRepository) { }
+
+  async getAll() {
+    const users = await this.userRepo.getAll();
+    if (!users) {
+      throw new Error("No users found");
+    }
+    return users;
+  }
 
   async getUserById(id: string) {
     const user = await this.userRepo.findById(id);

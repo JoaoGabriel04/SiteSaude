@@ -1,6 +1,16 @@
-version: "3.9"
-
 services:
+  db:
+    image: postgres:15
+    container_name: sitesaude_db
+    restart: always
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: saude_db
+    ports:
+      - "5433:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
 
   backend:
     build: ./backend
@@ -9,6 +19,12 @@ services:
       - "7000:7000"
     env_file:
       - ./backend/.env
+    depends_on:
+      - db
+    volumes:
+      - ./backend:/app
+      - /app/node_modules
+    command: sh -c "if [ \"$NODE_ENV\" = 'production' ]; then npm run start; else npm run dev; fi"
 
   frontend:
     build: ./frontend
@@ -19,3 +35,10 @@ services:
       - ./frontend/.env
     depends_on:
       - backend
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules
+    command: sh -c "if [ \"$NODE_ENV\" = 'production' ]; then npm run build && npm run start; else npm run dev; fi"
+
+volumes:
+  pgdata:

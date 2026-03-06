@@ -8,8 +8,13 @@ import cors from "cors";
 const app = express();
 const PORT = process.env.PORT || 7000;
 
+const urlsAllowed = [
+  "http://localhost:3000",
+  "https://intercarpellary-bess-subdenticulated.ngrok-free.dev",
+]
+
 app.use(cors({
-  origin: "http://localhost:3000",
+  origin: urlsAllowed,
   credentials: true,
 }))
 
