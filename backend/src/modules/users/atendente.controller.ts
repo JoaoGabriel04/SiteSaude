@@ -19,6 +19,7 @@ export class AttendantController {
             return res.status(401).json({ error: "Unauthorized" })
         }
 
+
         try {
 
             const patientRegistered = await userService.registerPatient(req.body)
@@ -26,7 +27,14 @@ export class AttendantController {
             res.json(patientRegistered)
 
         } catch (error) {
-            res.status(500).json({ error: (error as Error).message })
+
+            const message = (error as Error).message
+
+            if (message === "CPF já cadastrado!" || message === "CNS já cadastrado!") {
+                return res.status(400).json({ error: message })
+            }
+
+            return res.status(500).json({ error: "Erro interno do servidor" })
         }
     }
 
@@ -45,7 +53,7 @@ export class AttendantController {
         try {
 
             const agendaRegistered = await userService.registerAgenda({ ...req.body, createdById: req.user.id })
-            
+
             res.json(agendaRegistered)
 
         } catch (error) {

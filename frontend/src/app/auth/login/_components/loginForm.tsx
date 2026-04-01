@@ -9,7 +9,7 @@ import { signIn, useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import { toast } from "@/toast/toastManager";
 import { useEffect } from "react";
-import { InputField } from "./inputField";
+import { InputField } from "../../../../components/inputField";
 import Image from "next/image";
 import Link from "next/link";
 
@@ -67,7 +67,7 @@ export default function LoginForm() {
           <InputField
             id="password"
             type="password"
-            placeholder="••••••••"
+            placeholder="password"
             label="Senha"
             className="w-full"
             register={form.register("password")}

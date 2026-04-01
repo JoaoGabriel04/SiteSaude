@@ -1,4 +1,4 @@
-  import UserRepository from "../repositories/UserRepository.js";
+import UserRepository from "../repositories/UserRepository.js";
 import { regPant } from "../api/middlewares/validate.js";
 import { StatusAtendimento, StatusUrgencia, TipoAtendimento } from "../../generated/prisma/index.js";
 import { Prisma } from "../../generated/prisma/index.js";
@@ -36,22 +36,42 @@ export class UserService {
       throw new Error(error.message)
     }
 
+    const cpfExists = await this.userRepo.findByCpf(data.cpf)
+    const cnsExists = await this.userRepo.findByCns(data.cartaoSus)
+
+    if(cpfExists){
+      throw new Error("CPF já cadastrado!")
+    }
+
+    if(cnsExists){
+      throw new Error("CNS já cadastrado!")
+    }
+
     const nascimentoDate = new Date(data.nascimento)
     const foneNormalized = data.fone.replace(/\D/g, "")
 
-    const patientCreated = await this.userRepo.createPatient({
-      nome: data.nome,
-      cpf: data.cpf,
-      nascimento: nascimentoDate,
-      fone: foneNormalized,
-      email: data.email,
-      cartaoSus: data.cartaoSus
-    });
+    try {
+      const patientCreated = await this.userRepo.createPatient({
+        nome: data.nome,
+        cpf: data.cpf,
+        nascimento: nascimentoDate,
+        fone: foneNormalized,
+        email: data.email,
+        cartaoSus: data.cartaoSus
+      });
+      if (!patientCreated) {
+        throw new Error("Algum erro ocorreu no registro de paciente");
+      }
 
-    if (!patientCreated) {
-      throw new Error("Algum erro ocorreu no registro de paciente");
+      return patientCreated
+
+    } catch (error: any) {
+      if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === "P2002") {
+        throw new Error("Registro duplicado")
+      }
+      throw error
     }
-    return patientCreated
+
 
   }
 
@@ -69,7 +89,7 @@ export class UserService {
     if (!foundDoc) {
       throw new Error("Medico não encontrado")
     }
-    if(!foundAttend){
+    if (!foundAttend) {
       throw new Error("Não autorizado")
     }
 

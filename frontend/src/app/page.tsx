@@ -71,7 +71,7 @@ export default function Home() {
         <ul className="w-full flex justify-center items-center gap-4 lg:gap-10 text-sm text-zinc-100/60 font-montserrat">
           {
             footerOptions.map((link, index)=>(
-              <li><Link key={index} href={link.url} className="hover:font-bold transition-all">{link.text}</Link></li>
+              <li key={index}><Link  href={link.url} className="hover:font-bold transition-all">{link.text}</Link></li>
             ))
           }
         </ul>

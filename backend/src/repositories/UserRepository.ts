@@ -169,6 +169,18 @@ export default class UserRepository {
     });
   }
 
+  async findByCpf(cpf: string) {
+    return await prisma.patient.findFirst({
+      where: { cpf }
+    })
+  }
+
+  async findByCns(cartaoSus: string) {
+    return await prisma.patient.findFirst({
+      where: { cartaoSus }
+    })
+  }
+
   async findById(id: string) {
     return prisma.user.findFirst({
       where: { id },
@@ -194,9 +206,10 @@ export default class UserRepository {
     });
   }
 
-  async checkHour(docId: string){
-    return prisma.agenda.findFirst()
+  async checkHour(docId: string) {
+    return prisma.agenda.findFirst({
+      where:{docId}
+    })
   }
-
 
 }
