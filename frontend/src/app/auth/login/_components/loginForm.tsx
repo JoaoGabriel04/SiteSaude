@@ -40,6 +40,7 @@ export default function LoginForm() {
       setIsLoading(false);
       router.replace("/dashboard");
     }
+    setIsLoading(false);
   }, [status, router, session]);
 
   return (
