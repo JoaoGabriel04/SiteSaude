@@ -8,7 +8,7 @@ import { LoginFormData, loginFormSchema } from "@/schemas/loginSchema";
 import { signIn, useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import { toast } from "@/toast/toastManager";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { InputField } from "../../../../components/inputField";
 import Image from "next/image";
 import Link from "next/link";
@@ -21,6 +21,7 @@ export default function LoginForm() {
   });
 
   const { isSubmitting } = form.formState;
+  const [isLoading, setIsLoading] = useState(true);
 
   async function onSubmit(data: LoginFormData) {
     const res = await signIn("credentials", { ...data, redirect: false });
@@ -36,8 +37,7 @@ export default function LoginForm() {
   useEffect(() => {
     if (status === "authenticated") {
       console.log(status); // "authenticated"
-      console.log(session?.user);
-      console.log(session?.accessToken);
+      setIsLoading(false);
       router.replace("/dashboard");
     }
   }, [status, router, session]);
@@ -74,11 +74,11 @@ export default function LoginForm() {
             errorInvalid={form.formState.errors.password !== undefined}
             errorMessage={form.formState.errors.password?.message}
           />
-          <Button disabled={isSubmitting} className="w-3/4 cursor-pointer">
+          <Button disabled={isSubmitting || status === "loading" || isLoading} className="w-3/4 cursor-pointer disabled:opacity-50">
             Login
           </Button>
-          </form>
-          <Link href="/" className="text-sm text-zinc-600 underline cursor-pointer">Voltar para a página inicial</Link>
+        </form>
+        <Link href="/" className="text-sm text-zinc-600 underline cursor-pointer">Voltar para a página inicial</Link>
       </Card>
     </main>
   );
