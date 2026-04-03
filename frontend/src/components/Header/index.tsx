@@ -8,7 +8,7 @@ import gsap from "gsap";
 import Link from "next/link";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
-import LogoutButton from "../logoutButton";
+import LogoutButton from "./_components/logoutButton";
 
 type HeaderProps = {
   session: Session | null;
@@ -23,7 +23,7 @@ type MenuOption = {
 
 const menuOptions: MenuOption[] = [
   { text: "Dashboard", url: "/dashboard", icon: Gauge },
-  { text: "Pacientes", url: "/pacientes", icon: Users },
+  { text: "Pacientes", url: "dashboard/search/pacientes", icon: Users },
   { text: "Agendamentos", url: "/agendamentos", icon: Calendar },
   { text: "Profissionais", url: "/profissionais", icon: UserStar }
 ]

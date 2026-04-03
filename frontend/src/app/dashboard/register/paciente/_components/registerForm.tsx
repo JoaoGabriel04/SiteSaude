@@ -26,9 +26,6 @@ export default function PatientRegisterForm() {
 
     const onSubmit: SubmitHandler<RegisterFormPatient> = async (data) => {
         try {
-
-            console.log(session?.accessToken);
-
             const res = await fetch("http://localhost:7000/api/atendente/registerP", {
                 method: "POST",
                 headers: {
@@ -37,16 +34,13 @@ export default function PatientRegisterForm() {
                 },
                 body: JSON.stringify(data)
             })
-
             if (!res.ok) {
                 const error = await res.json()
                 toast.error(error.error || "Erro ao cadastrar paciente")
                 return
             }
-
             toast.success("Paciente cadastrado com sucesso!")
             router.push("/dashboard")
-
         } catch (error) {
             toast.error("Erro ao cadastrar paciente")
             console.log(error);
@@ -143,5 +137,4 @@ export default function PatientRegisterForm() {
             </Card>
         </div>
     )
-
 }

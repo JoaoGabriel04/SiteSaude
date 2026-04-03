@@ -4,16 +4,13 @@ import { InputGroup, InputGroupAddon, InputGroupInput } from "@/components/ui/in
 import { LoginFormData } from "@/schemas/loginSchema"
 import { RegisterFormPatient } from "@/schemas/registerSchema"
 import { EyeIcon, EyeOffIcon } from "lucide-react"
-import { useState } from "react"
+import { useState, InputHTMLAttributes } from "react"
 import { UseFormRegister } from "react-hook-form"
 
-interface InputFieldProps {
+interface InputFieldProps extends InputHTMLAttributes<HTMLInputElement> {
   id: string
-  type: string
-  placeholder: string
   label: string
-  className?: string
-  register?: ReturnType<UseFormRegister<LoginFormData | RegisterFormPatient>> 
+  register?: ReturnType<UseFormRegister<any>>
   errorInvalid?: boolean
   errorMessage?: string
   mask?: "phone" | "cpf" | "numbers" | "cns"
@@ -73,7 +70,6 @@ export function InputField({ id, type, placeholder, label, className, register, 
     return value
   }
 
-
   return (
     <Field className={className} data-invalid={errorInvalid}>
       <FieldLabel htmlFor={id}>{errorInvalid ? "Campo inválido" : label}</FieldLabel>
@@ -87,8 +83,8 @@ export function InputField({ id, type, placeholder, label, className, register, 
           {...props}
           onChange={(e) => {
             e.target.value = applyMask(e.target.value, mask)
-
             onChange?.(e)
+            props.onChange?.(e)
           }} />
         {type === "password" && <InputGroupAddon align="inline-end">
           <button type="button" className="w-2/3 cursor-pointer" onClick={() => { setShowPass(!showPass) }}>{showPass ? <EyeIcon className="w-full" /> : <EyeOffIcon className="w-full" />}</button>

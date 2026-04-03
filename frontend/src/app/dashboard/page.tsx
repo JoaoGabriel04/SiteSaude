@@ -6,7 +6,7 @@ import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import useSWR from "swr";
 import { toast } from "react-toastify";
-import Header from "./_components/Header";
+import Header from "@/components/Header";
 import { useViewportHeight } from "@/hooks/useViewportHeight";
 import { Carousel, CarouselApi, CarouselContent, CarouselItem } from "@/components/ui/carousel";
 import { Card } from "@/components/ui/card";
