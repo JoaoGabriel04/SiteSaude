@@ -1,5 +1,6 @@
 import { prisma } from "../lib/prisma.js";
 import { Role, StatusAtendimento, StatusUrgencia, TipoAtendimento } from "../../generated/prisma/index.js";
+import { stat } from "node:fs";
 
 export default class UserRepository {
   /* =======================
@@ -159,6 +160,17 @@ export default class UserRepository {
     });
   }
 
+  async getAllPacients(page: number) {
+    const limit = 10
+    return prisma.patient.findMany({
+      take: limit,
+      skip: (page - 1) * limit,
+      orderBy: {
+        nome: 'asc'
+      }
+    })
+  }
+
   async findByEmail(email: string) {
     return prisma.user.findUnique({
       where: { email },
@@ -167,6 +179,21 @@ export default class UserRepository {
         atendente: true,
       },
     });
+  }
+
+  async findPaciente(where: any, page: number) {
+
+    const limit = 10
+
+    return prisma.patient.findMany({
+      where,
+      take: limit,
+      skip: (page - 1) * limit,
+      orderBy: {
+        nome: 'asc'
+      },
+    })
+
   }
 
   async findByCpf(cpf: string) {
@@ -208,8 +235,7 @@ export default class UserRepository {
 
   async checkHour(docId: string) {
     return prisma.agenda.findFirst({
-      where:{docId}
+      where: { docId }
     })
   }
-
 }

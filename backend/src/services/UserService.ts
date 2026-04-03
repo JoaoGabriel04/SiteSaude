@@ -22,14 +22,67 @@ export class UserService {
     return user;
   }
 
-  async registerPatient(data: {
-    nome: string,
-    cpf: string,
-    nascimento: Date,
-    fone: string,
-    email?: string,
-    cartaoSus: string
-  }) {
+  async getPacient(busca?: string, urgencia?: string, page = 1) {
+
+    const value = busca?.trim() || ''
+    const numValue = value.replace(/\D/g, '')
+    const filtros: any[] = []
+
+    const urgenciaEnum = urgencia?.toUpperCase() as StatusUrgencia
+
+    if (!value && !urgencia) {
+      return this.userRepo.getAllPacients(page)
+    }
+
+    if (value) {
+
+      if (numValue.length === 11) {
+        filtros.push({ cpf: numValue })
+      }
+
+      if (numValue.length === 15) {
+        filtros.push({ cartaoSus: numValue })
+      }
+
+      if (numValue.length === 10 || numValue.length === 11) {
+        filtros.push({ fone: numValue })
+      }
+
+      if (value.includes('@')) {
+        filtros.push({
+          email: {
+            contains: value,
+            mode: 'insensitive'
+          }
+        })
+      }
+
+      filtros.push({
+        nome: {
+          contains: value,
+          mode: 'insensitive'
+        }
+      })
+    }
+
+    const where: any = {}
+
+    if (filtros.length) {
+      where.OR = filtros
+    }
+
+    if (urgencia) {
+      where.agendas = {
+        some: {
+          statusUrgencia: urgenciaEnum
+        }
+      }
+    }
+
+    return this.userRepo.findPaciente(where, page)
+  }
+
+  async registerPatient(data: Prisma.PatientCreateInput) {
 
     const { error } = regPant(data)
     if (error) {
@@ -39,11 +92,11 @@ export class UserService {
     const cpfExists = await this.userRepo.findByCpf(data.cpf)
     const cnsExists = await this.userRepo.findByCns(data.cartaoSus)
 
-    if(cpfExists){
+    if (cpfExists) {
       throw new Error("CPF já cadastrado!")
     }
 
-    if(cnsExists){
+    if (cnsExists) {
       throw new Error("CNS já cadastrado!")
     }
 
@@ -56,7 +109,7 @@ export class UserService {
         cpf: data.cpf,
         nascimento: nascimentoDate,
         fone: foneNormalized,
-        email: data.email,
+        email: data.email ?? undefined,
         cartaoSus: data.cartaoSus
       });
       if (!patientCreated) {
