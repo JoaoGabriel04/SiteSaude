@@ -26,7 +26,7 @@ export default function Home() {
           <Image src={'/images/logo-maior.png'} alt="logo-medflow" width={200} height={200} className="w-10 lg:w-15 drop-shadow-[0px_0px_1px_#05d5ff]" />
         </div>
         <nav className="flex justify-center items-center gap-2">
-          <Link href={'/agendas'} className="cursor-pointer">
+          <Link href={'/consult-acess'} className="cursor-pointer">
             <Button className="w-25 bg-sky-500 hover:bg-sky-400 transition-all shadow-md cursor-pointer">
               Consultar
             </Button>
