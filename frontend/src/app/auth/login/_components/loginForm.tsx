@@ -5,13 +5,13 @@ import { Card } from "@/components/ui/card";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { LoginFormData, loginFormSchema } from "@/schemas/loginSchema";
-import { signIn, useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import { toast } from "@/toast/toastManager";
-import { useEffect, useState } from "react";
 import { InputField } from "../../../../components/inputField";
 import Image from "next/image";
 import Link from "next/link";
+import api, { setAccessToken } from "@/services/api";
+import { useUserStore } from "@/stores/userStore";
 
 export default function LoginForm() {
   const router = useRouter();
@@ -21,27 +21,27 @@ export default function LoginForm() {
   });
 
   const { isSubmitting } = form.formState;
-  const [isLoading, setIsLoading] = useState(true);
+
+  const { setUser } = useUserStore();
 
   async function onSubmit(data: LoginFormData) {
-    const res = await signIn("credentials", { ...data, redirect: false });
-    if (res && res.error) {
+    try {
+      console.log("Fazendo login...")
+      const res = await api.post("/api/auth/loginU", data);
+
+      const result = res.data;
+
+      setAccessToken(result.accessToken);
+      setUser(result.user);
+
+      console.log("Login Sucessido.")
+      toast.success("Login realizado com sucesso!");
+
+      router.replace("/user/dashboard");
+    } catch (error) {
       toast.error("Email ou senha incorretos");
-      return;
     }
-    router.push("/dashboard");
   }
-
-  const { data: session, status } = useSession();
-
-  useEffect(() => {
-    if (status === "authenticated") {
-      console.log(status); // "authenticated"
-      setIsLoading(false);
-      router.replace("/dashboard");
-    }
-    setIsLoading(false);
-  }, [status, router, session]);
 
   return (
     <main className="w-full flex flex-col items-center">
@@ -75,8 +75,8 @@ export default function LoginForm() {
             errorInvalid={form.formState.errors.password !== undefined}
             errorMessage={form.formState.errors.password?.message}
           />
-          <Button disabled={isSubmitting || status === "loading" || isLoading} className="w-3/4 cursor-pointer disabled:opacity-50">
-            Login
+          <Button disabled={isSubmitting} className="w-3/4 cursor-pointer disabled:opacity-50">
+            {isSubmitting ? "Entrando..." : "Login"}
           </Button>
         </form>
         <Link href="/" className="text-sm text-zinc-600 underline cursor-pointer">Voltar para a página inicial</Link>

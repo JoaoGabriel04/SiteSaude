@@ -6,11 +6,16 @@ interface User {
   fone: string;
   email: string;
   avatar: string | null;
-  role: "ADMIN" | "MEDICO" | "ATENDENTE";
+  role: "ADMIN" | "MEDICO" | "ATENDENTE" | null;
   crm?: string;
   especialidade?: string;
   setor?: string;
   medico?: string[] | null;
   atendente?: string[] | null;
-  accessToken: string;
+}
+
+enum Role {
+  ADMIN,
+  MEDICO,
+  ATENDENTE
 }

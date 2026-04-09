@@ -1,6 +1,6 @@
 import { create } from "zustand";
 
-type UserStore = {
+type User = {
   id: string;
   nome: string;
   cpf: string;
@@ -11,35 +11,36 @@ type UserStore = {
   role: "ADMIN" | "MEDICO" | "ATENDENTE" | null;
   medico?: string[] | null;
   atendente?: string[] | null;
-  loading: boolean;
-  error: string | null;
+};
 
-  setUser: (user: Partial<UserStore>) => void;
+type UserStore = {
+  user: User | null;
+  isAuthenticated: boolean;
+  loading: boolean;
+
+  setUser: (user: User) => void;
   clearUser: () => void;
+  setLoading: (loading: boolean) => void;
 };
 
 export const useUserStore = create<UserStore>((set) => ({
-  id: "",
-  nome: "",
-  cpf: "",
-  nascimento: "",
-  fone: "",
-  email: "",
-  avatar: null,
-  role: null,
-  medico: null,
-  atendente: null,
-  loading: false,
-  error: null,
+  user: null,
+  isAuthenticated: false,
+  loading: true,
 
-  setUser: (user) => set(user),
+  setUser: (user) =>
+    set({
+      user,
+      isAuthenticated: true,
+      loading: false,
+    }),
+
   clearUser: () =>
     set({
-      id: "",
-      nome: "",
-      email: "",
-      role: "ATENDENTE",
+      user: null,
+      isAuthenticated: false,
       loading: false,
-      error: null,
     }),
+
+  setLoading: (loading) => set({ loading }),
 }));

@@ -2,7 +2,6 @@ import React from "react";
 import type { Metadata } from "next";
 import "./globals.css";
 import { Poppins, Montserrat } from "next/font/google"
-import NextAuthSessionProvider from "@/providers/sessionProvider";
 import ToastProvider from "@/toast/ToastProvider";
 
 const poppins = Poppins({
@@ -31,7 +30,7 @@ export default function RootLayout({
     <html lang="en">
       <body className={`${poppins.variable, montserrat.variable} antialiased`}>
         <ToastProvider>
-          <NextAuthSessionProvider>{children}</NextAuthSessionProvider>
+          {children}
         </ToastProvider>
       </body>
     </html>

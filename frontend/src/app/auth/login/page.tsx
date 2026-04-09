@@ -1,30 +1,46 @@
 'use client';
-import { useUserStore } from "@/stores/userStore";
-import LoginForm from "./_components/loginForm";
 import { useEffect, useState } from "react";
+import LoginForm from "./_components/loginForm";
+import { useViewportHeight } from "@/hooks/useViewportHeight";
+import { useUserStore } from "@/stores/userStore";
+import LoadingScreen from "@/components/LoadingScreen";
+import { useRouter } from "next/navigation";
+import api from "@/services/api";
 
 export default function Login() {
 
-  const [vh, setVh] = useState("100vh");
-  const { loading } = useUserStore();
+  const vh = useViewportHeight();
+  const [isLoading, setIsLoading] = useState(false);
+  const {user, setUser, isAuthenticated} = useUserStore();
+  const router = useRouter();
 
   useEffect(() => {
-    const updateVh = () => setVh(`${window.innerHeight}px`);
-    updateVh();
-    window.addEventListener("resize", updateVh);
+    async function checkAuth() {
+      try {
+        const res = await api.get("/api/user/me");
 
-    return () => window.removeEventListener("resize", updateVh);
+        setUser(res.data);
+
+        router.replace('/user/dashboard');
+      } catch (error) {
+        // ❗ não autenticado → segue normal
+      } finally {
+        setIsLoading(false);
+      }
+    }
+
+    checkAuth();
   }, []);
 
-  if (loading) {
-    return <div>Carregando...</div>;
+  if (isLoading) {
+    return (<LoadingScreen />)
   }
-  
+
   return (
     <main style={{ height: vh }} className="flex flex-col items-center justify-center px-8 bg-sky-200/40">
-      
+
       <LoginForm />
-      
+
     </main>
   );
 }

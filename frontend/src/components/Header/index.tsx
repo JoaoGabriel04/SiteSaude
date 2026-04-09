@@ -2,7 +2,6 @@
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useViewportHeight } from "@/hooks/useViewportHeight";
 import { Calendar, Gauge, LucideIcon, Menu, Users, UserStar } from "lucide-react";
-import { Session } from "next-auth";
 import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import gsap from "gsap";
 import Link from "next/link";
@@ -11,7 +10,7 @@ import { useRouter } from "next/navigation";
 import LogoutButton from "./_components/logoutButton";
 
 type HeaderProps = {
-  session: Session | null;
+  user: User | null;
   current: string;
 }
 
@@ -22,23 +21,30 @@ type MenuOption = {
 }
 
 const menuOptions: MenuOption[] = [
-  { text: "Dashboard", url: "/dashboard", icon: Gauge },
-  { text: "Pacientes", url: "dashboard/search/pacientes", icon: Users },
-  { text: "Agendamentos", url: "/agendamentos", icon: Calendar },
-  { text: "Profissionais", url: "/profissionais", icon: UserStar }
+  { text: "Dashboard", url: "/user/dashboard", icon: Gauge },
+  { text: "Pacientes", url: "/user/search/pacientes", icon: Users },
+  { text: "Agendamentos", url: "/user/agendamentos", icon: Calendar },
+  { text: "Profissionais", url: "/user/profissionais", icon: UserStar }
 ]
 
-export default function Header({ session, current }: HeaderProps) {
+export default function Header({ user, current }: HeaderProps) {
 
   const router = useRouter();
 
   const vh = useViewportHeight();
   const [isOpen, setIsOpen] = useState(false);
 
-  const ultimoNome = session?.user.nome
-    .trim()
-    .split(/\s+/)
-    .at(-1)
+  const nome = user?.nome ?? "";
+  const partes = nome.split(" ");
+
+  const primeiroNome = partes[0] ?? "";
+  const ultimoNome = partes.length > 1 ? partes.at(-1) ?? "" : "";
+
+  const role = user?.role ?? "";
+  const roleFormatada =
+    role.length > 0
+      ? role.charAt(0).toUpperCase() + role.slice(1).toLowerCase()
+      : "";
 
   const menuRef = useRef<HTMLDivElement | null>(null)
 
@@ -88,17 +94,19 @@ export default function Header({ session, current }: HeaderProps) {
   }
 
   return (
-    <header className="w-full h-16 flex justify-between items-center px-4 shadow-sm font-montserrat">
+    <header className="w-full h-18 lg:h-16 flex justify-between items-center px-4 shadow-sm font-montserrat">
       <button onClick={handleMenuClick} className="w-1/4 cursor-pointer"><Menu className="w-9 h-full border border-zinc-500/60 p-1 rounded-sm" /></button>
       <nav ref={menuRef} style={{ height: vh }} className={`fixed left-0 top-0 z-999 w-6/10 lg:w-1/5 bg-zinc-200 flex flex-col py-4 border-r border-zinc-600/30 rounded-r-md shadow-[2px_0px_5px_#00000020]`}>
         <div className="w-full border-y border-y-zinc-600/30 text-sm flex justify-start items-center gap-2 px-2">
           <Avatar>
-            <AvatarImage src={session?.user.avatar ? session?.user.avatar : 'images/avatar-1.png'} />
-            <AvatarFallback>{session?.user.nome.charAt(0)}</AvatarFallback>
+            <AvatarImage src={user?.avatar ? user.avatar : '/images/avatar-1.png'} />
+            <AvatarFallback>{user?.nome.charAt(0)}</AvatarFallback>
           </Avatar>
           <div className="flex flex-col justify-center gap-1 py-3 pl-2">
-            <span className="font-semibold">{session?.user.nome.split(" ")[0] + " " + ultimoNome}</span>
-            <span className="text-zinc-800/70">{session?.user.role.charAt(0).toUpperCase() + session?.user.role.slice(1).toLowerCase()}</span>
+            <span className="font-semibold">{primeiroNome + " " + ultimoNome}</span>
+            <span className="text-zinc-800/70">
+              {roleFormatada}
+            </span>
           </div>
         </div>
         <ul className="w-full px-4 py-1 mt-4 space-y-3 lg:space-y-4">
@@ -106,10 +114,10 @@ export default function Header({ session, current }: HeaderProps) {
             const Icon = option.icon;
 
             return (
-              <li key={index} className={`flex items-center gap-4 px-2 py-2 rounded-sm ${current === option.text ? 'bg-sky-500/80 text-zinc-100 font-semibold' : 'hover:bg-sky-500/20 text-zinc-800'} cursor-pointer transition-all`}>
+              <Link key={index} href={option.url} className={`flex items-center gap-4 px-2 py-2 rounded-sm ${current === option.text ? 'bg-sky-500/80 text-zinc-100 font-semibold' : 'hover:bg-sky-500/20 text-zinc-800'} cursor-pointer transition-all`}>
                 <Icon size={20} />
-                <Link href={option.url} className="text-sm lg:text-md">{option.text}</Link>
-              </li>
+                <span className="text-sm lg:text-md">{option.text}</span>
+              </Link>
             )
           })}
         </ul>
@@ -123,8 +131,8 @@ export default function Header({ session, current }: HeaderProps) {
       </div>
       <div className="w-1/4 flex justify-end items-center">
         <Avatar>
-          <AvatarImage src={session?.user.avatar ? session?.user.avatar : 'images/avatar-1.png'} />
-          <AvatarFallback>{session?.user.nome.charAt(0)}</AvatarFallback>
+          <AvatarImage src={user?.avatar ? user.avatar : '/images/avatar-1.png'} />
+          <AvatarFallback>{user?.nome.charAt(0)}</AvatarFallback>
         </Avatar>
       </div>
       <div style={{ height: vh }} className={`${isOpen ? 'block' : 'hidden'} w-full h-full fixed top-0 left-0 z-990 bg-zinc-800/60`} onClick={handleMenuClick}></div>

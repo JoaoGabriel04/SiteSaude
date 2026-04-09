@@ -40,7 +40,7 @@ export default function PatientRegisterForm() {
                 return
             }
             toast.success("Paciente cadastrado com sucesso!")
-            router.push("/dashboard")
+            router.push("/user/search/pacientes")
         } catch (error) {
             toast.error("Erro ao cadastrar paciente")
             console.log(error);

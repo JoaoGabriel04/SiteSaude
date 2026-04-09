@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { cpf } from "cpf-cnpj-validator";
+import * as cpfValidator from "cpf-cnpj-validator";
 
 function validationCPF(value: string) {
   const cpfNormalized = value.replace(/\D/g, "");
@@ -8,7 +8,7 @@ function validationCPF(value: string) {
     return true;
   }
 
-  return cpf.isValid(cpfNormalized);
+  return cpfValidator.cpf.isValid(cpfNormalized);
 }
 
 function validarCNS(value: string) {
