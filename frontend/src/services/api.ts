@@ -96,11 +96,6 @@ api.interceptors.response.use(
     } catch (err) {
       processQueue(err, null);
 
-      // 🚪 fallback: logout
-      if (typeof window !== "undefined") {
-        window.location.href = "/auth/login";
-      }
-
       return Promise.reject(err);
 
     } finally {

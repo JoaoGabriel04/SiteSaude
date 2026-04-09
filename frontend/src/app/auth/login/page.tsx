@@ -11,24 +11,26 @@ export default function Login() {
 
   const vh = useViewportHeight();
   const [isLoading, setIsLoading] = useState(false);
-  const {user, setUser, isAuthenticated} = useUserStore();
+  const { user, setUser, isAuthenticated } = useUserStore();
   const router = useRouter();
 
   useEffect(() => {
     async function checkAuth() {
       try {
         const res = await api.get("/api/user/me");
-
+        console.log("Dados recuperados!")
         setUser(res.data);
-
-        router.replace('/user/dashboard');
-      } catch (error) {
-        // ❗ não autenticado → segue normal
+        
+        if (isAuthenticated) {
+          router.replace("/user/dashboard");
+        }
+      } catch {
+        // 👈 simplesmente ignora
       } finally {
         setIsLoading(false);
       }
     }
-
+  
     checkAuth();
   }, []);
 

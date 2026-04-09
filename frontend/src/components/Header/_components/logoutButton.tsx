@@ -3,11 +3,11 @@
 import { useUserStore } from "@/stores/userStore"
 import { DoorOpen } from "lucide-react"
 import { useRouter } from "next/navigation"
-import api from "@/services/api"
+import api, { setAccessToken } from "@/services/api"
 
 export default function LogoutButton() {
   const router = useRouter();
-  const clearUser = useUserStore((state) => state.clearUser);
+  const { clearUser } = useUserStore();
 
   async function handleLogout() {
     try {
@@ -16,7 +16,9 @@ export default function LogoutButton() {
       // mesmo se der erro, continua logout local
     }
 
+    console.log("Limpando usuário!")
     clearUser(); // limpa Zustand
+    setAccessToken("");
 
     router.replace("/auth/login"); // redireciona
   }

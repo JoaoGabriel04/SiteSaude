@@ -25,7 +25,7 @@ export default function UserLayout({
         console.log(res.data);
         setUser(res.data);
       } catch (error) {
-        router.replace("/");
+        router.replace("/auth/login");
       }
     }
 
