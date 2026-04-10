@@ -1,6 +1,7 @@
 import { Request, Response } from "express";
 import UserRepository from "../../repositories/UserRepository.js";
 import { UserService } from "../../services/UserService.js";
+import { Role } from "../../../generated/prisma/index.js";
 
 const userService = new UserService(new UserRepository());
 
@@ -14,28 +15,45 @@ export class UserController {
       return res.status(500).json({ error: (error as Error).message });
     }
   }
-  
+
   async getProfile(req: Request, res: Response) {
 
     if (!req.user) return res.status(401).json({ error: "Unauthorized" });
 
     try {
-      const user = await userService.getUserById(req.user.id);
-      if (!user) {
-        return res.status(404).json({ error: "User not found" });
+      if (req.user.role !== Role.ADMIN) {
+        const user = await userService.getUserById(req.user.id);
+        if (!user) {
+          return res.status(404).json({ error: "User not found" });
+        }
+        return res.json({
+          id: user.id,
+          nome: user.nome,
+          email: user.email,
+          cpf: user.cpf,
+          nascimento: user.nascimento,
+          fone: user.fone,
+          avatar: user.avatar,
+          role: user.role,
+          medico: user.medico,
+          atendente: user.atendente,
+        });
       }
       return res.json({
-        id: user.id,
-        nome: user.nome,
-        email: user.email,
-        cpf: user.cpf,
-        nascimento: user.nascimento,
-        fone: user.fone,
-        avatar: user.avatar,
-        role: user.role,
-        medico: user.medico,
-        atendente: user.atendente,
-      });
+        id: "master-admin",
+        nome: "Master Admin",
+        cpf: null,
+        nascimento: null,
+        fone: null,
+        avatar: null,
+        email: process.env.MASTER_ADMIN_EMAIL,
+        role: Role.ADMIN,
+        crm: null,
+        especialidade: null,
+        setor: null,
+        medico: null,
+        atendente: null,
+      })
     } catch (error) {
       res.status(500).json({ error: (error as Error).message });
     }
