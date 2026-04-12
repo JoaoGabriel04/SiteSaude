@@ -18,12 +18,7 @@ export class AuthController {
     try {
       const result = await authService.registerUser(req.body);
 
-      res.cookie("refresh_token", result.token.refreshToken, cookieConfig);
-
-      return res.status(201).json({
-        accessToken: result.token.accessToken,
-        user: result.user,
-      });
+      return res.status(201).json({message: "Profissional Registrado com Sucesso!"});
 
     } catch (error) {
       return res.status(400).json({ error: (error as Error).message });

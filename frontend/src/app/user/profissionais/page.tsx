@@ -7,7 +7,6 @@ import { Button } from "@/components/ui/button";
 import { Card, CardTitle, CardHeader, CardContent } from "@/components/ui/card";
 import { useViewportHeight } from "@/hooks/useViewportHeight";
 import { PlusIcon } from "lucide-react";
-import { useSession } from "next-auth/react";
 import { useEffect, useMemo, useState } from "react";
 import { toast } from "@/toast/toastManager";
 import useSWR from "swr";
@@ -17,6 +16,9 @@ import { InputField } from "@/components/inputField";
 import LoadingScreen from "@/components/LoadingScreen";
 import api from "@/services/api";
 import { useUserStore } from "@/stores/userStore";
+import ProfissionalRegister from "./_components/ProfissionalRegister";
+import { User } from "@/types/user";
+import AtendenteRegister from "./_components/AtendenteRegister";
 
 export default function ProfissionaisPage() {
 
@@ -247,12 +249,12 @@ export default function ProfissionaisPage() {
 
           </section>
 
-          <Modal isOpen={openProf} onClose={handleCloseProf} title="Novo Profissional">
-            <h1>Oi</h1>
+          <Modal size="xl" isOpen={openProf} onClose={handleCloseProf} title="Novo Profissional">
+           <ProfissionalRegister onSubmit={handleCloseProf} />
           </Modal>
 
-          <Modal isOpen={openAtend} onClose={handleCloseAtend} title="Novo Atendente">
-            <h1>Oi</h1>
+          <Modal size="xl" isOpen={openAtend} onClose={handleCloseAtend} title="Novo Atendente">
+            <AtendenteRegister onSubmit={handleCloseAtend} />
           </Modal>
 
         </section>

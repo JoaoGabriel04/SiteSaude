@@ -58,4 +58,6 @@ export const regFormPatient = z.object({
     })
 });
 
+
+
 export type RegisterFormPatient = z.input<typeof regFormPatient>

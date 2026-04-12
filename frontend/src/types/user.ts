@@ -1,4 +1,4 @@
-interface User {
+export interface User {
   id: string;
   nome: string;
   cpf: string;
@@ -14,8 +14,8 @@ interface User {
   atendente?: string[] | null;
 }
 
-enum Role {
-  ADMIN,
-  MEDICO,
-  ATENDENTE
+export enum Role {
+  ADMIN = "ADMIN",
+  MEDICO = "MEDICO",
+  ATENDENTE = "ATENDENTE"
 }

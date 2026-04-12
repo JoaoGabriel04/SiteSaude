@@ -3,6 +3,7 @@
 import { useEffect, useRef } from "react";
 import gsap from "gsap";
 import { X } from "lucide-react";
+import Title1 from "../Title1";
 
 type ModalProps = {
   isOpen: boolean;
@@ -62,8 +63,8 @@ export default function Modal({
   const sizeClasses = {
     sm: "w-72",
     md: "w-96",
-    lg: "w-[32rem]",
-    xl: "w-[40rem]",
+    lg: "w-4/5 lg:w-[32rem]",
+    xl: "w-9/10 lg:w-[40rem]",
   };
 
   return (
@@ -72,14 +73,17 @@ export default function Modal({
       <div
         ref={boxRef}
         className={`absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 
-        ${sizeClasses[size]} bg-white rounded-md shadow-lg z-10`}
+        ${sizeClasses[size]} bg-white rounded-md shadow-lg z-10 
+        flex flex-col max-h-[90vh]`}
       >
-        <div className="flex items-center justify-between p-4 border-b">
-          <h2 className="text-lg font-semibold font-poppins">{title}</h2>
+        <div className="flex items-center justify-between p-4 border-b shrink-0">
+          <Title1>{title}</Title1>
           <X className="cursor-pointer" onClick={handleClose} />
         </div>
 
-        <div className="p-4">{children}</div>
+        <div className="p-4 overflow-y-auto">
+          {children}
+        </div>
       </div>
 
       {/* Overlay */}

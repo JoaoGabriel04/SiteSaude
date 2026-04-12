@@ -15,6 +15,7 @@ import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { toast } from "@/toast/toastManager";
 import api from "@/services/api";
 import { useUserStore } from "@/stores/userStore";
+import { useViewPacientes } from "@/hooks/useViewPacientes";
 
 type PacienteData = {
   id: string;
@@ -34,21 +35,14 @@ export default function SearchPacient() {
   const [urgencia, setUrgencia] = useState("");
   const [inputUrgencia, setInputUrgencia] = useState("TODOS");
 
-  const { user, isAuthenticated } = useUserStore();
+  const { user } = useUserStore();
 
-  const fetcher = (url: string) => api.get(url).then(res => res.data);
-
-  const shouldFetch = isAuthenticated;
-  const { data: pacienteData, error: pacienteError, isLoading: pacienteLoading } = useSWR(
-    shouldFetch
-      ? `http://localhost:7000/api/user/search/pacientes?busca=${busca}&page=${current}&urgencia=${urgencia}`
-      : null,
-    fetcher)
+  const { data: pacienteData, error: pacienteError, isLoading: pacienteLoading } = useViewPacientes({ busca, current, urgencia });
 
   const hasPreviousPage = current > 1;
   const hasNextPage = pacienteData && pacienteData.length === 10;
 
-  useEffect(()=>{
+  useEffect(() => {
     if (pacienteError) {
       toast.error("Erro ao buscar pacientes!")
     }

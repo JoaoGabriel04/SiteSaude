@@ -8,6 +8,7 @@ import { Carousel, CarouselContent, CarouselItem } from "@/components/ui/carouse
 import { Card } from "@/components/ui/card";
 import LoadingScreen from "@/components/LoadingScreen";
 import { useEffect } from "react";
+import { useViewPacientes } from "@/hooks/useViewPacientes";
 
 export default function Dashboard() {
 
@@ -15,6 +16,7 @@ export default function Dashboard() {
   const vh = useViewportHeight();
 
   const { user, loading, isAuthenticated } = useUserStore();
+  const {data: pacienteData, isLoading: pacienteLoading} = useViewPacientes({});
 
   const ultimoNome = user?.nome
     .trim()
@@ -25,7 +27,7 @@ export default function Dashboard() {
     console.log(isAuthenticated);
   }, [])
 
-  if (loading || !user) {
+  if (loading || !user || pacienteLoading) {
     return <LoadingScreen />;
   }
 
@@ -42,7 +44,7 @@ export default function Dashboard() {
               <CarouselItem className="pl-4 basis-2/3 md:basis-1/6">
                 <Card className="flex flex-col items-start justify-start gap-1 p-3">
                   <span className="text-zinc-900 text-sm font-roboto font-medium">Total de Pacientes:</span>
-                  <h1 className="text-4xl text-zinc-800/70 font-roboto">0</h1>
+                  <h1 className="text-4xl text-zinc-800/70 font-roboto">{pacienteData ? pacienteData.length : 0}</h1>
                   <span className="text-xs text-zinc-700/60 font-roboto font-medium mt-3">Marcados com urgência: 0</span>
                 </Card>
               </CarouselItem>

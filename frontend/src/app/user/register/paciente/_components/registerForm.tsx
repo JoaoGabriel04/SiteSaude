@@ -12,11 +12,12 @@ import { InputField } from "@/components/inputField";
 import Image from "next/image";
 import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
-import { useSession } from "next-auth/react";
+import { useUserStore } from "@/stores/userStore";
+import api from "@/services/api";
 
 export default function PatientRegisterForm() {
     const router = useRouter()
-    const { data: session } = useSession()
+    const {user} = useUserStore();
 
     const form = useForm<RegisterFormPatient>({
         resolver: zodResolver(regFormPatient)
@@ -26,19 +27,8 @@ export default function PatientRegisterForm() {
 
     const onSubmit: SubmitHandler<RegisterFormPatient> = async (data) => {
         try {
-            const res = await fetch("http://localhost:7000/api/atendente/registerP", {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json",
-                    "Authorization": `Bearer ${session?.accessToken}`
-                },
-                body: JSON.stringify(data)
-            })
-            if (!res.ok) {
-                const error = await res.json()
-                toast.error(error.error || "Erro ao cadastrar paciente")
-                return
-            }
+            await api.post("http://localhost:7000/api/atendente/registerP", data);
+            
             toast.success("Paciente cadastrado com sucesso!")
             router.push("/user/search/pacientes")
         } catch (error) {

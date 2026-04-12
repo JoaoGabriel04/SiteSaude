@@ -82,15 +82,7 @@ export class AuthService {
         throw new Error("Invalid Role");
       }
 
-      const accessToken = generateAccessToken({ sub: user.id, role: user.role });
-      const refreshToken = generateRefreshToken({ sub: user.id, role: user.role });
-
-      const token = {
-        accessToken,
-        refreshToken,
-      };
-
-      return { user, token };
+      return { user };
     } catch (err) {
       console.error(err);
       throw err;
