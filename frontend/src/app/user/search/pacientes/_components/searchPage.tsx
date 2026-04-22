@@ -40,7 +40,7 @@ export default function SearchPacient() {
   const { data: pacienteData, error: pacienteError, isLoading: pacienteLoading } = useViewPacientes({ busca, current, urgencia });
 
   const hasPreviousPage = current > 1;
-  const hasNextPage = pacienteData && pacienteData.length === 10;
+  const hasNextPage = pacienteData && pacienteData.length === 12;
 
   useEffect(() => {
     if (pacienteError) {
@@ -130,7 +130,7 @@ export default function SearchPacient() {
               {pacienteData && pacienteData.length > 0 && pacienteData.map((paciente: PacienteData, index: number) => {
 
                 return (
-                  <Card key={paciente.id} className="w-full md:w-1/4 shadow-md hover:shadow-lg transition">
+                  <Card key={paciente.id} className="w-full md:w-[calc(25%-6px)] shadow-md hover:shadow-lg transition">
                     <CardHeader className="flex flex-row items-center justify-between">
                       <CardTitle className="text-lg flex items-center gap-2">
                         <Avatar>

@@ -161,7 +161,7 @@ export default class UserRepository {
   }
 
   async getAllPacients(page: number) {
-    const limit = 10
+    const limit = 12
     return prisma.patient.findMany({
       take: limit,
       skip: (page - 1) * limit,
@@ -183,7 +183,7 @@ export default class UserRepository {
 
   async findPaciente(where: any, page: number) {
 
-    const limit = 10
+    const limit = 12
 
     return prisma.patient.findMany({
       where,
