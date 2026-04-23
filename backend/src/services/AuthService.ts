@@ -1,7 +1,6 @@
 import jwt from "jsonwebtoken";
 import bcrypt from "bcryptjs";
 import UserRepository from "../repositories/UserRepository.js";
-import { lgUserJoi, regUserJoi } from "../api/middlewares/validate.js";
 import { Role } from "../../generated/prisma/index.js";
 
 export const generateAccessToken = (payload: object) => {
@@ -34,10 +33,6 @@ export class AuthService {
     especialidade?: string;
     setor?: string;
   }) {
-    const { error } = regUserJoi(data);
-    if (error) {
-      throw new Error(error.message);
-    }
 
     const userFound = await this.userRepo.findByEmail(data.email);
 
@@ -90,13 +85,6 @@ export class AuthService {
   }
 
   async loginCredentials(email: string, password: string) {
-    const { error } = lgUserJoi({ email, password });
-
-    if (error) {
-      throw new Error(error.message);
-    }
-
-    // 🔥 MASTER ADMIN (antes de consultar o banco)
     if (
       email === process.env.MASTER_ADMIN_EMAIL &&
       password === process.env.MASTER_ADMIN_PASSWORD

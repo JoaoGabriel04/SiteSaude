@@ -1,5 +1,4 @@
 import UserRepository from "../repositories/UserRepository.js";
-import { regPant } from "../api/middlewares/validate.js";
 import { StatusAtendimento, StatusUrgencia, TipoAtendimento } from "../../generated/prisma/index.js";
 import { Prisma } from "../../generated/prisma/index.js";
 
@@ -83,11 +82,6 @@ export class UserService {
   }
 
   async registerPatient(data: Prisma.PatientCreateInput) {
-
-    const { error } = regPant(data)
-    if (error) {
-      throw new Error(error.message)
-    }
 
     const cpfExists = await this.userRepo.findByCpf(data.cpf)
     const cnsExists = await this.userRepo.findByCns(data.cartaoSus)
