@@ -1,6 +1,7 @@
 import UserRepository from "../repositories/UserRepository.js";
 import { StatusAtendimento, StatusUrgencia, TipoAtendimento } from "../../generated/prisma/index.js";
 import { Prisma } from "../../generated/prisma/index.js";
+import { AppError } from "../errors/AppError.js";
 
 export class UserService {
   constructor(private userRepo: UserRepository) { }
@@ -87,11 +88,11 @@ export class UserService {
     const cnsExists = await this.userRepo.findByCns(data.cartaoSus)
 
     if (cpfExists) {
-      throw new Error("CPF já cadastrado!")
+      throw new AppError("CPF já cadastrado!", 400)
     }
 
     if (cnsExists) {
-      throw new Error("CNS já cadastrado!")
+      throw new AppError("CNS já cadastrado!", 400)
     }
 
     const nascimentoDate = new Date(data.nascimento)
@@ -107,14 +108,14 @@ export class UserService {
         cartaoSus: data.cartaoSus
       });
       if (!patientCreated) {
-        throw new Error("Algum erro ocorreu no registro de paciente");
+        throw new AppError("Algum erro ocorreu no registro de paciente", 500);
       }
 
       return patientCreated
 
     } catch (error: any) {
       if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === "P2002") {
-        throw new Error("Registro duplicado")
+        throw new AppError("Registro duplicado", 400)
       }
       throw error
     }
@@ -131,13 +132,13 @@ export class UserService {
     const foundAttend = await this.userRepo.findById(data.createdById)
 
     if (!foundPatient) {
-      throw new Error("Paciente não encontrado")
+      throw new AppError("Paciente não encontrado", 404)
     }
     if (!foundDoc) {
-      throw new Error("Medico não encontrado")
+      throw new AppError("édico não encontrado", 404)
     }
     if (!foundAttend) {
-      throw new Error("Não autorizado")
+      throw new AppError("Não autorizado", 401)
     }
 
     const agendaCreated = await this.userRepo.createAgenda({
@@ -155,7 +156,7 @@ export class UserService {
     })
 
     if (!agendaCreated) {
-      throw new Error("Ocorreu algum erro na criação da agenda")
+      throw new AppError("Ocorreu algum erro na criação da agenda", 500)
     }
 
     return agendaCreated
