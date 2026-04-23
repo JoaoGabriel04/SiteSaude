@@ -12,8 +12,13 @@ import { InputField } from "@/components/inputField";
 import Image from "next/image";
 import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
+import { AxiosError } from "axios";
 import { useUserStore } from "@/stores/userStore";
 import api from "@/services/api";
+
+type ApiError = {
+  error: string;
+};
 
 export default function PatientRegisterForm() {
     const router = useRouter()
@@ -31,9 +36,9 @@ export default function PatientRegisterForm() {
             
             toast.success("Paciente cadastrado com sucesso!")
             router.push("/user/search/pacientes")
-        } catch (error) {
-            toast.error("Erro ao cadastrar paciente")
-            console.log(error);
+        } catch (err) {
+            const error = err as AxiosError<ApiError>
+            toast.error(error.response?.data.error || "Erro ao cadastrar paciente!")
         }
     }
 
