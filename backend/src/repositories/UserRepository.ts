@@ -153,9 +153,30 @@ export default class UserRepository {
 
   async getAll() {
     return prisma.user.findMany({
-      include: {
-        medico: true,
-        atendente: true,
+      select: {
+        id: true,
+        nome: true,
+        cpf: true,
+        nascimento: true,
+        fone: true,
+        email: true,
+        avatar: true,
+        role: true,
+        createdAt: true,
+        updatedAt: true,
+
+        medico: {
+          select: {
+            crm: true,
+            especialidade: true,
+          },
+        },
+
+        atendente: {
+          select: {
+            setor: true,
+          },
+        },
       },
     });
   }
