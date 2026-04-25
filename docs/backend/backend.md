@@ -95,23 +95,266 @@ throw new AppError("CPF já cadastrado", 400)
 
 ### GET api/user/
 
+Descrição: retorna um lista com todos os usuários cadastrados no sistema
+
+Autenticação: necessária (ADMIN)  
+Header:
+Authorization: Bearer `TOKEN`
+
+#### Resposta de sucesso
+
+`200 OK`
+
+```json
+{
+  "data": [
+    {
+      "id": "uuid",
+      "nome": "string",
+      "cpf": "string",
+      "nascimento": "ISO 8601",
+      "fone": "string",
+      "email": "string",
+      "avatar": "string | null",
+      "role": "MEDICO | ATENDENTE",
+      "createdAt": "ISO 8601",
+      "updatedAt": "ISO 8601",
+      "medico": {
+        "crm": "string",
+        "especialidade": "string"
+      } | null,
+      "atendente": {
+        "setor": "string"
+      } | null
+    }, {...}
+  ]
+}
+```
+#### Observações
+
+- O campo `medico` será preenchido apenas quando `role = MEDICO`
+- O campo `atendente` será preenchido apenas quando `role = ATENDENTE`
+- O outro campo será `null`
+
+#### Exemplo - Médico
+
+```json
+{
+  "role": "MEDICO",
+  "medico": {
+    "crm": "SSP/MA 123432",
+    "especialidade": "CARDIOLOGISTA"
+  },
+  "atendente": null
+}
+```
+
+#### Exemplo - Atendente
+```json
+{
+  "role": "ATENDENTE",
+  "medico": null,
+  "atendente": {
+    "setor": "RECEPÇÃO"
+  }
+}
+```
 ---
 
 ### GET api/user/me
+
+Descrição: retorna o perfil do user condizendo com o ID vindo do token
+
+Autenticação: necessária (ATENDENTE, ADMIN)  
+Header:
+Authorization: Bearer `TOKEN`
+
+#### Resposta de sucesso
+
+`200 OK`
+
+```json
+{
+  "data":
+    {
+      "id": "uuid",
+      "nome": "string",
+      "cpf": "string",
+      "nascimento": "ISO 8601",
+      "fone": "string",
+      "email": "string",
+      "avatar": "string | null",
+      "role": "MEDICO | ATENDENTE",
+      "createdAt": "ISO 8601",
+      "updatedAt": "ISO 8601",
+      "medico": {
+        "crm": "string",
+        "especialidade": "string"
+      } | null,
+      "atendente": {
+        "setor": "string"
+      } | null
+    }
+}
+```
 
 ---
 
 ### GET api/user/search/paciente
 
+Descrição: retorna a lista de pacientes com filtros opcionais
+
+Autenticação: necessária (ATENDENTE, ADMIN)  
+Header:
+Authorization: Bearer `TOKEN`
+
+#### Query Params (opcional)
+
+- `nome` (string) → filtra por nome (parcial)
+- `cpf` (string) → filtra por CPF
+- `cartaoSus` (string) → filtra por CNS
+- `telefone` (string) → filtra por telefone
+- `page` (number) → número da página (default: 1)
+- `limit` (number) → quantidade por página (default: 10)
+
+#### Exemplo de requisição
+
+GET /api/patients?busca=joao&page=1
+
+#### Resposta de sucesso
+
+`200 OK`
+
+```json
+[
+	{
+		"id": "uuid",
+		"nome": "string",
+		"cpf": "string",
+		"nascimento": "ISO 8601",
+		"fone": "string",
+		"email": "string",
+		"cartaoSus": "string",
+		"createdAt": "ISO 8601",
+		"updatedAt": "ISO 8601"
+	}, 
+  {...}
+]
+```
 ---
 
 ## POST
 
 ### POST api/auth/registerU
+Descrição: registra usuários (MEDICO e ATENDENTE)
+
+Autenticação: necessária `ADMIN`  
+Header:
+Authorization: Bearer `TOKEN`
+
+#### Body
+
+```json
+{
+  "nome": "string",
+  "cpf": "string",
+  "password": "string",
+  "nascimento": "AAAA-MM-DD",
+  "email": "string",
+  "role": "MEDICO" | "ATENDENTE",
+  "fone": "string",
+  "crm": "string",
+  "especialidade": "string",
+  "setor": "string"
+}
+```
+
+#### Resposta de sucesso
+
+`200 OK`
+
+```json
+{ 
+  "message":"Profissional Registrado com Sucesso"
+}
+```
+
+#### Observações
+
+- Os campos `crm` e `especialidade` devem ser preenchidos apenas quando o **user** é `MEDICO` em `role`
+- O campo `setor` só deve ser preenchido apenas quando o **user** é `ATENDENTE` em `role`
+- O campo `password` é armazenado de forma criptografada e não é retornado pela API
+
+#### Erros
+
+* `400` - Email já cadastrado
+* `400` - CRM já cadastrado
+* `400` - CPF já cadastrado
+* `400` - Role Invalida
+* `500` - Erro interno do servidor 
 
 ---
 
 ### POST api/auth/loginU
+
+Descrição: registra usuários (MEDICO, ATENDENTE e ADMIN)
+
+Autenticação: necessária `ADMIN`  
+Header:
+Authorization: Bearer `TOKEN`
+
+#### Body
+
+```json
+{
+  "email": "string",
+  "password": "string"
+}
+```
+
+`200 OK`
+
+```json
+{
+  "accessToken": "JWT",
+  "user": {
+    "id": "uuid",
+    "nome": "string",
+    "cpf": "string",
+    "nascimento": "ISO 8601",
+    "fone": "string",
+    "email": "string",
+    "password" : ""
+    "avatar": "string | null",
+    "role": "MEDICO | ATENDENTE",
+    "createdAt": "ISO 8601",
+    "updatedAt": "ISO 8601",
+    "medico": {
+      "crm": "string",
+      "especialidade": "string"
+    } | null,
+    "atendente": {
+      "setor": "string"
+    } | null
+  }
+}
+```
+#### Observações
+
+- O campo `accessToken` deve ser utilizado no header das requisições:
+  
+  >Authorization: Bearer `<token>`
+
+- O campo `medico` será preenchido apenas quando `role = MEDICO`
+
+- O campo `atendente` será preenchido apenas quando `role = ATENDENTE`
+
+- Campos sensíveis como `password` não são retornados vázios pela API
+
+#### Erros
+
+- `400` - Email ou senha inválidos
+- `500` - Erro interno do servidor
 
 ---
 
@@ -138,8 +381,8 @@ Header:
 {
   "nome": "string",
   "cpf": "string",
-  "nascimento": "YYYY-MM-DD",
-  "email": "email@email.com",
+  "nascimento": "AAAA-MM-DD",
+  "email": "string",
   "cartaoSus": "string",
   "telefone": "string"
 }
@@ -154,7 +397,7 @@ Header:
   "id": "uuid",
   "nome": "string",
   "cpf": "string",
-  "nascimento": "YYYY-MM-DD",
+  "nascimento": "ISO 8601",
   "telefone": "string",
   "email": "string",
   "cartaoSus": "string",
