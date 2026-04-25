@@ -30,23 +30,25 @@ export class UserService {
 
     if (value) {
 
-      filtros.push({
-        OR: [{
-          fone: {
-            contains: numValue,
-          }
-        },
-        {
-          cpf: {
-            contains: numValue,
-          }
-        },
-        {
-          cartaoSus: {
-            contains: numValue,
-          }
-        }]
-      })
+      if (numValue) {
+        filtros.push({
+          OR: [{
+            fone: {
+              contains: numValue,
+            }
+          },
+          {
+            cpf: {
+              contains: numValue,
+            }
+          },
+          {
+            cartaoSus: {
+              contains: numValue,
+            }
+          }]
+        })
+      }
 
       if (value.includes('@')) {
         filtros.push({
