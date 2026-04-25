@@ -134,7 +134,7 @@ export class AuthService {
       };
     }
 
-    const user = await this.userRepo.findByEmail(email);
+    let user = await this.userRepo.findByEmail(email);
 
     if (!user || !user.password) {
       throw new AppError("Email ou senha inválidos", 400);
@@ -152,6 +152,11 @@ export class AuthService {
       accessToken,
       refreshToken,
     };
+
+    user = {
+      ...user, 
+      password: '',
+    }
 
     return { user, token };
   }
