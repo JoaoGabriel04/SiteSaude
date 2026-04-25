@@ -1,6 +1,7 @@
 import { Request, Response } from "express";
 import { AuthService } from "../../services/AuthService.js";
 import UserRepository from "../../repositories/UserRepository.js";
+import { AppError } from "../../errors/AppError.js";
 
 const authService = new AuthService(new UserRepository());
 
@@ -18,10 +19,13 @@ export class AuthController {
     try {
       const result = await authService.registerUser(req.body);
 
-      return res.status(201).json({message: "Profissional Registrado com Sucesso!"});
+      return res.status(201).json({ message: "Profissional Registrado com Sucesso!" });
 
     } catch (error) {
-      return res.status(400).json({ error: (error as Error).message });
+      if (error instanceof AppError) {
+        return res.status(error.statusCode).json({ error: error.message })
+      }
+      return res.status(500).json({ error: "Erro interno do servidor" })
     }
   }
 
@@ -39,7 +43,10 @@ export class AuthController {
       });
 
     } catch (error) {
-      return res.status(401).json({ error: "Email ou senha inválidos" });
+      if (error instanceof AppError) {
+        return res.status(error.statusCode).json({ error: error.message });
+      }
+      return res.status(500).json({ error: "Erro interno do servidor" });
     }
   }
 
@@ -60,7 +67,10 @@ export class AuthController {
       });
 
     } catch (error) {
-      return res.status(401).json({ error: "Refresh token inválido" });
+      if (error instanceof AppError) {
+        return res.status(error.statusCode).json({ error: error.message });
+      }
+      return res.status(500).json({ error: "Erro interno do servidor" });
     }
   }
 

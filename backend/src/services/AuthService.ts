@@ -2,18 +2,19 @@ import jwt from "jsonwebtoken";
 import bcrypt from "bcryptjs";
 import UserRepository from "../repositories/UserRepository.js";
 import { Role } from "../../generated/prisma/index.js";
+import { AppError } from "../errors/AppError.js";
 
 export const generateAccessToken = (payload: object) => {
   const secret = process.env.JWT_SECRET;
   if (!secret) {
-    throw new Error("JWT secret not found");
+    throw new AppError("JWT secret not found", 500);
   }
   return jwt.sign(payload, secret, { expiresIn: "15m" });
 }
 export const generateRefreshToken = (payload: object) => {
   const secret = process.env.JWT_SECRET;
   if (!secret) {
-    throw new Error("JWT secret not found");
+    throw new AppError("JWT secret not found", 500);
   }
   return jwt.sign(payload, secret, { expiresIn: "7d" });
 }
@@ -35,9 +36,19 @@ export class AuthService {
   }) {
 
     const userFound = await this.userRepo.findByEmail(data.email);
+    const cpfFound = await this.userRepo.findByCpfUser(data.cpf);
+    const crmFound = data.crm ? await this.userRepo.findByCrm(data.crm) : null;
+
+    if (crmFound) {
+      throw new AppError("CRM já registrado", 400);
+    }
 
     if (userFound) {
-      throw new Error("Email already registered");
+      throw new AppError("Email já registrado", 400);
+    }
+
+    if (cpfFound) {
+      throw new AppError("CPF já registrado", 400);
     }
 
     let passwordHash = await bcrypt.hash(data.password, 10);
@@ -74,12 +85,11 @@ export class AuthService {
       }
 
       if (!user) {
-        throw new Error("Invalid Role");
+        throw new AppError("Role inválida", 400);
       }
 
       return { user };
     } catch (err) {
-      console.error(err);
       throw err;
     }
   }
@@ -127,12 +137,12 @@ export class AuthService {
     const user = await this.userRepo.findByEmail(email);
 
     if (!user || !user.password) {
-      throw new Error("Invalid email or password");
+      throw new AppError("Email ou senha inválidos", 400);
     }
 
     const valid = await bcrypt.compare(password, user.password);
     if (!valid) {
-      throw new Error("Invalid email or password");
+      throw new AppError("Email ou senha inválidos", 400);
     }
 
     const accessToken = generateAccessToken({ sub: user.id, role: user.role });
@@ -151,7 +161,7 @@ export class AuthService {
 
       const jwtSecret = process.env.JWT_SECRET;
       if (!jwtSecret) {
-        throw new Error("JWT secret not found");
+        throw new AppError("JWT secret not found", 500);
       }
 
       const decoded = jwt.verify(oldRefreshToken, jwtSecret) as jwt.JwtPayload;
@@ -160,7 +170,7 @@ export class AuthService {
       const userRole = decoded.role as Role;
 
       if (!userId || !userRole) {
-        throw new Error("Invalid token payload");
+        throw new AppError("Invalid token payload", 400);
       }
 
       const accessToken = generateAccessToken({ sub: userId, role: userRole });
@@ -173,7 +183,7 @@ export class AuthService {
         },
       };
     } catch (err) {
-      throw new Error("Invalid refresh token");
+      throw new AppError("Invalid refresh token", 400);
     }
   }
 

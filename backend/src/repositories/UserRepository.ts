@@ -202,6 +202,18 @@ export default class UserRepository {
     });
   }
 
+  async findByCpfUser(cpf: string) {
+    return prisma.user.findFirst({
+      where: { cpf }
+    })
+  }
+
+  async findByCrm(crm: string) {
+    return prisma.doctor.findFirst({
+      where: { crm }
+    })
+  }
+
   async findPaciente(where: any, page: number) {
 
     const limit = 12
