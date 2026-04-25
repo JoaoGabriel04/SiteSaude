@@ -1,19 +1,16 @@
 "use client"
 
 import { useState } from "react";
-import useSWR from "swr";
 import { useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { InputField } from "@/components/inputField";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import Link from "next/dist/client/link";
 import Title1 from "@/components/Title1";
 import Subtitle from "@/components/Subtitle";
 import LoadingScreen from "@/components/LoadingScreen";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { toast } from "@/toast/toastManager";
-import api from "@/services/api";
 import { useUserStore } from "@/stores/userStore";
 import { useViewPacientes } from "@/hooks/useViewPacientes";
 
@@ -37,7 +34,7 @@ export default function SearchPacient() {
 
   const { user } = useUserStore();
 
-  const { data: pacienteData, error: pacienteError, isLoading: pacienteLoading } = useViewPacientes({ busca, current, urgencia });
+  const { data: pacienteData, error: pacienteError, isLoading: pacienteLoading } = useViewPacientes({ busca, current });
 
   const hasPreviousPage = current > 1;
   const hasNextPage = pacienteData && pacienteData.length === 12;
@@ -46,8 +43,7 @@ export default function SearchPacient() {
     if (pacienteError) {
       toast.error("Erro ao buscar pacientes!")
     }
-    console.log(pacienteData)
-    console.log(user)
+
   }, [pacienteData, pacienteError])
 
   if (pacienteLoading) {
@@ -101,17 +97,6 @@ export default function SearchPacient() {
                   value={inputValue}
                   onChange={(e) => { setInputValue(e.target.value) }}
                 />
-                <Select value={inputUrgencia} onValueChange={(value) => setInputUrgencia(value)}>
-                  <SelectTrigger className="w-1/4 self-center">
-                    <SelectValue placeholder="Selecione a prioridade" />
-                  </SelectTrigger>
-                  <SelectContent position="popper">
-                    <SelectItem value="TODOS" >Todos</SelectItem>
-                    <SelectItem value="URGENTE">Urgente</SelectItem>
-                    <SelectItem value="MODERADO">Moderado</SelectItem>
-                    <SelectItem value="BAIXO">Baixo</SelectItem>
-                  </SelectContent>
-                </Select>
               </div>
               <Button className="bg-blue-600 hover:bg-blue-700 font-bold text-white px-10 cursor-pointer" type="submit">
                 Buscar

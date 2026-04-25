@@ -61,10 +61,10 @@ export class UserController {
   }
 
   async getPacient(req: Request, res: Response) {
-    const { busca, urgencia, page } = req.query as { busca?: string; urgencia?: string; page?: string };
+    const { busca, page } = req.query as { busca?: string; page?: string };
 
     try {
-      const pacientes = await userService.getPacient(busca, urgencia, page ? parseInt(page) : 1);
+      const pacientes = await userService.getPacient(busca, page ? parseInt(page) : 1);
       return res.json(pacientes);
     } catch (error) {
       return res.status(500).json({ error: "Erro ao buscar pacientes" });

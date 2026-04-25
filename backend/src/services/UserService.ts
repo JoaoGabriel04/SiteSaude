@@ -22,31 +22,31 @@ export class UserService {
     return user;
   }
 
-  async getPacient(busca?: string, urgencia?: string, page = 1) {
+  async getPacient(busca?: string, page = 1) {
 
     const value = busca?.trim() || ''
     const numValue = value.replace(/\D/g, '')
     const filtros: any[] = []
 
-    const urgenciaEnum = urgencia?.toUpperCase() as StatusUrgencia
-
-    if (!value && !urgencia) {
-      return this.userRepo.getAllPacients(page)
-    }
-
     if (value) {
 
-      if (numValue.length === 11) {
-        filtros.push({ cpf: numValue })
-      }
-
-      if (numValue.length === 15) {
-        filtros.push({ cartaoSus: numValue })
-      }
-
-      if (numValue.length === 10 || numValue.length === 11) {
-        filtros.push({ fone: numValue })
-      }
+      filtros.push({
+        OR: [{
+          fone: {
+            contains: numValue,
+          }
+        },
+        {
+          cpf: {
+            contains: numValue,
+          }
+        },
+        {
+          cartaoSus: {
+            contains: numValue,
+          }
+        }]
+      })
 
       if (value.includes('@')) {
         filtros.push({
@@ -69,14 +69,6 @@ export class UserService {
 
     if (filtros.length) {
       where.OR = filtros
-    }
-
-    if (urgencia) {
-      where.agendas = {
-        some: {
-          statusUrgencia: urgenciaEnum
-        }
-      }
     }
 
     return this.userRepo.findPaciente(where, page)
