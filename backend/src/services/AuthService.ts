@@ -153,12 +153,9 @@ export class AuthService {
       refreshToken,
     };
 
-    user = {
-      ...user, 
-      password: '',
-    }
+    const { password: _, ...userSafe } = user; // Remove a senha do objeto de usuário retornado
 
-    return { user, token };
+    return { user: userSafe, token };
   }
 
   async refreshToken(oldRefreshToken: string) {
