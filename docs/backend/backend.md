@@ -312,7 +312,11 @@ Authorization: Bearer `TOKEN`
 }
 ```
 
+#### Resposta de Sucesso
+
 `200 OK`
+
+- Define um cookie `refresh_token` automaticamente
 
 ```json
 {
@@ -324,7 +328,6 @@ Authorization: Bearer `TOKEN`
     "nascimento": "ISO 8601",
     "fone": "string",
     "email": "string",
-    "password" : ""
     "avatar": "string | null",
     "role": "MEDICO | ATENDENTE",
     "createdAt": "ISO 8601",
@@ -339,6 +342,7 @@ Authorization: Bearer `TOKEN`
   }
 }
 ```
+
 #### Observações
 
 - O campo `accessToken` deve ser utilizado no header das requisições:
@@ -349,7 +353,7 @@ Authorization: Bearer `TOKEN`
 
 - O campo `atendente` será preenchido apenas quando `role = ATENDENTE`
 
-- Campos sensíveis como `password` não são retornados vázios pela API
+- Campos sensíveis como `password` não são retornados pela API
 
 #### Erros
 
@@ -358,11 +362,74 @@ Authorization: Bearer `TOKEN`
 
 ---
 
-### POST api/auth/refresh
+### POST /api/auth/refresh
+
+Descrição: gera um novo access token a partir do refresh token
+
+Autenticação: não requer Bearer Token
+
+#### Cookies 
+
+- `refresh_token` (string) → enviado automaticamente pelo navegador
+
+#### Body
+
+```
+Não é necessário
+```
+
+#### Resposta de Sucesso
+
+`200 OK`
+
+```json
+{
+  "accessToken": "string (JWT)"
+}
+```
+
+#### Observações
+
+- O `accessToken` deve ser utilizado no header das requisições:
+
+  >Authorization: Bearer TOKEN
+
+- O `refresh_token` é armazenado em cookie HttpOnly
+- O cookie é enviado automaticamente pelo navegador
+
+#### Erros
+
+- `400` - Invalid token payload
+- `400` - Invalid refresh token
+- `401` - Refresh token ausente
+- `500` - Erro interno do servidor
+- `500` - JWT secret not found
 
 ---
 
-### POST api/auth/logout
+### POST /api/auth/logout
+
+Descrição: encerra a sessão do usuário removendo o refresh token
+
+Autenticação: não necessária
+
+#### Cookies
+
+- `refresh_token` (string) → será removido
+
+#### Body
+
+Não é necessário
+
+#### Resposta de Sucesso
+
+`200 OK`
+
+```json
+{
+  "message": "Logout realizado com sucesso"
+}
+```
 
 ---
 
