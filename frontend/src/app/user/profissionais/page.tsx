@@ -185,7 +185,7 @@ export default function ProfissionaisPage() {
                 <span className="text-sm text-zinc-800/50">{profData?.length} profissionais encontrados</span>
               </div>
 
-              <div className="w-full flex flex-wrap gap-2">
+              <div className="w-full grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-2">
                 {listaFiltrada.length > 0 ? listaFiltrada.map((prof: User, index: number) => {
 
                   const role = prof.role ?? "";
@@ -195,7 +195,7 @@ export default function ProfissionaisPage() {
                       : "";
 
                   return (
-                    <Card key={prof.id} className="w-full lg:w-1/4 px-1">
+                    <Card key={prof.id} className="w-full px-1 shadow-md hover:shadow-lg transition">
                       <CardHeader className="flex flex-row items-center justify-between">
                         <CardTitle className="text-lg flex items-center gap-2">
                           <Avatar>
@@ -261,4 +261,4 @@ export default function ProfissionaisPage() {
       </section>
     </main>
   )
-}
+} 

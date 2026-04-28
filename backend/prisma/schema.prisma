@@ -19,6 +19,12 @@ enum StatusUrgencia {
   BAIXO
 }
 
+enum Sexo {
+  MASCULINO
+  FEMININO
+  OUTRO
+}
+
 enum StatusAtendimento {
   AGENDADO
   CONFIRMADO
@@ -109,6 +115,8 @@ model Patient {
   fone       String
   email      String?
   cartaoSus  String   @unique
+  sexo       Sexo     @default(OUTRO)
+
 
   agendas Agenda[]
 

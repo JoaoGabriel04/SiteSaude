@@ -72,7 +72,7 @@ export function InputField({ id, type, placeholder, label, className, register, 
 
   return (
     <Field className={className} data-invalid={errorInvalid}>
-      <FieldLabel htmlFor={id}>{errorInvalid ? "Campo inválido" : label}</FieldLabel>
+      <FieldLabel htmlFor={id}>{label}</FieldLabel>
       <InputGroup>
         <InputGroupInput id={id}
           type={showPass ? "text" : type}

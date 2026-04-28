@@ -1,6 +1,6 @@
 import { Request, Response, Router } from "express";
 import authRouter from "./auth.route.js";
-import atendenteRouter from "./atedente.route.js";
+import atendenteRouter from "./atendente.route.js";
 import userRouter from "./user.route.js";
 import { authToken } from "../middlewares/authenticate.js";
 import { authorize } from "../middlewares/RolesAuthorize.js";

@@ -22,7 +22,7 @@ export class UserService {
     return user;
   }
 
-  async getPacient(busca?: string, page = 1) {
+  async getPacient(busca?: string, page = 1, sexo?: string) {
 
     const value = busca?.trim() || ''
     const numValue = value.replace(/\D/g, '')
@@ -73,7 +73,15 @@ export class UserService {
       where.OR = filtros
     }
 
+    if (sexo && sexo !== 'TODOS') {
+      where.sexo = sexo
+    }
+
     return this.userRepo.findPaciente(where, page)
+  }
+
+  async getAgendas(data: Prisma.$AgendaPayload) {
+    return this.userRepo.findAgendas(data)
   }
 
   async registerPatient(data: Prisma.PatientCreateInput) {
@@ -117,6 +125,40 @@ export class UserService {
 
   }
 
+  async updatePatient(id: string, data: {
+    nome?: string;
+    sexo?: string;
+    nascimento?: Date | string;
+    fone?: string;
+    email?: string;
+  }) {
+    const patient = await this.userRepo.findByIdPatient(id);
+
+    if (!patient) {
+      throw new AppError("Paciente não encontrado", 404);
+    }
+
+    const foneNormalized = data.fone
+      ? data.fone.replace(/\D/g, "")
+      : undefined;
+
+    return this.userRepo.updatePatient(id, {
+      ...data,
+      ...(foneNormalized && { fone: foneNormalized }),
+      nascimento: data.nascimento ? new Date(data.nascimento) : undefined,
+    });
+  }
+
+  async deletePatient(id: string) {
+    const patient = await this.userRepo.findByIdPatient(id);
+
+    if (!patient) {
+      throw new AppError("Paciente não encontrado", 404);
+    }
+
+    return this.userRepo.deletePatient(id);
+  }
+
   async registerAgenda(data: Prisma.AgendaUncheckedCreateInput) {
 
     const horarioNorm = new Date(data.horario_atend)
@@ -129,7 +171,7 @@ export class UserService {
       throw new AppError("Paciente não encontrado", 404)
     }
     if (!foundDoc) {
-      throw new AppError("édico não encontrado", 404)
+      throw new AppError("Médico não encontrado", 404)
     }
     if (!foundAttend) {
       throw new AppError("Não autorizado", 401)

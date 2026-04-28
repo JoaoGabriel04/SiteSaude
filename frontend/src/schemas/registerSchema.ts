@@ -33,6 +33,10 @@ function validarCNS(value: string) {
 export const regFormPatient = z.object({
   nome: z.string().min(3, "Nome deve ter no mínimo 3 caracteres").max(100, "Nome deve ter no máximo 100 caracteres"),
 
+  sexo: z.enum(["MASCULINO", "FEMININO", "OUTRO"], {
+    error: () => ({ message: "Selecione o sexo" })
+  }),
+
   cpf: z.string()
     .transform((v) => v.replace(/\D/g, ""))
     .refine(validationCPF, {
@@ -45,10 +49,10 @@ export const regFormPatient = z.object({
       message: "Cartão do SUS inválido",
     }),
 
-  nascimento: z.coerce.date().refine(
-    (date) => date <= new Date(),
-    { message: "Data de nascimento inválida" }
-  ),
+  nascimento: z.string()
+    .min(1, "Data de nascimento obrigatória")
+    .refine((v) => !isNaN(new Date(v).getTime()), { message: "Data inválida" })
+    .refine((v) => new Date(v) <= new Date(), { message: "Data de nascimento inválida" }),
   email: z.email("Email inválido").optional(),
 
   fone: z.string()

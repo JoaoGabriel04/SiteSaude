@@ -146,7 +146,6 @@ export default class UserRepository {
     })
   }
 
-
   /* =======================
      QUERIES
   ======================= */
@@ -229,6 +228,20 @@ export default class UserRepository {
 
   }
 
+  async findAgendas(where: any) {
+
+    const limit = 12
+
+    return prisma.agenda.findMany({
+      where,
+      take: limit,
+      orderBy: {
+        horario_atend: 'asc'
+      },
+    })
+
+  }
+
   async findByCpf(cpf: string) {
     return await prisma.patient.findFirst({
       where: { cpf }
@@ -270,5 +283,24 @@ export default class UserRepository {
     return prisma.agenda.findFirst({
       where: { docId }
     })
+  }
+
+  async updatePatient(id: string, data: {
+    nome?: string;
+    sexo?: string;
+    nascimento?: Date;
+    fone?: string;
+    email?: string;
+  }) {
+    return prisma.patient.update({
+      where: { id },
+      data
+    });
+  }
+  
+  async deletePatient(id: string) {
+    return prisma.patient.delete({
+      where: { id }
+    });
   }
 }

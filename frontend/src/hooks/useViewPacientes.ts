@@ -6,28 +6,28 @@ import useSWR from "swr";
 type PacienteProps = {
   busca?: string;
   current?: number;
+  sexo?: string;
 }
 
 const fetcher = (url: string) => api.get(url).then(res => res.data);
 
-export function useViewPacientes({ busca, current }: PacienteProps) {
-  
+export function useViewPacientes({ busca, current, sexo }: PacienteProps) {
+
   const { isAuthenticated } = useUserStore();
 
+  const params = new URLSearchParams();
+  if (busca) params.append("busca", busca);
+  if (current && current > 1) params.append("page", String(current));  // só manda se não for página 1
+  if (sexo && sexo !== "TODOS") params.append("sexo", sexo);
+
+  const query = params.toString();
   const url = isAuthenticated
-  ? (() => {
-      const base = "http://localhost:7000/api/user/search/pacientes";
-      if (!busca && !current) return base;
+    ? query
+      ? `http://localhost:7000/api/user/search/pacientes?${query}`
+      : "http://localhost:7000/api/user/search/pacientes"
+    : null;
 
-      const params = new URLSearchParams();
-      if (busca) params.append("busca", busca);
-      if (current) params.append("page", String(current));
+  const { data, error, isLoading, mutate } = useSWR(url, fetcher);
 
-      return `${base}?${params.toString()}`;
-    })()
-  : null;
-
-  const { data, error, isLoading } = useSWR(url, fetcher);
-  
-  return { data, error, isLoading };
+  return { data, error, isLoading, mutate };
 }

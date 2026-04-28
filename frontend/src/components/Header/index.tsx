@@ -8,6 +8,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 import LogoutButton from "./_components/logoutButton";
+import { User } from "@/types/user";
 
 type HeaderProps = {
   user: User | null;
@@ -22,7 +23,7 @@ type MenuOption = {
 
 const menuOptions: MenuOption[] = [
   { text: "Dashboard", url: "/user/dashboard", icon: Gauge },
-  { text: "Pacientes", url: "/user/search/pacientes", icon: Users },
+  { text: "Pacientes", url: "/user/pacientes", icon: Users },
   { text: "Agendamentos", url: "/user/agendamentos", icon: Calendar },
   { text: "Profissionais", url: "/user/profissionais", icon: UserStar }
 ]

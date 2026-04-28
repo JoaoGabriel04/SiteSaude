@@ -28,8 +28,10 @@ export default function Modal({
     if (isOpen && boxRef.current && overlayRef.current) {
       gsap.fromTo(
         boxRef.current,
-        { opacity: 0, y: -50, scale: 0.9 },
-        { opacity: 1, y: 0, scale: 1, duration: 0.4, ease: "power3.out" }
+        { opacity: 0, scale: 0.9 },
+        {
+          opacity: 1, scale: 1, duration: 0.4, ease: "power3.out",
+        }
       );
 
       gsap.fromTo(
@@ -45,7 +47,6 @@ export default function Modal({
 
     gsap.to(boxRef.current, {
       opacity: 0,
-      y: 50,
       scale: 0.9,
       duration: 0.3,
       ease: "power3.in",
