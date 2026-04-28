@@ -6,7 +6,7 @@ import Header from "@/components/Header";
 import Title1 from "@/components/Title1";
 import Subtitle from "@/components/Subtitle";
 import { Button } from "@/components/ui/button";
-import { Pencil, PlusIcon } from "lucide-react";
+import { Mars, Venus, CircleDashed, Pencil, PlusIcon } from "lucide-react";
 import LoadingScreen from "@/components/LoadingScreen";
 import { toast } from "@/toast/toastManager";
 import { useViewPacientes } from "@/hooks/useViewPacientes";
@@ -51,6 +51,12 @@ export default function Paciente() {
   const [inputValue, setInputValue] = useState("");
   const [sexo, setSexo] = useState("");
   const [inputSexo, setInputSexo] = useState("TODOS");
+
+  const SexoIcon = ({ sexo }: { sexo: string }) => {
+    if (sexo === "MASCULINO") return <Mars className="w-4 h-4 text-blue-500" />;
+    if (sexo === "FEMININO") return <Venus className="w-4 h-4 text-pink-500" />;
+    return <CircleDashed className="w-4 h-4 text-green-500" />;
+  };
 
   const { user } = useUserStore();
 
@@ -162,6 +168,7 @@ export default function Paciente() {
                             <AvatarImage src={'/images/avatar-1.png'} />
                             <AvatarFallback>{paciente.nome.charAt(0)}</AvatarFallback>
                           </Avatar>
+                          <SexoIcon sexo={paciente.sexo} />
                           {paciente.nome}
                         </CardTitle>
                         <Pencil
@@ -177,7 +184,7 @@ export default function Paciente() {
                         </div>
 
                         <div className="flex justify-between">
-                          <span className="font-medium text-foreground">CNS:</span>
+                          <span className="font-medium text-foreground">SUS:</span>
                           <span>{paciente.cartaoSus}</span>
                         </div>
 
@@ -217,7 +224,7 @@ export default function Paciente() {
 
       {paciente && (
         <Modal size="xl" isOpen={openEdit} onClose={handleEdit} title="Editar Paciente">
-          <EditPacientes paciente={paciente} onClose={handleEdit} onSuccess={()=> {handleEdit(); mutate(); }} />
+          <EditPacientes paciente={paciente} onClose={handleEdit} onSuccess={() => { handleEdit(); mutate(); }} />
         </Modal>
       )}
 

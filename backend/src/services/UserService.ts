@@ -2,6 +2,7 @@ import UserRepository from "../repositories/UserRepository.js";
 import { StatusAtendimento, StatusUrgencia, TipoAtendimento } from "../../generated/prisma/index.js";
 import { Prisma } from "../../generated/prisma/index.js";
 import { AppError } from "../errors/AppError.js";
+import {Sexo} from "../../generated/prisma/index.js";
 
 export class UserService {
   constructor(private userRepo: UserRepository) { }
@@ -88,18 +89,18 @@ export class UserService {
 
     const cpfExists = await this.userRepo.findByCpf(data.cpf)
     const cnsExists = await this.userRepo.findByCns(data.cartaoSus)
-
+  
     if (cpfExists) {
       throw new AppError("CPF já cadastrado!", 400)
     }
-
+  
     if (cnsExists) {
       throw new AppError("CNS já cadastrado!", 400)
     }
-
+  
     const nascimentoDate = new Date(data.nascimento)
     const foneNormalized = data.fone.replace(/\D/g, "")
-
+  
     try {
       const patientCreated = await this.userRepo.createPatient({
         nome: data.nome,
@@ -107,27 +108,27 @@ export class UserService {
         nascimento: nascimentoDate,
         fone: foneNormalized,
         email: data.email ?? undefined,
-        cartaoSus: data.cartaoSus
+        cartaoSus: data.cartaoSus,
+        sexo: data.sexo as Sexo ?? Sexo.OUTRO
       });
+  
       if (!patientCreated) {
         throw new AppError("Algum erro ocorreu no registro de paciente", 500);
       }
-
+  
       return patientCreated
-
+  
     } catch (error: any) {
       if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === "P2002") {
         throw new AppError("Registro duplicado", 400)
       }
       throw error
     }
-
-
   }
 
   async updatePatient(id: string, data: {
     nome?: string;
-    sexo?: string;
+    sexo?: Sexo;
     nascimento?: Date | string;
     fone?: string;
     email?: string;

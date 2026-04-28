@@ -1,5 +1,5 @@
 import { prisma } from "../lib/prisma.js";
-import { Role, StatusAtendimento, StatusUrgencia, TipoAtendimento } from "../../generated/prisma/index.js";
+import { Role, Sexo, StatusAtendimento, StatusUrgencia, TipoAtendimento } from "../../generated/prisma/index.js";
 import { stat } from "node:fs";
 
 export default class UserRepository {
@@ -87,7 +87,8 @@ export default class UserRepository {
     nascimento: Date,
     fone: string,
     email?: string,
-    cartaoSus: string
+    cartaoSus: string,
+    sexo: Sexo
   }) {
     return prisma.patient.create({
       data: {
@@ -96,7 +97,8 @@ export default class UserRepository {
         nascimento: data.nascimento,
         fone: data.fone,
         email: data.email,
-        cartaoSus: data.cartaoSus
+        cartaoSus: data.cartaoSus,
+        sexo: data.sexo
       }
     })
   }
@@ -287,7 +289,7 @@ export default class UserRepository {
 
   async updatePatient(id: string, data: {
     nome?: string;
-    sexo?: string;
+    sexo?: Sexo;
     nascimento?: Date;
     fone?: string;
     email?: string;

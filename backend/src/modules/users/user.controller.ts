@@ -1,7 +1,7 @@
 import { Request, Response } from "express";
 import UserRepository from "../../repositories/UserRepository.js";
 import { UserService } from "../../services/UserService.js";
-import { Role } from "../../../generated/prisma/index.js";
+import { Role, Sexo } from "../../../generated/prisma/index.js";
 
 const userService = new UserService(new UserRepository());
 
@@ -61,7 +61,7 @@ export class UserController {
   }
 
   async getPacient(req: Request, res: Response) {
-    const { busca, page, sexo } = req.query as { busca?: string; page?: string; sexo?: string };
+    const { busca, page, sexo } = req.query as { busca?: string; page?: string; sexo?: Sexo };
   
     try {
       const pacientes = await userService.getPacient(busca, page ? parseInt(page) : 1, sexo);
