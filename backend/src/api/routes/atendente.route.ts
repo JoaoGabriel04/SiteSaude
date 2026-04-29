@@ -6,6 +6,8 @@ import { registerPatient } from "../../schemas/registerPantSchema.js";
 const atendenteRouter = Router();
 const ctrlAttend = new AttendantController()
 
+atendenteRouter.get("/agendamentos", ctrlAttend.getAgendamentos);
+
 atendenteRouter.post("/registerP", validate(registerPatient), ctrlAttend.registerPatient);
 atendenteRouter.post("/agendamento", ctrlAttend.registerAgenda);
 

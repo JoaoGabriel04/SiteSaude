@@ -1,17 +1,5 @@
 import { create } from "zustand";
-
-type User = {
-  id: string;
-  nome: string;
-  cpf: string;
-  nascimento: string;
-  fone: string;
-  email: string;
-  avatar: string | null;
-  role: "ADMIN" | "MEDICO" | "ATENDENTE" | null;
-  medico?: string[] | null;
-  atendente?: string[] | null;
-};
+import { User } from "@/types/user";
 
 type UserStore = {
   user: User | null;

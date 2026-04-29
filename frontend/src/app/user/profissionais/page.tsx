@@ -4,21 +4,26 @@ import Modal from "@/components/Modal";
 import Subtitle from "@/components/Subtitle";
 import Title1 from "@/components/Title1";
 import { Button } from "@/components/ui/button";
-import { Card, CardTitle, CardHeader, CardContent } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useViewportHeight } from "@/hooks/useViewportHeight";
 import { PlusIcon } from "lucide-react";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 import { toast } from "@/toast/toastManager";
-import useSWR from "swr";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Select, SelectItem, SelectContent, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { InputField } from "@/components/inputField";
 import LoadingScreen from "@/components/LoadingScreen";
-import api from "@/services/api";
 import { useUserStore } from "@/stores/userStore";
 import ProfissionalRegister from "./_components/ProfissionalRegister";
-import { User } from "@/types/user";
 import AtendenteRegister from "./_components/AtendenteRegister";
+import { useViewProfissionais } from "@/hooks/useViewProfissionais";
+import { User } from "@/types/user";
+import { Stethoscope, ClipboardList } from "lucide-react";
+
+const roleColors: Record<string, string> = {
+  MEDICO: "bg-blue-100 text-blue-600",
+  ATENDENTE: "bg-purple-100 text-purple-600",
+};
 
 export default function ProfissionaisPage() {
 
@@ -26,80 +31,33 @@ export default function ProfissionaisPage() {
   const [openAtend, setOpenAtend] = useState(false);
 
   const vh = useViewportHeight();
-  const { user, isAuthenticated } = useUserStore();
-
-  /* Config de Busca dos Profissionais */
+  const { user } = useUserStore();
 
   const [current, setCurrent] = useState(1);
   const [busca, setBusca] = useState("");
   const [inputValue, setInputValue] = useState("");
-  const [seletor, setSeletor] = useState("TODOS");
-  const [inputSeletor, setInputSeletor] = useState("");
+  const [role, setRole] = useState("");
+  const [inputRole, setInputRole] = useState("TODOS");
 
-  const fetcher = (url: string) => api.get(url).then(res => res.data);
+  const { data: profData, error: profError, isLoading: profLoading, mutate } = useViewProfissionais({
+    busca, role, page: current
+  });
 
-  const shouldFetch = isAuthenticated;
-  const { data: profData, error: profError, isLoading: profLoading } = useSWR(
-    shouldFetch
-      ? `http://localhost:7000/api/user`
-      : null,
-    fetcher
-  )
+  const hasPreviousPage = current > 1;
+  const hasNextPage = profData && profData.length === 12;
 
   useEffect(() => {
     if (profError) {
       toast.error("Erro ao encontrar profissionais!");
     }
-  }, [profError])
+  }, [profError]);
 
-  const listaFiltrada = useMemo(() => {
-    const lista = profData ?? [];
+  function handleOpenProf() { setOpenProf(true); }
+  function handleCloseProf() { setOpenProf(false); }
+  function handleOpenAtend() { setOpenAtend(true); }
+  function handleCloseAtend() { setOpenAtend(false); }
 
-    const termo = busca.toLowerCase(); // 👈 usa busca (submit), não inputValue
-
-    return lista
-      .filter((prof: User) => {
-
-        const matchBusca =
-          !termo ||
-          (prof.nome ?? "").toLowerCase().includes(termo) ||
-          String(prof.cpf).includes(termo);
-
-        const matchCargo =
-          seletor === "TODOS" || !seletor
-            ? true
-            : prof.role === seletor;
-
-        return matchBusca && matchCargo;
-      })
-      .sort((a: User, b: User) => a.nome.localeCompare(b.nome));
-
-  }, [profData, busca, seletor]);
-
-  const hasPreviousPage = current > 1;
-  const hasNextPage = profData && profData.length === 10;
-
-  function handleOpenProf() {
-    setOpenProf(true);
-  }
-
-  function handleCloseProf() {
-    setOpenProf(false);
-  }
-
-  function handleOpenAtend() {
-    setOpenAtend(true);
-  }
-
-  function handleCloseAtend() {
-    setOpenAtend(false);
-  }
-
-  if (profLoading) {
-    return (
-      <LoadingScreen />
-    )
-  }
+  if (profLoading) return <LoadingScreen />;
 
   if (!user) {
     return (
@@ -115,7 +73,6 @@ export default function ProfissionaisPage() {
       <Header user={user} current="Profissionais" />
 
       <section className="flex-1 w-full p-1 md:p-2 overflow-hidden">
-
         <section className="w-full h-full px-4 pt-4 pb-2 bg-zinc-300/50 overflow-y-auto rounded-sm md:shadow-[0px_0px_4px_#00000060]">
 
           <div className="w-full flex items-start justify-between">
@@ -124,12 +81,11 @@ export default function ProfissionaisPage() {
               <Subtitle>Gerencie o cadastro de médicos, cirurgiões e atendentes.</Subtitle>
             </div>
             {user.role === "ADMIN" && (
-              <div className="h-full flex flex-col lg:flex-row gap-2 lg:items-center justify-between">
+              <div className="h-full flex flex-col lg:flex-row gap-2 lg:items-center">
                 <Button className="cursor-pointer" onClick={(e) => { e.preventDefault(); handleOpenProf(); }}>
                   <PlusIcon className="w-4 h-4" />
                   <span>Novo Profissional</span>
                 </Button>
-
                 <Button className="cursor-pointer" onClick={(e) => { e.preventDefault(); handleOpenAtend(); }}>
                   <PlusIcon className="w-4 h-4" />
                   <span>Novo Atendente</span>
@@ -146,10 +102,10 @@ export default function ProfissionaisPage() {
                 <span className="text-sm text-zinc-800/50">Encontre os profissionais pelo nome ou CPF</span>
               </div>
               <form onSubmit={(e) => {
-                e.preventDefault()
-                setBusca(inputValue)
-                setSeletor(inputSeletor === "TODOS" ? "" : inputSeletor)
-                setCurrent(1)
+                e.preventDefault();
+                setBusca(inputValue);
+                setRole(inputRole === "TODOS" ? "" : inputRole);
+                setCurrent(1);
               }} className="w-full flex flex-col lg:flex-row lg:justify-between lg:items-center gap-2">
                 <div className="flex flex-row gap-1 flex-1">
                   <InputField
@@ -159,14 +115,14 @@ export default function ProfissionaisPage() {
                     className="w-full"
                     placeholder="Digite para buscar..."
                     value={inputValue}
-                    onChange={(e) => { setInputValue(e.target.value) }}
+                    onChange={(e) => setInputValue(e.target.value)}
                   />
-                  <Select value={inputSeletor} onValueChange={(value) => setInputSeletor(value)}>
+                  <Select value={inputRole} onValueChange={setInputRole}>
                     <SelectTrigger className="w-1/4 self-center">
                       <SelectValue placeholder="Selecione o cargo" />
                     </SelectTrigger>
                     <SelectContent position="popper">
-                      <SelectItem value="TODOS" >Todos</SelectItem>
+                      <SelectItem value="TODOS">Todos</SelectItem>
                       <SelectItem value="MEDICO">Médicos</SelectItem>
                       <SelectItem value="ATENDENTE">Atendentes</SelectItem>
                     </SelectContent>
@@ -179,47 +135,50 @@ export default function ProfissionaisPage() {
             </Card>
 
             <Card className="w-full px-4">
-
               <div className="w-full flex flex-col">
-                <h1 className="text-lg font-poppins font-bold text-zinc-700">Lista de Profissionais</h1>
-                <span className="text-sm text-zinc-800/50">{profData?.length} profissionais encontrados</span>
+                <h1 className="text-lg font-bold text-zinc-700">Lista de Profissionais</h1>
+                <span className="text-sm text-zinc-800/50">{profData?.length ?? 0} profissional(is) encontrado(s)</span>
               </div>
 
-              <div className="w-full grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-2">
-                {listaFiltrada.length > 0 ? listaFiltrada.map((prof: User, index: number) => {
-
-                  const role = prof.role ?? "";
-                  const roleFormatada =
-                    role.length > 0
-                      ? role.charAt(0).toUpperCase() + role.slice(1).toLowerCase()
-                      : "";
-
-                  return (
-                    <Card key={prof.id} className="w-full px-1 shadow-md hover:shadow-lg transition">
-                      <CardHeader className="flex flex-row items-center justify-between">
-                        <CardTitle className="text-lg flex items-center gap-2">
+              {profLoading ? (
+                <span className="text-sm text-zinc-400">Carregando...</span>
+              ) : (
+                <div className="w-full grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-2">
+                  {profData && profData.length > 0 ? profData.map((prof: User) => (
+                    <Card key={prof.id} className="w-full shadow-md hover:shadow-lg transition">
+                      <CardHeader className="flex flex-row items-center justify-between pb-2">
+                        <CardTitle className="text-base flex items-center gap-2">
                           <Avatar>
-                            <AvatarImage src={'/images/avatar-1.png'} />
                             <AvatarFallback>{prof.nome.charAt(0)}</AvatarFallback>
                           </Avatar>
-                          {prof.nome}
+                          <span className="truncate">{prof.nome}</span>
                         </CardTitle>
                       </CardHeader>
 
                       <CardContent className="space-y-2 text-sm text-muted-foreground">
-                        <div className="flex justify-between">
-                          <span className="font-medium text-foreground">Cargo:</span>
-                          <span>{roleFormatada}</span>
+                        <div className="flex gap-1">
+                          <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${roleColors[prof.role!] ?? "bg-zinc-100 text-zinc-600"}`}>
+                            {prof.role === "MEDICO" ? "Médico" : "Atendente"}
+                          </span>
                         </div>
+
+                        {prof.medico && (
+                          <div className="flex items-center gap-1">
+                            <Stethoscope className="w-3 h-3" />
+                            <span className="truncate">{prof.medico.especialidade}</span>
+                          </div>
+                        )}
+
+                        {prof.atendente && (
+                          <div className="flex items-center gap-1">
+                            <ClipboardList className="w-3 h-3" />
+                            <span className="truncate">{prof.atendente.setor}</span>
+                          </div>
+                        )}
 
                         <div className="flex justify-between">
                           <span className="font-medium text-foreground">CPF:</span>
                           <span>{prof.cpf}</span>
-                        </div>
-
-                        <div className="flex justify-between">
-                          <span className="font-medium text-foreground">Nascimento:</span>
-                          <span>{new Date(prof.nascimento).toLocaleDateString("pt-BR")}</span>
                         </div>
 
                         <div className="flex justify-between">
@@ -228,37 +187,36 @@ export default function ProfissionaisPage() {
                         </div>
                       </CardContent>
                     </Card>
-                  )
-                }) : (
-                  <div className="w-full h-full flex justify-center items-center">
-                    <span className="text-sm text-zinc-700/50">Nenhum Usuário Encontrado</span>
-                  </div>
-                )}
-              </div>
+                  )) : (
+                    <div className="col-span-4 flex justify-center items-center py-8">
+                      <span className="text-sm text-zinc-700/50">Nenhum profissional encontrado</span>
+                    </div>
+                  )}
+                </div>
+              )}
 
               <div className="flex flex-row w-full gap-3 items-center justify-center">
-                <Button className="" disabled={!hasPreviousPage} onClick={() => setCurrent(current - 1)}>
-                  Pagina Anterior
+                <Button disabled={!hasPreviousPage} onClick={() => setCurrent(current - 1)}>
+                  Página Anterior
                 </Button>
                 <Button className="bg-blue-600 font-bold text-white" disabled={!hasNextPage} onClick={() => setCurrent(current + 1)}>
                   Próxima página
                 </Button>
               </div>
-
             </Card>
 
           </section>
 
           <Modal size="xl" isOpen={openProf} onClose={handleCloseProf} title="Novo Profissional">
-           <ProfissionalRegister onSubmit={handleCloseProf} />
+            <ProfissionalRegister onSubmit={() => { handleCloseProf(); mutate(); }} />
           </Modal>
 
           <Modal size="xl" isOpen={openAtend} onClose={handleCloseAtend} title="Novo Atendente">
-            <AtendenteRegister onSubmit={handleCloseAtend} />
+            <AtendenteRegister onSubmit={() => { handleCloseAtend(); mutate(); }} />
           </Modal>
 
         </section>
       </section>
     </main>
-  )
-} 
+  );
+}

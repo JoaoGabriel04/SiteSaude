@@ -1,3 +1,14 @@
+export interface Medico {
+  userId: string;
+  crm: string;
+  especialidade: string;
+}
+
+export interface Atendente {
+  userId: string;
+  setor: string;
+}
+
 export interface User {
   id: string;
   nome: string;
@@ -7,11 +18,8 @@ export interface User {
   email: string;
   avatar: string | null;
   role: "ADMIN" | "MEDICO" | "ATENDENTE" | null;
-  crm?: string;
-  especialidade?: string;
-  setor?: string;
-  medico?: string[] | null;
-  atendente?: string[] | null;
+  medico?: Medico | null;
+  atendente?: Atendente | null;
 }
 
 export enum Role {

@@ -22,24 +22,21 @@ export default function LoginForm() {
 
   const { isSubmitting } = form.formState;
 
-  const { setUser } = useUserStore();
+  const { setUser, loading } = useUserStore();
 
   async function onSubmit(data: LoginFormData) {
     try {
-      console.log("Fazendo login...")
       const res = await api.post("/api/auth/loginU", data);
-
       const result = res.data;
 
       setAccessToken(result.accessToken);
       setUser(result.user);
 
-      console.log("Login Sucessido.")
       toast.success("Login realizado com sucesso!");
-
       router.replace("/user/dashboard");
-    } catch (error) {
-      toast.error("Email ou senha incorretos");
+    } catch (error: any) {
+      const message = error?.response?.data?.message ?? "Email ou senha incorretos";
+      toast.error(message);
     }
   }
 
@@ -68,7 +65,7 @@ export default function LoginForm() {
           <InputField
             id="password"
             type="password"
-            placeholder="password"
+            placeholder="Digite sua senha"
             label="Senha"
             className="w-full"
             register={form.register("password")}

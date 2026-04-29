@@ -99,24 +99,23 @@ export class AuthService {
       email === process.env.MASTER_ADMIN_EMAIL &&
       password === process.env.MASTER_ADMIN_PASSWORD
     ) {
+      const adminId = process.env.MASTER_ADMIN_ID ?? "04034e21-cb5c-4f98-9e23-1bb44447fba9";
+
       const accessToken = generateAccessToken({
-        sub: "master-admin",
+        sub: adminId,
         role: Role.ADMIN,
       });
 
       const refreshToken = generateRefreshToken({
-        sub: "master-admin",
+        sub: adminId,
         role: Role.ADMIN,
       });
 
-      const token = {
-        accessToken,
-        refreshToken,
-      };
+      const token = { accessToken, refreshToken };
 
       return {
         user: {
-          id: "master-admin",
+          id: adminId,
           nome: "Master Admin",
           cpf: null,
           nascimento: null,

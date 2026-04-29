@@ -93,6 +93,12 @@ throw new AppError("CPF já cadastrado", 400)
 
 ## GET
 
+### GET /api/atendente/agendamentos
+### GET /api/user/search/profissionais
+### GET /api/medico/disponibilidade/:docId
+### GET /api/medico/slots/:docId
+### GET /api/medico/excecao/:docId
+
 ### GET api/user/
 
 Descrição: retorna um lista com todos os usuários cadastrados no sistema
@@ -244,6 +250,9 @@ GET /api/patients?busca=joao&page=1
 ---
 
 ## POST
+
+### POST api/medico/disponibilidade
+### POST api/medico/excecao
 
 ### POST api/auth/registerU
 Descrição: registra usuários (MEDICO e ATENDENTE)
@@ -497,3 +506,14 @@ Header:
 ```json
 "error": "mensagem"
 ```
+
+## PATCH
+
+### PATCH /api/atendente/paciente/:id
+
+
+## DELETE
+
+### DELETE /api/atendente/paciente/:id
+### DELETE /api/medico/disponibilidade/:id
+### DELETE /api/medico/excecao/:id

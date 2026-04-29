@@ -13,7 +13,7 @@ import { useViewPacientes } from "@/hooks/useViewPacientes";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { InputField } from "@/components/inputField";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import Modal from "@/components/Modal";
 import PatientRegisterForm from "./_components/PacienteRegister";
 import EditPacientes from "./_components/EditPacientes";
@@ -29,36 +29,32 @@ type PacienteData = {
   sexo: "MASCULINO" | "FEMININO" | "OUTRO";
 }
 
+const SexoIcon = ({ sexo }: { sexo: string }) => {
+  if (sexo === "MASCULINO") return <Mars className="w-4 h-4 text-blue-500" />;
+  if (sexo === "FEMININO") return <Venus className="w-4 h-4 text-pink-500" />;
+  return <CircleDashed className="w-4 h-4 text-green-500" />;
+};
+
+const sexoLabel: Record<string, string> = {
+  MASCULINO: "Masculino",
+  FEMININO: "Feminino",
+  OUTRO: "Outro",
+};
+
 export default function Paciente() {
 
   const vh = useViewportHeight();
+  const { user, loading } = useUserStore();
 
-  /* === Config Modal === */
   const [openPacient, setOpenPacient] = useState(false);
   const [openEdit, setOpenEdit] = useState(false);
-
-  function handlePac() { setOpenPacient(!openPacient) }
-  function handleEdit() { setOpenEdit(!openEdit) }
-
-  /* === Config Edit === */
-
   const [paciente, setPaciente] = useState<PacienteData>();
-
-  /* === Config Busca === */
 
   const [current, setCurrent] = useState(1);
   const [busca, setBusca] = useState("");
   const [inputValue, setInputValue] = useState("");
   const [sexo, setSexo] = useState("");
   const [inputSexo, setInputSexo] = useState("TODOS");
-
-  const SexoIcon = ({ sexo }: { sexo: string }) => {
-    if (sexo === "MASCULINO") return <Mars className="w-4 h-4 text-blue-500" />;
-    if (sexo === "FEMININO") return <Venus className="w-4 h-4 text-pink-500" />;
-    return <CircleDashed className="w-4 h-4 text-green-500" />;
-  };
-
-  const { user } = useUserStore();
 
   const { data: pacienteData, error: pacienteError, isLoading: pacienteLoading, mutate } = useViewPacientes({ busca, current, sexo });
 
@@ -67,23 +63,14 @@ export default function Paciente() {
 
   useEffect(() => {
     if (pacienteError) {
-      toast.error("Erro ao buscar pacientes!")
+      toast.error("Erro ao buscar pacientes!");
     }
-    console.log(pacienteData)
-    console.log(user)
-  }, [pacienteData, pacienteError])
+  }, [pacienteError]);
 
-  if (pacienteLoading) {
-    return <LoadingScreen />;
-  }
+  function handlePac() { setOpenPacient(!openPacient); }
+  function handleEdit() { setOpenEdit(!openEdit); }
 
-  if (!user) {
-    return (
-      <div className="w-full h-full flex justify-center items-center">
-        <span className="text-red-500 text-sm">Erro ao carregar a sessão!</span>
-      </div>
-    );
-  }
+  if (loading || !user) return <LoadingScreen />;
 
   return (
     <main style={{ height: vh }} className="w-full flex flex-col">
@@ -91,7 +78,6 @@ export default function Paciente() {
       <Header user={user} current="Pacientes" />
 
       <section className="flex-1 w-full p-1 md:p-2 overflow-hidden">
-
         <section className="w-full h-full px-4 pt-4 pb-2 bg-zinc-300/50 overflow-y-auto rounded-sm md:shadow-[0px_0px_4px_#00000060]">
 
           <div className="w-full flex items-start justify-between">
@@ -100,12 +86,10 @@ export default function Paciente() {
               <Subtitle>Gerencie seus pacientes</Subtitle>
             </div>
             {(user.role === "ATENDENTE" || user.role === "ADMIN") && (
-              <div className="flex flex-col lg:flex-row gap-2 lg:items-center justify-between">
-                <Button className="cursor-pointer" onClick={(e) => { e.preventDefault(); handlePac(); }}>
-                  <PlusIcon className="w-4 h-4" />
-                  <span>Novo Paciente</span>
-                </Button>
-              </div>
+              <Button className="cursor-pointer" onClick={(e) => { e.preventDefault(); handlePac(); }}>
+                <PlusIcon className="w-4 h-4" />
+                <span>Novo Paciente</span>
+              </Button>
             )}
           </div>
 
@@ -117,10 +101,10 @@ export default function Paciente() {
                 <span className="text-zinc-400 text-sm">Encontre um paciente pelo nome, CPF ou telefone</span>
               </div>
               <form onSubmit={(e) => {
-                e.preventDefault()
-                setBusca(inputValue)
-                setSexo(inputSexo === "TODOS" ? "" : inputSexo)
-                setCurrent(1)
+                e.preventDefault();
+                setBusca(inputValue);
+                setSexo(inputSexo === "TODOS" ? "" : inputSexo);
+                setCurrent(1);
               }} className="w-full flex flex-col lg:flex-row lg:justify-between lg:items-center gap-2">
                 <div className="flex flex-row gap-1 flex-1">
                   <InputField
@@ -130,17 +114,17 @@ export default function Paciente() {
                     className="w-full"
                     placeholder="Digite para buscar..."
                     value={inputValue}
-                    onChange={(e) => { setInputValue(e.target.value) }}
+                    onChange={(e) => setInputValue(e.target.value)}
                   />
-                  <Select value={inputSexo} onValueChange={(value) => setInputSexo(value)}>
+                  <Select value={inputSexo} onValueChange={setInputSexo}>
                     <SelectTrigger className="w-1/4 self-center">
                       <SelectValue placeholder="Selecione o sexo" />
                     </SelectTrigger>
                     <SelectContent position="popper">
-                      <SelectItem value="TODOS" >Todos</SelectItem>
+                      <SelectItem value="TODOS">Todos</SelectItem>
                       <SelectItem value="FEMININO">Feminino</SelectItem>
                       <SelectItem value="MASCULINO">Masculino</SelectItem>
-                      <SelectItem value="OUTROS">Outros</SelectItem>
+                      <SelectItem value="OUTRO">Outro</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
@@ -151,33 +135,36 @@ export default function Paciente() {
             </Card>
 
             <Card className="w-full px-4">
-
               <div className="w-full flex flex-col">
-                <h1 className="text-lg font-poppins font-bold text-zinc-700">Resultados da busca</h1>
-                <span className="text-sm text-zinc-800/50">{pacienteData ? pacienteData?.length : "0"} paciente(s) encontrado(s)</span>
+                <h1 className="text-lg font-bold text-zinc-700">Resultados da busca</h1>
+                <span className="text-sm text-zinc-800/50">{pacienteData?.length ?? 0} paciente(s) encontrado(s)</span>
               </div>
 
-              <div className="w-full grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-2">
-                {pacienteData && pacienteData.length > 0 && pacienteData.map((paciente: PacienteData, index: number) => {
-
-                  return (
+              {pacienteLoading ? (
+                <span className="text-sm text-zinc-400">Carregando...</span>
+              ) : (
+                <div className="w-full grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-2">
+                  {pacienteData && pacienteData.length > 0 ? pacienteData.map((paciente: PacienteData) => (
                     <Card key={paciente.id} className="w-full shadow-md hover:shadow-lg transition group">
-                      <CardHeader className="flex flex-row items-center justify-between">
-                        <CardTitle className="text-lg flex items-center gap-2">
+                      <CardHeader className="flex flex-row items-center justify-between pb-2">
+                        <CardTitle className="text-base flex items-center gap-2">
                           <Avatar>
-                            <AvatarImage src={'/images/avatar-1.png'} />
                             <AvatarFallback>{paciente.nome.charAt(0)}</AvatarFallback>
                           </Avatar>
-                          <SexoIcon sexo={paciente.sexo} />
-                          {paciente.nome}
+                          <span className="truncate">{paciente.nome}</span>
                         </CardTitle>
                         <Pencil
-                          className="w-4 h-4 text-zinc-500 group-hover:text-amber-500 cursor-pointer transition-all"
+                          className="w-4 h-4 text-zinc-500 group-hover:text-amber-500 cursor-pointer transition-all shrink-0"
                           onClick={(e) => { e.preventDefault(); setPaciente(paciente); handleEdit(); }}
                         />
                       </CardHeader>
 
                       <CardContent className="space-y-2 text-sm text-muted-foreground">
+                        <div className="flex items-center gap-1">
+                          <SexoIcon sexo={paciente.sexo} />
+                          <span>{sexoLabel[paciente.sexo]}</span>
+                        </div>
+
                         <div className="flex justify-between">
                           <span className="font-medium text-foreground">CPF:</span>
                           <span>{paciente.cpf}</span>
@@ -198,19 +185,23 @@ export default function Paciente() {
                           <span>{paciente.fone}</span>
                         </div>
                       </CardContent>
-                    </Card>)
-                })}
-              </div>
+                    </Card>
+                  )) : (
+                    <div className="col-span-4 flex justify-center items-center py-8">
+                      <span className="text-sm text-zinc-700/50">Nenhum paciente encontrado</span>
+                    </div>
+                  )}
+                </div>
+              )}
 
               <div className="flex flex-row w-full gap-3 items-center justify-center">
-                <Button className="" disabled={!hasPreviousPage} onClick={() => setCurrent(current - 1)}>
-                  Pagina Anterior
+                <Button disabled={!hasPreviousPage} onClick={() => setCurrent(current - 1)}>
+                  Página Anterior
                 </Button>
                 <Button className="bg-blue-600 font-bold text-white" disabled={!hasNextPage} onClick={() => setCurrent(current + 1)}>
                   Próxima página
                 </Button>
               </div>
-
             </Card>
 
           </section>
@@ -229,5 +220,5 @@ export default function Paciente() {
       )}
 
     </main>
-  )
+  );
 }

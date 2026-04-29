@@ -2,6 +2,7 @@ import { Request, Response } from "express";
 import UserRepository from "../../repositories/UserRepository.js";
 import { UserService } from "../../services/UserService.js";
 import { Role, Sexo } from "../../../generated/prisma/index.js";
+import { AppError } from "../../errors/AppError.js";
 
 const userService = new UserService(new UserRepository());
 
@@ -13,6 +14,28 @@ export class UserController {
       return res.json(users);
     } catch (error) {
       return res.status(500).json({ error: (error as Error).message });
+    }
+  }
+
+  async getProfissionais(req: Request, res: Response) {
+    const { busca, role, page } = req.query as {
+      busca?: string;
+      role?: string;
+      page?: string;
+    };
+
+    try {
+      const profissionais = await userService.getProfissionais({
+        busca,
+        role,
+        page: page ? parseInt(page) : 1,
+      });
+      return res.json(profissionais);
+    } catch (error) {
+      if (error instanceof AppError) {
+        return res.status(error.statusCode).json({ error: error.message });
+      }
+      return res.status(500).json({ error: "Erro interno do servidor" });
     }
   }
 
@@ -62,7 +85,7 @@ export class UserController {
 
   async getPacient(req: Request, res: Response) {
     const { busca, page, sexo } = req.query as { busca?: string; page?: string; sexo?: Sexo };
-  
+
     try {
       const pacientes = await userService.getPacient(busca, page ? parseInt(page) : 1, sexo);
       return res.json(pacientes);

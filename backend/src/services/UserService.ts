@@ -2,7 +2,7 @@ import UserRepository from "../repositories/UserRepository.js";
 import { StatusAtendimento, StatusUrgencia, TipoAtendimento } from "../../generated/prisma/index.js";
 import { Prisma } from "../../generated/prisma/index.js";
 import { AppError } from "../errors/AppError.js";
-import {Sexo} from "../../generated/prisma/index.js";
+import { Sexo } from "../../generated/prisma/index.js";
 
 export class UserService {
   constructor(private userRepo: UserRepository) { }
@@ -21,6 +21,32 @@ export class UserService {
       throw new Error("User not found");
     }
     return user;
+  }
+
+  async getProfissionais(params: {
+    busca?: string;
+    role?: string;
+    page?: number;
+  }) {
+    const { busca, role, page = 1 } = params;
+    const where: any = {
+      role: { not: "ADMIN" } // não lista admins
+    };
+
+    if (role && role !== "TODOS") {
+      where.role = role;
+    }
+
+    if (busca) {
+      const termo = busca.trim();
+      const numValue = termo.replace(/\D/g, "");
+      where.OR = [
+        { nome: { contains: termo, mode: "insensitive" } },
+        ...(numValue.length === 11 ? [{ cpf: numValue }] : []),
+      ];
+    }
+
+    return this.userRepo.findProfissionais(where, page);
   }
 
   async getPacient(busca?: string, page = 1, sexo?: string) {
@@ -81,26 +107,67 @@ export class UserService {
     return this.userRepo.findPaciente(where, page)
   }
 
-  async getAgendas(data: Prisma.$AgendaPayload) {
-    return this.userRepo.findAgendas(data)
+  async getAgendamentos(params: {
+    busca?: string;
+    docId?: string;
+    status?: string;
+    statusUrgencia?: string;
+    data?: string;
+    page?: number;
+  }) {
+    const { busca, docId, status, statusUrgencia, data, page = 1 } = params;
+    const where: any = {};
+
+    if (docId) {
+      where.docId = docId;
+    }
+
+    if (status && status !== "TODOS") {
+      where.status = status;
+    }
+
+    if (statusUrgencia && statusUrgencia !== "TODOS") {
+      where.statusUrgencia = statusUrgencia;
+    }
+
+    if (data) {
+      const [ano, mes, dia] = data.split("-").map(Number);
+      const inicio = new Date(ano, mes - 1, dia, 0, 0, 0);
+      const fim = new Date(ano, mes - 1, dia, 23, 59, 59);
+      where.horario_atend = { gte: inicio, lte: fim };
+    }
+
+    if (busca) {
+      const termo = busca.trim();
+      const numValue = termo.replace(/\D/g, "");
+
+      where.paciente = {
+        OR: [
+          { nome: { contains: termo, mode: "insensitive" } },
+          ...(numValue.length === 11 ? [{ cpf: numValue }] : []),
+        ]
+      };
+    }
+
+    return this.userRepo.findAgendamentos(where, page);
   }
 
   async registerPatient(data: Prisma.PatientCreateInput) {
 
     const cpfExists = await this.userRepo.findByCpf(data.cpf)
     const cnsExists = await this.userRepo.findByCns(data.cartaoSus)
-  
+
     if (cpfExists) {
       throw new AppError("CPF já cadastrado!", 400)
     }
-  
+
     if (cnsExists) {
       throw new AppError("CNS já cadastrado!", 400)
     }
-  
+
     const nascimentoDate = new Date(data.nascimento)
     const foneNormalized = data.fone.replace(/\D/g, "")
-  
+
     try {
       const patientCreated = await this.userRepo.createPatient({
         nome: data.nome,
@@ -111,13 +178,13 @@ export class UserService {
         cartaoSus: data.cartaoSus,
         sexo: data.sexo as Sexo ?? Sexo.OUTRO
       });
-  
+
       if (!patientCreated) {
         throw new AppError("Algum erro ocorreu no registro de paciente", 500);
       }
-  
+
       return patientCreated
-  
+
     } catch (error: any) {
       if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === "P2002") {
         throw new AppError("Registro duplicado", 400)
@@ -166,7 +233,6 @@ export class UserService {
 
     const foundPatient = await this.userRepo.findByIdPatient(data.patientId)
     const foundDoc = await this.userRepo.findById(data.docId)
-    const foundAttend = await this.userRepo.findById(data.createdById)
 
     if (!foundPatient) {
       throw new AppError("Paciente não encontrado", 404)
@@ -174,15 +240,12 @@ export class UserService {
     if (!foundDoc) {
       throw new AppError("Médico não encontrado", 404)
     }
-    if (!foundAttend) {
-      throw new AppError("Não autorizado", 401)
-    }
 
     const agendaCreated = await this.userRepo.createAgenda({
       horario_atend: horarioNorm,
-      duracaoMin: data.duracaoMin ?? 15,
+      duracaoMin: data.duracaoMin ?? 30,
       statusUrgencia: data.statusUrgencia ?? StatusUrgencia.BAIXO,
-      status: data.status ?? StatusAtendimento.CONFIRMADO,
+      status: data.status ?? StatusAtendimento.AGENDADO,
       tipo: data.tipo ?? TipoAtendimento.CONSULTA,
       patientId: data.patientId,
       docId: data.docId,
@@ -197,7 +260,6 @@ export class UserService {
     }
 
     return agendaCreated
-
   }
 
 }

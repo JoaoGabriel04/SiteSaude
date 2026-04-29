@@ -56,6 +56,7 @@ export class AttendantController {
       const agendaRegistered = await userService.registerAgenda({ ...req.body, createdById: userId })
       res.json(agendaRegistered)
     } catch (error) {
+      console.log("Erro ao criar agenda:", error)
       if (error instanceof AppError) {
         return res.status(error.statusCode).json({ error: error.message })
       }
@@ -63,6 +64,35 @@ export class AttendantController {
     }
 
   }
+
+  async getAgendamentos(req: Request, res: Response) {
+    const { busca, docId, status, statusUrgencia, data, page } = req.query as {
+      busca?: string;
+      docId?: string;
+      status?: string;
+      statusUrgencia?: string;
+      data?: string;
+      page?: string;
+    };
+  
+    try {
+      const agendamentos = await userService.getAgendamentos({
+        busca,
+        docId,
+        status,
+        statusUrgencia,
+        data,
+        page: page ? parseInt(page) : 1,
+      });
+      return res.json(agendamentos);
+    } catch (error) {
+      if (error instanceof AppError) {
+        return res.status(error.statusCode).json({ error: error.message });
+      }
+      return res.status(500).json({ error: "Erro interno do servidor" });
+    }
+  }
+  
 }
 
 

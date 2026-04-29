@@ -10,39 +10,33 @@ import api from "@/services/api";
 export default function Login() {
 
   const vh = useViewportHeight();
-  const [isLoading, setIsLoading] = useState(false);
-  const { user, setUser, isAuthenticated } = useUserStore();
+  const [isLoading, setIsLoading] = useState(true); // começa true
+  const { setUser } = useUserStore();
   const router = useRouter();
 
   useEffect(() => {
     async function checkAuth() {
       try {
         const res = await api.get("/api/user/me");
-        console.log("Dados recuperados!")
         setUser(res.data);
-        
-        if (isAuthenticated) {
-          router.replace("/user/dashboard");
-        }
+        router.replace("/user/dashboard"); // redireciona direto com os dados da resposta
       } catch {
-        // 👈 simplesmente ignora
+        // token inválido ou ausente, fica na página de login
       } finally {
         setIsLoading(false);
       }
     }
-  
+
     checkAuth();
   }, []);
 
   if (isLoading) {
-    return (<LoadingScreen />)
+    return <LoadingScreen />;
   }
 
   return (
     <main style={{ height: vh }} className="flex flex-col items-center justify-center px-8 bg-sky-200/40">
-
       <LoginForm />
-
     </main>
   );
 }

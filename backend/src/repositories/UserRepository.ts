@@ -1,6 +1,5 @@
 import { prisma } from "../lib/prisma.js";
 import { Role, Sexo, StatusAtendimento, StatusUrgencia, TipoAtendimento } from "../../generated/prisma/index.js";
-import { stat } from "node:fs";
 
 export default class UserRepository {
   /* =======================
@@ -215,6 +214,31 @@ export default class UserRepository {
     })
   }
 
+  async findProfissionais(where: any, page: number) {
+    const limit = 12;
+  
+    return prisma.user.findMany({
+      where,
+      take: limit,
+      skip: (page - 1) * limit,
+      orderBy: { nome: 'asc' },
+      select: {
+        id: true,
+        nome: true,
+        cpf: true,
+        nascimento: true,
+        fone: true,
+        email: true,
+        avatar: true,
+        role: true,
+        createdAt: true,
+        updatedAt: true,
+        medico: true,
+        atendente: true,
+      }
+    });
+  }
+
   async findPaciente(where: any, page: number) {
 
     const limit = 12
@@ -230,18 +254,37 @@ export default class UserRepository {
 
   }
 
-  async findAgendas(where: any) {
-
-    const limit = 12
-
+  async findAgendamentos(where: any, page: number) {
+    const limit = 12;
+  
     return prisma.agenda.findMany({
       where,
       take: limit,
-      orderBy: {
-        horario_atend: 'asc'
-      },
-    })
-
+      skip: (page - 1) * limit,
+      orderBy: { horario_atend: 'asc' },
+      include: {
+        paciente: {
+          select: {
+            id: true,
+            nome: true,
+            cpf: true,
+            fone: true,
+          }
+        },
+        medico: {
+          select: {
+            userId: true,
+            crm: true,
+            especialidade: true,
+            user: {
+              select: {
+                nome: true,
+              }
+            }
+          }
+        }
+      }
+    });
   }
 
   async findByCpf(cpf: string) {
