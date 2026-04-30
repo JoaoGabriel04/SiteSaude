@@ -16,6 +16,7 @@ const cookieConfig = {
 export class AuthController {
 
   async registerUser(req: Request, res: Response) {
+    console.log("Body recebido:", req.body);
     try {
       const result = await authService.registerUser(req.body);
 

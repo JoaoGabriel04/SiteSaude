@@ -16,6 +16,7 @@ export default class UserRepository {
     role: Role;
     crm?: string;
     especialidade?: string;
+    avatar?: string;
   }) {
     return prisma.user.create({
       data: {
@@ -26,6 +27,7 @@ export default class UserRepository {
         fone: data.fone,
         password: data.password,
         role: data.role,
+        avatar: data.avatar,
 
         medico: {
           create: {
@@ -53,6 +55,7 @@ export default class UserRepository {
     password: string;
     role: Role;
     setor?: string;
+    avatar?: string;
   }) {
     return prisma.user.create({
       data: {
@@ -63,6 +66,7 @@ export default class UserRepository {
         fone: data.fone,
         password: data.password,
         role: data.role,
+        avatar: data.avatar,
 
         atendente: {
           create: {
@@ -216,7 +220,7 @@ export default class UserRepository {
 
   async findProfissionais(where: any, page: number) {
     const limit = 12;
-  
+
     return prisma.user.findMany({
       where,
       take: limit,
@@ -256,7 +260,7 @@ export default class UserRepository {
 
   async findAgendamentos(where: any, page: number) {
     const limit = 12;
-  
+
     return prisma.agenda.findMany({
       where,
       take: limit,
@@ -342,10 +346,48 @@ export default class UserRepository {
       data
     });
   }
-  
+
   async deletePatient(id: string) {
     return prisma.patient.delete({
       where: { id }
     });
   }
+
+  async updateUser(id: string, data: {
+    nome?: string;
+    email?: string;
+    password?: string;
+    nascimento?: Date;
+    fone?: string;
+    avatar?: string;
+    especialidade?: string;
+    setor?: string;
+  }) {
+    const { especialidade, setor, ...userData } = data;
+
+    return prisma.user.update({
+      where: { id },
+      data: {
+        ...userData,
+        ...(especialidade && {
+          medico: { update: { especialidade } }
+        }),
+        ...(setor && {
+          atendente: { update: { setor } }
+        }),
+      },
+      include: {
+        medico: true,
+        atendente: true,
+      }
+    });
+  }
+
+  async deleteUser(id: string) {
+    return prisma.$transaction(async (tx) => {
+      await tx.doctor.deleteMany({ where: { userId: id } });
+      await tx.attend.deleteMany({ where: { userId: id } });
+      await tx.user.delete({ where: { id } });
+    });
+  } 
 }

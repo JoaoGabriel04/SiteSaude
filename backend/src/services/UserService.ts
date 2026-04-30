@@ -3,6 +3,7 @@ import { StatusAtendimento, StatusUrgencia, TipoAtendimento } from "../../genera
 import { Prisma } from "../../generated/prisma/index.js";
 import { AppError } from "../errors/AppError.js";
 import { Sexo } from "../../generated/prisma/index.js";
+import bcrypt from "bcryptjs";
 
 export class UserService {
   constructor(private userRepo: UserRepository) { }
@@ -260,6 +261,48 @@ export class UserService {
     }
 
     return agendaCreated
+  }
+
+  async updateUser(id: string, data: {
+    nome?: string;
+    email?: string;
+    password?: string;
+    nascimento?: Date | string;
+    fone?: string;
+    avatar?: string;
+    especialidade?: string;
+    setor?: string;
+  }) {
+    const user = await this.userRepo.findById(id);
+
+    if (!user) {
+      throw new AppError("Usuário não encontrado", 404);
+    }
+
+    const foneNormalized = data.fone ? data.fone.replace(/\D/g, "") : undefined;
+    const nascimento = data.nascimento ? new Date(data.nascimento) : undefined;
+    let password = undefined;
+
+    if (data.password) {
+      password = await bcrypt.hash(data.password, 10);
+    }
+
+    return this.userRepo.updateUser(id, {
+      ...data,
+      ...(foneNormalized && { fone: foneNormalized }),
+      nascimento: data.nascimento ? new Date(data.nascimento) : undefined,
+      ...(password && { password }),
+    });
+  }
+
+  async deleteUser(id: string) {
+    const user = await this.userRepo.findById(id);
+
+    if (!user) {
+      throw new AppError("Usuário não encontrado", 404);
+    }
+
+    return this.userRepo.deleteUser(id);
   }
 
 }

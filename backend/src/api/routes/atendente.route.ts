@@ -12,7 +12,9 @@ atendenteRouter.post("/registerP", validate(registerPatient), ctrlAttend.registe
 atendenteRouter.post("/agendamento", ctrlAttend.registerAgenda);
 
 atendenteRouter.patch("/paciente/:id", ctrlAttend.updatePatient);
+atendenteRouter.patch("/profissional/:id", ctrlAttend.updateUser);
 
 atendenteRouter.delete("/paciente/:id", ctrlAttend.deletePatient);
+atendenteRouter.delete("/profissional/:id", ctrlAttend.deleteUser);
 
 export default atendenteRouter

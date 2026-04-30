@@ -92,6 +92,35 @@ export class AttendantController {
       return res.status(500).json({ error: "Erro interno do servidor" });
     }
   }
+
+  async updateUser(req: Request, res: Response) {
+    const id = req.params.id as string;
+  
+    try {
+      const userUpdated = await userService.updateUser(id, req.body);
+      return res.json(userUpdated);
+    } catch (error) {
+      if (error instanceof AppError) {
+        return res.status(error.statusCode).json({ error: error.message });
+      }
+      return res.status(500).json({ error: "Erro interno do servidor" });
+    }
+  }
+  
+  async deleteUser(req: Request, res: Response) {
+    const id = req.params.id as string;
+  
+    try {
+      await userService.deleteUser(id);
+      return res.status(204).send();
+    } catch (error) {
+      console.error("Erro ao deletar usuário:", error);
+      if (error instanceof AppError) {
+        return res.status(error.statusCode).json({ error: error.message });
+      }
+      return res.status(500).json({ error: "Erro interno do servidor" });
+    }
+  }
   
 }
 

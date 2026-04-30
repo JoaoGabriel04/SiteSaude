@@ -17,6 +17,8 @@ export const registerUser = Joi.object({
         nascimento: Joi.date().iso().required(),
 
         email: Joi.string().email().required(),
+        
+        avatar: Joi.string().uri().optional(),
 
         role: Joi.string().required().valid(...Object.values(Role))
             .messages({

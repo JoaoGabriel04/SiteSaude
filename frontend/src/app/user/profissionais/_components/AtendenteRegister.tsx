@@ -8,6 +8,9 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { Role } from "@/types/user";
 import { regFormAtendente, RegisterFormAtendente } from "@/schemas/registerAtendente";
+import { useState, useRef } from "react";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Camera } from "lucide-react";
 
 type AtendenteRegProps = {
   onSubmit: () => void;
@@ -15,40 +18,99 @@ type AtendenteRegProps = {
 
 export default function AtendenteRegister({ onSubmit }: AtendenteRegProps) {
 
+  const [avatarPreview, setAvatarPreview] = useState<string | null>(null);
+  const [avatarFile, setAvatarFile] = useState<File | null>(null);
+  const [uploadingAvatar, setUploadingAvatar] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
   const form = useForm<RegisterFormAtendente>({
     resolver: zodResolver(regFormAtendente),
   });
 
   const { isSubmitting } = form.formState;
 
+  function handleAvatarChange(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setAvatarFile(file);
+    setAvatarPreview(URL.createObjectURL(file));
+  }
+
+  async function uploadAvatar(file: File): Promise<string | null> {
+    try {
+      setUploadingAvatar(true);
+      const formData = new FormData();
+      formData.append("avatar", file);
+      const res = await api.post("http://localhost:7000/api/upload/avatar", formData, {
+        headers: { "Content-Type": "multipart/form-data" }
+      });
+      return res.data.url;
+    } catch {
+      toast.error("Erro ao fazer upload da imagem");
+      return null;
+    } finally {
+      setUploadingAvatar(false);
+    }
+  }
+
   async function registerAtendente(data: RegisterFormAtendente) {
     try {
-      const { confirmPassword, ...payload } = data;
-      const newData = { ...payload, role: Role.ATENDENTE }
-      await api.post("http://localhost:7000/api/auth/registerU", newData);
+      let avatarUrl: string | null = null;
 
-      console.log("Registro realizado com sucesso.")
+      if (avatarFile) {
+        avatarUrl = await uploadAvatar(avatarFile);
+        if (!avatarUrl) return;
+      }
+
+      const { confirmPassword, ...payload } = data;
+      const newData = {
+        ...payload,
+        role: Role.ATENDENTE,
+        ...(avatarUrl && { avatar: avatarUrl })
+      };
+
+      await api.post("http://localhost:7000/api/auth/registerU", newData);
       toast.success("Registro realizado com sucesso.");
       onSubmit();
 
     } catch (error: any) {
-
       const message = error?.response?.data?.message ?? "Erro ao cadastrar atendente";
       toast.error(message);
-      console.log(error);
-
     }
   }
 
   return (
-    <main className="w-full h-full">
+    <main className="w-full">
       <Subtitle>Cadastre um novo Atendente</Subtitle>
 
       <div className="w-full h-10 flex justify-center items-center">
-        <hr className="w-[calc(100%-4px)] " />
+        <hr className="w-[calc(100%-4px)]" />
       </div>
 
       <form onSubmit={form.handleSubmit(registerAtendente)} className="w-full">
+
+        {/* Avatar */}
+        <div className="w-full flex justify-center mb-4">
+          <div className="relative cursor-pointer group" onClick={() => fileInputRef.current?.click()}>
+            <Avatar className="w-20 h-20">
+              <AvatarImage src={avatarPreview ?? ""} />
+              <AvatarFallback className="text-2xl bg-zinc-100">
+                <Camera className="w-6 h-6 text-zinc-400" />
+              </AvatarFallback>
+            </Avatar>
+            <div className="absolute inset-0 bg-black/30 rounded-full opacity-0 group-hover:opacity-100 transition flex items-center justify-center">
+              <Camera className="w-5 h-5 text-white" />
+            </div>
+          </div>
+          <input
+            ref={fileInputRef}
+            type="file"
+            accept="image/jpeg,image/png,image/webp"
+            className="hidden"
+            onChange={handleAvatarChange}
+          />
+        </div>
+
         <InputField
           id="nome"
           type="text"
@@ -84,7 +146,7 @@ export default function AtendenteRegister({ onSubmit }: AtendenteRegProps) {
             placeholder="Confirmar Senha"
             label="Confirmar Senha *"
             className="w-full"
-            register={form.register("confirmPassword")}  // agora registrado no form
+            register={form.register("confirmPassword")}
             errorInvalid={form.formState.errors.confirmPassword !== undefined}
             errorMessage={form.formState.errors.confirmPassword?.message}
           />
@@ -137,15 +199,13 @@ export default function AtendenteRegister({ onSubmit }: AtendenteRegProps) {
         <div className="w-full flex justify-center items-center mt-4">
           <Button
             type="submit"
-            disabled={isSubmitting}
+            disabled={isSubmitting || uploadingAvatar}
             className="w-full md:w-auto cursor-pointer"
           >
-            {isSubmitting ? "Cadastrando..." : "Cadastrar"}
+            {uploadingAvatar ? "Enviando imagem..." : isSubmitting ? "Cadastrando..." : "Cadastrar"}
           </Button>
         </div>
       </form>
-
     </main>
   )
-
 }

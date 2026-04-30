@@ -6,10 +6,10 @@ import Title1 from "@/components/Title1";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useViewportHeight } from "@/hooks/useViewportHeight";
-import { PlusIcon } from "lucide-react";
+import { Pencil, PlusIcon } from "lucide-react";
 import { useEffect, useState } from "react";
 import { toast } from "@/toast/toastManager";
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Select, SelectItem, SelectContent, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { InputField } from "@/components/inputField";
 import LoadingScreen from "@/components/LoadingScreen";
@@ -19,6 +19,7 @@ import AtendenteRegister from "./_components/AtendenteRegister";
 import { useViewProfissionais } from "@/hooks/useViewProfissionais";
 import { User } from "@/types/user";
 import { Stethoscope, ClipboardList } from "lucide-react";
+import EditProfissional from "./_components/EditProfissional";
 
 const roleColors: Record<string, string> = {
   MEDICO: "bg-blue-100 text-blue-600",
@@ -29,10 +30,13 @@ export default function ProfissionaisPage() {
 
   const [openProf, setOpenProf] = useState(false);
   const [openAtend, setOpenAtend] = useState(false);
+  const [openEdit, setOpenEdit] = useState(false);
+
 
   const vh = useViewportHeight();
   const { user } = useUserStore();
 
+  const [profissional, setProfissional] = useState<User | null>(null);
   const [current, setCurrent] = useState(1);
   const [busca, setBusca] = useState("");
   const [inputValue, setInputValue] = useState("");
@@ -56,6 +60,9 @@ export default function ProfissionaisPage() {
   function handleCloseProf() { setOpenProf(false); }
   function handleOpenAtend() { setOpenAtend(true); }
   function handleCloseAtend() { setOpenAtend(false); }
+
+  function handleOpenEdit(prof: User) { setProfissional(prof); setOpenEdit(true); }
+  function handleCloseEdit() { setOpenEdit(false); }
 
   if (profLoading) return <LoadingScreen />;
 
@@ -145,17 +152,24 @@ export default function ProfissionaisPage() {
               ) : (
                 <div className="w-full grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-2">
                   {profData && profData.length > 0 ? profData.map((prof: User) => (
-                    <Card key={prof.id} className="w-full shadow-md hover:shadow-lg transition">
-                      <CardHeader className="flex flex-row items-center justify-between pb-2">
+                    <Card key={prof.id} className="w-full shadow-md hover:shadow-lg transition group">
+                      <CardHeader className="flex flex-row items-center justify-between pb-2 px-3 md:px-6">
                         <CardTitle className="text-base flex items-center gap-2">
                           <Avatar>
+                            <AvatarImage src={prof.avatar ?? ""} />
                             <AvatarFallback>{prof.nome.charAt(0)}</AvatarFallback>
                           </Avatar>
                           <span className="truncate">{prof.nome}</span>
                         </CardTitle>
+                        {user.role === "ADMIN" && (
+                          <Pencil
+                            className="w-4 h-4 text-zinc-500 group-hover:text-amber-500 cursor-pointer transition-all shrink-0"
+                            onClick={(e) => { e.preventDefault(); handleOpenEdit(prof); }}
+                          />
+                        )}
                       </CardHeader>
 
-                      <CardContent className="space-y-2 text-sm text-muted-foreground">
+                      <CardContent className="space-y-2 text-sm text-muted-foreground px-4 md:px-7">
                         <div className="flex gap-1">
                           <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${roleColors[prof.role!] ?? "bg-zinc-100 text-zinc-600"}`}>
                             {prof.role === "MEDICO" ? "Médico" : "Atendente"}
@@ -214,6 +228,12 @@ export default function ProfissionaisPage() {
           <Modal size="xl" isOpen={openAtend} onClose={handleCloseAtend} title="Novo Atendente">
             <AtendenteRegister onSubmit={() => { handleCloseAtend(); mutate(); }} />
           </Modal>
+
+          {profissional && (
+            <Modal size="xl" isOpen={openEdit} onClose={handleCloseEdit} title="Editar Profissional">
+              <EditProfissional profissional={profissional} onClose={handleCloseEdit} onSuccess={() => { handleCloseEdit(); mutate(); }} />
+            </Modal>
+          )}
 
         </section>
       </section>

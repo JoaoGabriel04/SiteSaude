@@ -30,6 +30,7 @@ export class AuthService {
     nascimento: Date;
     role: Role;
     fone: string;
+    avatar?: string;
     crm?: string;
     especialidade?: string;
     setor?: string;
@@ -68,6 +69,7 @@ export class AuthService {
           email: data.email,
           password: passwordHash,
           role: data.role,
+          avatar: data.avatar,
           crm: data.crm?.toUpperCase(),
           especialidade: data.especialidade?.toUpperCase(),
         });
@@ -80,6 +82,7 @@ export class AuthService {
           email: data.email,
           password: passwordHash,
           role: data.role,
+          avatar: data.avatar,
           setor: data.setor?.toUpperCase(),
         });
       }
