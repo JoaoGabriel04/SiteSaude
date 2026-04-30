@@ -4,6 +4,7 @@ import { Prisma } from "../../generated/prisma/index.js";
 import { AppError } from "../errors/AppError.js";
 import { Sexo } from "../../generated/prisma/index.js";
 import bcrypt from "bcryptjs";
+import { UploadService } from "./UploadService.js";
 
 export class UserService {
   constructor(private userRepo: UserRepository) { }
@@ -302,7 +303,22 @@ export class UserService {
       throw new AppError("Usuário não encontrado", 404);
     }
 
-    return this.userRepo.deleteUser(id);
+    if (user.avatar) {
+      try {
+        const uploadService = new UploadService();
+        await uploadService.deleteAvatar(user.avatar);
+      } catch {
+        // ignora erro do Cloudinary
+      }
+    }
+
+    try {
+      return await this.userRepo.deleteUser(id);
+    } catch (error) {
+      console.error("Erro ao deletar usuário do banco:", error);
+      throw error;
+    }
   }
+
 
 }

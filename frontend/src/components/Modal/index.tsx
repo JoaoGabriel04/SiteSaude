@@ -64,18 +64,16 @@ export default function Modal({
   const sizeClasses = {
     sm: "w-72",
     md: "w-96",
-    lg: "w-4/5 lg:w-[32rem]",
-    xl: "w-9/10 lg:w-[40rem]",
+    lg: "w-[88%] lg:w-[32rem]",
+    xl: "w-[98%] lg:w-[40rem]",
   };
 
   return (
-    <div className="fixed inset-0 z-50">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
       {/* Modal */}
       <div
         ref={boxRef}
-        className={`absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 
-        ${sizeClasses[size]} bg-white rounded-md shadow-lg z-10 
-        flex flex-col max-h-[90vh]`}
+        className={`relative ${sizeClasses[size]} bg-white rounded-md shadow-lg z-10 flex flex-col max-h-[90vh]`}
       >
         <div className="flex items-center justify-between p-4 border-b shrink-0">
           <Title1>{title}</Title1>
@@ -90,7 +88,7 @@ export default function Modal({
       {/* Overlay */}
       <div
         ref={overlayRef}
-        className="absolute inset-0 bg-black/50 backdrop-blur-sm"
+        className="absolute inset-0 bg-black/50 backdrop-blur-sm -z-10"
         onClick={handleClose}
       />
     </div>

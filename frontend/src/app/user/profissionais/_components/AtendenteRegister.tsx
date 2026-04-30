@@ -74,7 +74,7 @@ export default function AtendenteRegister({ onSubmit }: AtendenteRegProps) {
       onSubmit();
 
     } catch (error: any) {
-      const message = error?.response?.data?.message ?? "Erro ao cadastrar atendente";
+      const message = error?.response?.data?.error ?? "Erro ao cadastrar atendente";
       toast.error(message);
     }
   }

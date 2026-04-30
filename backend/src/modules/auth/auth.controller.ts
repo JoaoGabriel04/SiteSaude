@@ -16,11 +16,10 @@ const cookieConfig = {
 export class AuthController {
 
   async registerUser(req: Request, res: Response) {
-    console.log("Body recebido:", req.body);
     try {
       const result = await authService.registerUser(req.body);
 
-      return res.status(201).json({ message: "Profissional Registrado com Sucesso!" });
+      return res.status(201).json({ message: "Profissional Registrado com Sucesso!", user: result.user });
 
     } catch (error) {
       if (error instanceof AppError) {

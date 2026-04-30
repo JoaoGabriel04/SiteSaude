@@ -385,9 +385,18 @@ export default class UserRepository {
 
   async deleteUser(id: string) {
     return prisma.$transaction(async (tx) => {
+      // Deleta agendamentos do médico
+      await tx.agenda.deleteMany({ where: { docId: id } });
+      // Deleta agendamentos criados pelo usuário
+      await tx.agenda.deleteMany({ where: { createdById: id } });
+      // Deleta disponibilidades e exceções
+      await tx.disponibilidade.deleteMany({ where: { docId: id } });
+      await tx.excecaoMedico.deleteMany({ where: { docId: id } });
+      // Deleta relações de médico/atendente
       await tx.doctor.deleteMany({ where: { userId: id } });
       await tx.attend.deleteMany({ where: { userId: id } });
+      // Deleta o usuário
       await tx.user.delete({ where: { id } });
     });
-  } 
+  }
 }

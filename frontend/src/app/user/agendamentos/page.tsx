@@ -79,11 +79,11 @@ export default function Agendamentos() {
   }
 
   return (
-    <main style={{ height: vh }} className="w-full flex flex-col overflow-hidden">
+    <main style={{ height: vh }} className="w-full flex flex-col">
 
       <Header user={user} current={pageName} />
 
-      <section className="flex-1 w-full md:px-2 md:py-2">
+      <section className="flex-1 w-full p-1 md:p-2 overflow-hidden">
         <section className="w-full h-full px-4 pt-4 pb-2 bg-zinc-300/50 overflow-y-auto rounded-sm md:shadow-[0px_0px_4px_#00000060]">
 
           <div className="w-full flex items-start justify-between">
