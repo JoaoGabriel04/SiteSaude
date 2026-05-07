@@ -1,7 +1,6 @@
-import { Request, Response } from "express";
+import { NextFunction, Request, Response } from "express";
 import { AuthService } from "../../services/AuthService.js";
 import UserRepository from "../../repositories/UserRepository.js";
-import { AppError } from "../../errors/AppError.js";
 
 const authService = new AuthService(new UserRepository());
 
@@ -15,21 +14,18 @@ const cookieConfig = {
 
 export class AuthController {
 
-  async registerUser(req: Request, res: Response) {
+  async registerUser(req: Request, res: Response, next: NextFunction) {
     try {
       const result = await authService.registerUser(req.body);
 
       return res.status(201).json({ message: "Profissional Registrado com Sucesso!", user: result.user });
 
     } catch (error) {
-      if (error instanceof AppError) {
-        return res.status(error.statusCode).json({ error: error.message })
-      }
-      return res.status(500).json({ error: "Erro interno do servidor" })
+      next(error);
     }
   }
 
-  async loginCredentials(req: Request, res: Response) {
+  async loginCredentials(req: Request, res: Response, next: NextFunction) {
     try {
       const { email, password } = req.body;
 
@@ -43,14 +39,11 @@ export class AuthController {
       });
 
     } catch (error) {
-      if (error instanceof AppError) {
-        return res.status(error.statusCode).json({ error: error.message });
-      }
-      return res.status(500).json({ error: "Erro interno do servidor" });
+      next(error);
     }
   }
 
-  async refreshToken(req: Request, res: Response) {
+  async refreshToken(req: Request, res: Response, next: NextFunction) {
     try {
       const refreshToken = req.cookies.refresh_token;
 
@@ -67,10 +60,7 @@ export class AuthController {
       });
 
     } catch (error) {
-      if (error instanceof AppError) {
-        return res.status(error.statusCode).json({ error: error.message });
-      }
-      return res.status(500).json({ error: "Erro interno do servidor" });
+      next(error);
     }
   }
 

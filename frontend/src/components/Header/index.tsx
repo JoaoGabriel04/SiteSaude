@@ -1,14 +1,14 @@
 'use client'
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useViewportHeight } from "@/hooks/useViewportHeight";
-import { Calendar, Gauge, LucideIcon, Menu, Users, UserStar } from "lucide-react";
+import { Calendar, CalendarCheck, Gauge, LucideIcon, Menu, Archive, Users, UserStar, XCircle } from "lucide-react";
 import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import gsap from "gsap";
 import Link from "next/link";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 import LogoutButton from "./_components/logoutButton";
-import { User } from "@/types/user";
+import { Role, User } from "@/types/user";
 
 type HeaderProps = {
   user: User | null;
@@ -18,15 +18,24 @@ type HeaderProps = {
 type MenuOption = {
   text: string;
   url: string;
-  icon: LucideIcon
-}
+  icon: LucideIcon;
+  roles?: Role[]; // se omitido, todos veem
+};
 
 const menuOptions: MenuOption[] = [
   { text: "Dashboard", url: "/user/dashboard", icon: Gauge },
   { text: "Pacientes", url: "/user/pacientes", icon: Users },
   { text: "Agendamentos", url: "/user/agendamentos", icon: Calendar },
-  { text: "Profissionais", url: "/user/profissionais", icon: UserStar }
-]
+  { text: "Finalizados", url: "/user/finalizados", icon: Archive },
+  { text: "Cancelados", url: "/user/cancelados", icon: XCircle },
+  {
+    text: "Meus Agendamentos",
+    url: "/user/meusAgendamentos",
+    icon: CalendarCheck,
+    roles: [Role.MEDICO],
+  },
+  { text: "Profissionais", url: "/user/profissionais", icon: UserStar },
+];
 
 export default function Header({ user, current }: HeaderProps) {
 
@@ -94,6 +103,10 @@ export default function Header({ user, current }: HeaderProps) {
     setIsOpen(!isOpen)
   }
 
+  const visibleOptions = menuOptions.filter(
+    (option) => !option.roles || (user?.role && option.roles.includes(user.role as Role))
+  );
+
   return (
     <header className="w-full h-18 lg:h-16 flex justify-between items-center px-4 shadow-sm font-montserrat">
       <button onClick={handleMenuClick} className="w-1/4 cursor-pointer"><Menu className="w-9 h-full border border-zinc-500/60 p-1 rounded-sm" /></button>
@@ -111,11 +124,11 @@ export default function Header({ user, current }: HeaderProps) {
           </div>
         </div>
         <ul className="w-full px-4 py-1 mt-4 space-y-3 lg:space-y-4">
-          {menuOptions.map((option, index) => {
+          {visibleOptions.map((option, index) => {
             const Icon = option.icon;
 
             return (
-              <Link key={index} href={option.url} className={`flex items-center gap-4 px-2 py-2 rounded-sm ${current === option.text ? 'bg-sky-500/80 text-zinc-100 font-semibold' : 'hover:bg-sky-500/20 text-zinc-800'} cursor-pointer transition-all`}>
+              <Link key={index} href={option.url} className={`flex items-center gap-4 px-2 py-2 rounded-sm ${current === option.text ? 'bg-blue-600 text-zinc-100 font-semibold' : 'hover:bg-blue-600/20 text-zinc-800'} cursor-pointer transition-all`}>
                 <Icon size={20} />
                 <span className="text-sm lg:text-md">{option.text}</span>
               </Link>

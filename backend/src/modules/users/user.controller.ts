@@ -1,23 +1,22 @@
-import { Request, Response } from "express";
+import { NextFunction, Request, Response } from "express";
 import UserRepository from "../../repositories/UserRepository.js";
 import { UserService } from "../../services/UserService.js";
 import { Role, Sexo } from "../../../generated/prisma/index.js";
-import { AppError } from "../../errors/AppError.js";
 
 const userService = new UserService(new UserRepository());
 
 export class UserController {
 
-  async getAll(req: Request, res: Response) {
+  async getAll(req: Request, res: Response, next: NextFunction) {
     try {
       const users = await userService.getAll();
       return res.json(users);
     } catch (error) {
-      return res.status(500).json({ error: (error as Error).message });
+      next(error);
     }
   }
 
-  async getProfissionais(req: Request, res: Response) {
+  async getProfissionais(req: Request, res: Response, next: NextFunction) {
     const { busca, role, page } = req.query as {
       busca?: string;
       role?: string;
@@ -32,14 +31,11 @@ export class UserController {
       });
       return res.json(profissionais);
     } catch (error) {
-      if (error instanceof AppError) {
-        return res.status(error.statusCode).json({ error: error.message });
-      }
-      return res.status(500).json({ error: "Erro interno do servidor" });
+      next(error);
     }
   }
 
-  async getProfile(req: Request, res: Response) {
+  async getProfile(req: Request, res: Response, next: NextFunction) {
 
     if (!req.user) return res.status(401).json({ error: "Unauthorized" });
 
@@ -78,19 +74,19 @@ export class UserController {
         atendente: null,
       })
     } catch (error) {
-      res.status(500).json({ error: (error as Error).message });
+      next(error);
     }
 
   }
 
-  async getPacient(req: Request, res: Response) {
+  async getPacient(req: Request, res: Response, next: NextFunction) {
     const { busca, page, sexo } = req.query as { busca?: string; page?: string; sexo?: Sexo };
 
     try {
       const pacientes = await userService.getPacient(busca, page ? parseInt(page) : 1, sexo);
       return res.json(pacientes);
     } catch (error) {
-      return res.status(500).json({ error: "Erro ao buscar pacientes" });
+      next(error);
     }
   }
 }

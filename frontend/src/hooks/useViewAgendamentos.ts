@@ -28,8 +28,8 @@ export function useViewAgendamentos({ busca, docId, status, statusUrgencia, data
   const query = params.toString();
   const url = isAuthenticated
     ? query
-      ? `http://localhost:7000/api/atendente/agendamentos?${query}`
-      : "http://localhost:7000/api/atendente/agendamentos"
+      ? `${process.env.NEXT_PUBLIC_API_URL}/api/agenda/agendamentos?${query}`
+      : `${process.env.NEXT_PUBLIC_API_URL}/api/agenda/agendamentos`
     : null;
 
   const { data: agendaData, error, isLoading, mutate } = useSWR(url, fetcher);

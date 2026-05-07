@@ -69,7 +69,7 @@ export default function AtendenteRegister({ onSubmit }: AtendenteRegProps) {
         ...(avatarUrl && { avatar: avatarUrl })
       };
 
-      await api.post("http://localhost:7000/api/auth/registerU", newData);
+      await api.post("/api/auth/registerU", newData);
       toast.success("Registro realizado com sucesso.");
       onSubmit();
 

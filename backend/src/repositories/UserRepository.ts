@@ -107,51 +107,6 @@ export default class UserRepository {
   }
 
   /* =======================
-     USER + AGENDA
-  ======================= */
-
-  async createAgenda(
-    data: {
-      horario_atend: Date,
-      duracaoMin: number,
-      statusUrgencia: StatusUrgencia,
-      status: StatusAtendimento,
-      tipo: TipoAtendimento,
-      patientId: string,
-      docId: string,
-      createdById: string,
-      cancelReason?: string,
-      motivo?: string,
-      observacoes?: string
-    }
-  ) {
-    return prisma.agenda.create({
-      data: {
-        horario_atend: data.horario_atend,
-        duracaoMin: data.duracaoMin,
-        statusUrgencia: data.statusUrgencia,
-        status: data.status,
-        tipo: data.tipo,
-        cancelReason: data.cancelReason,
-        motivo: data.motivo,
-        observacoes: data.observacoes,
-
-        paciente: {
-          connect: { id: data.patientId }
-        },
-
-        medico: {
-          connect: { userId: data.docId }
-        },
-
-        createdBy: {
-          connect: { id: data.createdById }
-        }
-      }
-    })
-  }
-
-  /* =======================
      QUERIES
   ======================= */
 
@@ -237,7 +192,14 @@ export default class UserRepository {
         role: true,
         createdAt: true,
         updatedAt: true,
-        medico: true,
+        medico: {
+          select: {
+            userId: true,
+            crm: true,
+            especialidade: true,
+            status: true,
+          }
+        },
         atendente: true,
       }
     });
@@ -256,39 +218,6 @@ export default class UserRepository {
       },
     })
 
-  }
-
-  async findAgendamentos(where: any, page: number) {
-    const limit = 12;
-
-    return prisma.agenda.findMany({
-      where,
-      take: limit,
-      skip: (page - 1) * limit,
-      orderBy: { horario_atend: 'asc' },
-      include: {
-        paciente: {
-          select: {
-            id: true,
-            nome: true,
-            cpf: true,
-            fone: true,
-          }
-        },
-        medico: {
-          select: {
-            userId: true,
-            crm: true,
-            especialidade: true,
-            user: {
-              select: {
-                nome: true,
-              }
-            }
-          }
-        }
-      }
-    });
   }
 
   async findByCpf(cpf: string) {
@@ -326,12 +255,6 @@ export default class UserRepository {
       where: { email },
       data,
     });
-  }
-
-  async checkHour(docId: string) {
-    return prisma.agenda.findFirst({
-      where: { docId }
-    })
   }
 
   async updatePatient(id: string, data: {

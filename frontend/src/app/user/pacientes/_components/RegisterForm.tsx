@@ -33,7 +33,7 @@ export default function PatientRegisterForm() {
 
   const onSubmit: SubmitHandler<RegisterFormPatient> = async (data) => {
     try {
-      await api.post("http://localhost:7000/api/atendente/registerP", data);
+      await api.post("/api/atendente/registerP", data);
 
       toast.success("Paciente cadastrado com sucesso!")
       router.push("/user/search/pacientes")

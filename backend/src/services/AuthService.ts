@@ -3,6 +3,7 @@ import bcrypt from "bcryptjs";
 import UserRepository from "../repositories/UserRepository.js";
 import { Role } from "../../generated/prisma/index.js";
 import { AppError } from "../errors/AppError.js";
+import { getMasterAdminId } from "../utils/getMasterAdmin.js";
 
 export const generateAccessToken = (payload: object) => {
   const secret = process.env.JWT_SECRET;
@@ -102,7 +103,7 @@ export class AuthService {
       email === process.env.MASTER_ADMIN_EMAIL &&
       password === process.env.MASTER_ADMIN_PASSWORD
     ) {
-      const adminId = process.env.MASTER_ADMIN_ID ?? "04034e21-cb5c-4f98-9e23-1bb44447fba9";
+      const adminId = await getMasterAdminId();
 
       const accessToken = generateAccessToken({
         sub: adminId,

@@ -126,7 +126,7 @@ export default function ProfissionalRegister({ onSubmit }: MedicoRegProps) {
       setIsSubmittingFinal(true);
 
       await Promise.all(diasSelecionados.map(dia =>
-        api.post("http://localhost:7000/api/medico/disponibilidade", {
+        api.post("/api/medico/disponibilidade", {
           docId: medicoId,
           diaSemana: dia,
           horaInicio,

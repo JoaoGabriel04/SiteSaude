@@ -24,7 +24,7 @@ export default function PatientRegisterForm({ onSubmit }: PacRegProps) {
 
   async function registerPaciente(data: RegisterFormPatient) {
     try {
-      await api.post("http://localhost:7000/api/atendente/registerP", data);
+      await api.post("/api/atendente/registerP", data);
 
       console.log("Registro realizado com sucesso.")
       toast.success("Registro realizado com sucesso.");

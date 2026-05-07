@@ -23,8 +23,8 @@ export function useViewPacientes({ busca, current, sexo }: PacienteProps) {
   const query = params.toString();
   const url = isAuthenticated
     ? query
-      ? `http://localhost:7000/api/user/search/pacientes?${query}`
-      : "http://localhost:7000/api/user/search/pacientes"
+      ? `${process.env.NEXT_PUBLIC_API_URL}/api/user/search/pacientes?${query}`
+      : `${process.env.NEXT_PUBLIC_API_URL}/api/user/search/pacientes`
     : null;
 
   const { data, error, isLoading, mutate } = useSWR(url, fetcher);

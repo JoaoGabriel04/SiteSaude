@@ -22,8 +22,8 @@ export function useViewProfissionais({ busca, role, page }: ProfissionaisProps) 
   const query = params.toString();
   const url = isAuthenticated
     ? query
-      ? `http://localhost:7000/api/user/search/profissionais?${query}`
-      : "http://localhost:7000/api/user/search/profissionais"
+      ? `${process.env.NEXT_PUBLIC_API_URL}/api/user/search/profissionais?${query}`
+      : `${process.env.NEXT_PUBLIC_API_URL}/api/user/search/profissionais`
     : null;
 
   const { data, error, isLoading, mutate } = useSWR(url, fetcher);

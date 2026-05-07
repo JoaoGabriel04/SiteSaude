@@ -14,7 +14,7 @@ export function useSlotsDisponiveis({ docId, data }: SlotsProps) {
   const { isAuthenticated } = useUserStore();
 
   const url = isAuthenticated && docId && data
-    ? `http://localhost:7000/api/medico/slots/${docId}?data=${data}`
+    ? `${process.env.NEXT_PUBLIC_API_URL}/api/medico/slots/${docId}?data=${data}`
     : null;
 
   const { data: slotsData, error, isLoading } = useSWR(url, fetcher);

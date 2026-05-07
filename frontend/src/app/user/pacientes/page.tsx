@@ -17,6 +17,14 @@ import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import Modal from "@/components/Modal";
 import PatientRegisterForm from "./_components/PacienteRegister";
 import EditPacientes from "./_components/EditPacientes";
+import {
+  Table,
+  TableHeader,
+  TableBody,
+  TableRow,
+  TableHead,
+  TableCell,
+} from "@/components/ui/table";
 
 type PacienteData = {
   id: string;
@@ -142,59 +150,66 @@ export default function Paciente() {
 
               {pacienteLoading ? (
                 <span className="text-sm text-zinc-400">Carregando...</span>
+              ) : pacienteData && pacienteData.length > 0 ? (
+                <div className="w-full overflow-x-auto mt-4">
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead className="w-[200px]">Nome</TableHead>
+                        <TableHead className="w-[90px]">Sexo</TableHead>
+                        <TableHead className="w-[110px]">CPF</TableHead>
+                        <TableHead className="w-[100px]">SUS</TableHead>
+                        <TableHead className="w-[100px]">Nascimento</TableHead>
+                        <TableHead className="w-[100px]">Telefone</TableHead>
+                        <TableHead className="w-[80px] text-right">Ações</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {pacienteData.map((paciente: PacienteData) => (
+                        <TableRow key={paciente.id}>
+                          <TableCell>
+                            <div className="flex items-center gap-2">
+                              <Avatar className="w-8 h-8">
+                                <AvatarFallback>{paciente.nome.charAt(0)}</AvatarFallback>
+                              </Avatar>
+                              <span className="truncate">{paciente.nome}</span>
+                            </div>
+                          </TableCell>
+                          <TableCell>
+                            <div className="flex items-center gap-1">
+                              <SexoIcon sexo={paciente.sexo} />
+                              <span>{sexoLabel[paciente.sexo]}</span>
+                            </div>
+                          </TableCell>
+                          <TableCell>{paciente.cpf}</TableCell>
+                          <TableCell>{paciente.cartaoSus}</TableCell>
+                          <TableCell>{new Date(paciente.nascimento).toLocaleDateString("pt-BR")}</TableCell>
+                          <TableCell>{paciente.fone}</TableCell>
+                          <TableCell className="text-right">
+                            {(user.role === "ATENDENTE" || user.role === "ADMIN") && (
+                              <Button
+                                size="sm"
+                                variant="outline"
+                                className="h-8 px-2 cursor-pointer"
+                                onClick={(e) => { e.preventDefault(); setPaciente(paciente); handleEdit(); }}
+                              >
+                                <Pencil className="w-3 h-3 mr-1" />
+                                Editar
+                              </Button>
+                            )}
+                          </TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                </div>
               ) : (
-                <div className="w-full grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-2">
-                  {pacienteData && pacienteData.length > 0 ? pacienteData.map((paciente: PacienteData) => (
-                    <Card key={paciente.id} className="w-full shadow-md hover:shadow-lg transition group">
-                      <CardHeader className="flex flex-row items-center justify-between pb-2">
-                        <CardTitle className="text-base flex items-center gap-2">
-                          <Avatar>
-                            <AvatarFallback>{paciente.nome.charAt(0)}</AvatarFallback>
-                          </Avatar>
-                          <span className="truncate">{paciente.nome}</span>
-                        </CardTitle>
-                        <Pencil
-                          className="w-4 h-4 text-zinc-500 group-hover:text-amber-500 cursor-pointer transition-all shrink-0"
-                          onClick={(e) => { e.preventDefault(); setPaciente(paciente); handleEdit(); }}
-                        />
-                      </CardHeader>
-
-                      <CardContent className="space-y-2 text-sm text-muted-foreground">
-                        <div className="flex items-center gap-1">
-                          <SexoIcon sexo={paciente.sexo} />
-                          <span>{sexoLabel[paciente.sexo]}</span>
-                        </div>
-
-                        <div className="flex justify-between">
-                          <span className="font-medium text-foreground">CPF:</span>
-                          <span>{paciente.cpf}</span>
-                        </div>
-
-                        <div className="flex justify-between">
-                          <span className="font-medium text-foreground">SUS:</span>
-                          <span>{paciente.cartaoSus}</span>
-                        </div>
-
-                        <div className="flex justify-between">
-                          <span className="font-medium text-foreground">Nascimento:</span>
-                          <span>{new Date(paciente.nascimento).toLocaleDateString("pt-BR")}</span>
-                        </div>
-
-                        <div className="flex justify-between">
-                          <span className="font-medium text-foreground">Telefone:</span>
-                          <span>{paciente.fone}</span>
-                        </div>
-                      </CardContent>
-                    </Card>
-                  )) : (
-                    <div className="col-span-4 flex justify-center items-center py-8">
-                      <span className="text-sm text-zinc-700/50">Nenhum paciente encontrado</span>
-                    </div>
-                  )}
+                <div className="flex justify-center items-center py-8">
+                  <span className="text-sm text-zinc-700/50">Nenhum paciente encontrado</span>
                 </div>
               )}
 
-              <div className="flex flex-row w-full gap-3 items-center justify-center">
+              <div className="flex flex-row w-full gap-3 items-center justify-center mt-4">
                 <Button disabled={!hasPreviousPage} onClick={() => setCurrent(current - 1)}>
                   Página Anterior
                 </Button>

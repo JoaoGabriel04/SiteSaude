@@ -1,8 +1,9 @@
 import { AppError } from "../errors/AppError.js";
 import MedicoRepository from "../repositories/MedicoRepository.js";
+import AgendaRepository from "../repositories/AgendaRepository.js";
 
 export class MedicoService {
-  constructor(private medicoRepo: MedicoRepository) { }
+  constructor(private medicoRepo: MedicoRepository, private agendaRepo: AgendaRepository) { }
 
   async cadastrarDisponibilidade(data: {
     docId: string;
@@ -65,7 +66,7 @@ export class MedicoService {
       atual += 30;
     }
 
-    const agendamentos = await this.medicoRepo.findAgendamentosByDocEData(docId, data);
+    const agendamentos = await this.agendaRepo.findAgendamentosByDocEData(docId, data);
     const horariosOcupados = agendamentos.map((a) => {
       const d = new Date(a.horario_atend);
       return `${String(d.getHours()).padStart(2, "0")}:${String(d.getMinutes()).padStart(2, "0")}`;

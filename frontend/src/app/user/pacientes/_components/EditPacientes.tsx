@@ -64,7 +64,7 @@ export default function EditPacientes({ paciente, onClose, onSuccess }: EditPaci
 
   async function editPaciente(data: EditFormPatient) {
     try {
-      await api.patch(`http://localhost:7000/api/atendente/paciente/${paciente.id}`, data);
+      await api.patch(`/api/atendente/paciente/${paciente.id}`, data);
       toast.success("Paciente atualizado com sucesso!");
       onSuccess();
     } catch (error: any) {
@@ -76,7 +76,7 @@ export default function EditPacientes({ paciente, onClose, onSuccess }: EditPaci
   async function deletePaciente() {
     try {
       setIsDeleting(true);
-      await api.delete(`http://localhost:7000/api/atendente/paciente/${paciente.id}`);
+      await api.delete(`/api/atendente/paciente/${paciente.id}`);
       toast.success("Paciente excluído com sucesso!");
       onSuccess();
     } catch (error: any) {

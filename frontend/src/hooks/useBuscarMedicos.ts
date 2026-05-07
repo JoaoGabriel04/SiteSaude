@@ -9,7 +9,7 @@ export function useBuscarMedicos() {
   const { isAuthenticated } = useUserStore();
 
   const url = isAuthenticated
-    ? "http://localhost:7000/api/user"
+    ? `${process.env.NEXT_PUBLIC_API_URL}/api/user`
     : null;
 
   const { data, error, isLoading } = useSWR(url, fetcher);

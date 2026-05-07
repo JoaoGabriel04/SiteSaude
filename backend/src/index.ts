@@ -1,9 +1,13 @@
 import "dotenv/config";
 
 import express from "express";
-import cookieParse from "cookie-parser"
+import cookieParser from "cookie-parser"
 import apiRouter from "./api/routes/index.js"
 import cors from "cors";
+import { getMasterAdminId } from "./utils/getMasterAdmin.js";
+import helmet from "helmet";
+import rateLimit from "express-rate-limit";
+import { errorHandler } from "./api/middlewares/errorHandler.js";
 
 const app = express();
 const PORT = process.env.PORT || 7000;
@@ -13,6 +17,10 @@ const urlsAllowed = [
   "https://intercarpellary-bess-subdenticulated.ngrok-free.dev",
 ]
 
+app.use(helmet({
+  crossOriginResourcePolicy: { policy: "cross-origin" },
+}));
+
 app.use(cors({
   origin: urlsAllowed,
   credentials: true,
@@ -20,10 +28,36 @@ app.use(cors({
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
-app.use(cookieParse())
+app.use(cookieParser())
 
-app.use("/api", apiRouter);
+const generalLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutos
+  max: 300,                  // 300 requests por IP nesse período
+  message: { error: "Muitas requisições. Tente novamente mais tarde." },
+  standardHeaders: true,
+  legacyHeaders: false,
+});
 
-app.listen(PORT, ()=>{
-  console.log(`Server running on port ${PORT}`);
-})
+app.use("/api", generalLimiter, apiRouter);
+
+// 404 fallback
+app.use((req, res) => {
+  res.status(404).json({ error: "Rota não encontrada" });
+});
+
+// Error handler — SEMPRE por último
+app.use(errorHandler);
+
+async function bootstrap() {
+  try {
+    const adminId = await getMasterAdminId();
+    console.log(`✅ Master admin OK!`);
+  } catch (err) {
+    console.error("❌ Master admin não existe. Rode: npx prisma db seed");
+    process.exit(1);
+  }
+
+  app.listen(PORT, () => console.log(`🚀 Server on ${PORT}`));
+}
+
+bootstrap();
