@@ -1,8 +1,6 @@
 "use client";
 
 import { useUserStore } from "@/stores/userStore";
-import Header from "@/components/Header";
-import { useViewportHeight } from "@/hooks/useViewportHeight";
 import LoadingScreen from "@/components/LoadingScreen";
 import { useEffect, useState, useMemo } from "react";
 import Title1 from "@/components/Title1";
@@ -10,14 +8,13 @@ import Subtitle from "@/components/Subtitle";
 import { Button } from "@/components/ui/button";
 import { PlusIcon, XCircle } from "lucide-react";
 import Modal from "@/components/Modal";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card } from "@/components/ui/card";
 import { InputField } from "@/components/inputField";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import AgendamentoForm from "./_components/AgendamentoForm";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { useViewAgendamentos } from "@/hooks/useViewAgendamentos";
 import { toast } from "@/toast/toastManager";
-import { CalendarIcon, StethoscopeIcon } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { getStatusVisual, StatusVisual } from "@/utils/agendamentoStatus";
 import api from "@/services/api";
@@ -55,10 +52,7 @@ const urgenciaColor: Record<string, string> = {
 };
 
 export default function Agendamentos() {
-
   const [openAgend, setOpenAgend] = useState(false);
-  const pageName = "Agendamentos";
-  const vh = useViewportHeight();
   const { user, loading } = useUserStore();
 
   const [current, setCurrent] = useState(1);
@@ -97,15 +91,11 @@ export default function Agendamentos() {
     }
   }
 
-  // Ordem solicitada: AGENDADO, FINALIZADO, CANCELADO, ATRASADO (os AGENDADOS aparecem primeiro)
   const statusOrder = useMemo<Record<string, number>>(
     () => ({ AGENDADO: 0, FINALIZADO: 1, CANCELADO: 2, ATRASADO: 3 }),
     []
   );
 
-  // Processa agendaData: usa getStatusVisual para decidirmos o status visual (ex.: ATRASADO),
-  // separa agendamentos atrasados (displayStatus === "ATRASADO") para a tabela inferior,
-  // e ordena a lista principal conforme a ordem pedida e alfabeticamente por paciente.
   const { mainList, overdueList } = useMemo(() => {
     const raw: AgendaData[] = agendaData ?? [];
 
@@ -134,253 +124,240 @@ export default function Agendamentos() {
   }
 
   return (
-    <main style={{ height: vh }} className="w-full flex flex-col">
+    <>
+      <div className="w-full flex items-start justify-between">
+        <div>
+          <Title1>Agendamentos</Title1>
+          <Subtitle>Gerencie os agendamentos de todos os pacientes.</Subtitle>
+        </div>
+        {(user.role === "ADMIN" || user.role === "ATENDENTE") && (
+          <Button className="cursor-pointer" onClick={(e) => { e.preventDefault(); handleOpenAgend(); }}>
+            <PlusIcon className="w-4 h-4" />
+            <span>Novo Agendamento</span>
+          </Button>
+        )}
+      </div>
 
-      <Header user={user} current={pageName} />
-
-      <section className="flex-1 w-full p-1 md:p-2 overflow-hidden">
-        <section className="w-full h-full px-4 pt-4 pb-2 bg-zinc-300/50 overflow-y-auto rounded-sm md:shadow-[0px_0px_4px_#00000060]">
-
-          <div className="w-full flex items-start justify-between">
-            <div>
-              <Title1>Agendamentos</Title1>
-              <Subtitle>Gerencie os agendamentos de todos os pacientes.</Subtitle>
+      <section className="w-full flex flex-col gap-4 mt-10">
+        <Card className="px-3">
+          <div>
+            <h1 className="text-xl font-bold text-zinc-700">Buscar agendamentos</h1>
+            <span className="text-sm text-zinc-800/50">Encontre os agendamentos pelo nome ou CPF do paciente</span>
+          </div>
+          <form onSubmit={(e) => {
+            e.preventDefault();
+            setBusca(inputValue);
+            setStatus(inputStatus === "ATIVOS" ? "AGENDADO" : inputStatus === "TODOS" ? "" : inputStatus);
+            setStatusUrgencia(inputUrgencia === "TODOS" ? "" : inputUrgencia);
+            setCurrent(1);
+          }} className="w-full flex flex-col lg:flex-row lg:justify-between lg:items-center gap-2">
+            <div className="flex flex-row gap-1 flex-1">
+              <InputField
+                id="barra-busca"
+                type="search"
+                label=""
+                className="w-full"
+                placeholder="Nome ou CPF do paciente..."
+                value={inputValue}
+                onChange={(e) => setInputValue(e.target.value)}
+              />
+              <Select value={inputStatus} onValueChange={setInputStatus}>
+                <SelectTrigger className="w-1/4 self-center">
+                  <SelectValue placeholder="Status" />
+                </SelectTrigger>
+                <SelectContent position="popper">
+                  <SelectItem value="ATIVOS">Ativos</SelectItem>
+                  <SelectItem value="AGENDADO">Agendado</SelectItem>
+                  <SelectItem value="CANCELADO">Cancelado</SelectItem>
+                </SelectContent>
+              </Select>
+              <Select value={inputUrgencia} onValueChange={setInputUrgencia}>
+                <SelectTrigger className="w-1/4 self-center">
+                  <SelectValue placeholder="Urgência" />
+                </SelectTrigger>
+                <SelectContent position="popper">
+                  <SelectItem value="TODOS">Todos</SelectItem>
+                  <SelectItem value="URGENTE">Urgente</SelectItem>
+                  <SelectItem value="MODERADO">Moderado</SelectItem>
+                  <SelectItem value="BAIXO">Baixo</SelectItem>
+                </SelectContent>
+              </Select>
             </div>
-            {(user.role === "ADMIN" || user.role === "ATENDENTE") && (
-              <Button className="cursor-pointer" onClick={(e) => { e.preventDefault(); handleOpenAgend(); }}>
-                <PlusIcon className="w-4 h-4" />
-                <span>Novo Agendamento</span>
-              </Button>
-            )}
+            <Button className="bg-blue-600 hover:bg-blue-700 font-bold text-white px-10 cursor-pointer" type="submit">
+              Buscar
+            </Button>
+          </form>
+        </Card>
+
+        <Card className="w-full px-4">
+          <div className="w-full flex flex-col">
+            <h1 className="text-lg font-bold text-zinc-700">Lista de Agendamentos</h1>
+            <span className="text-sm text-zinc-800/50">{mainList.length} agendamento(s) encontrado(s)</span>
           </div>
 
-          <section className="w-full flex flex-col gap-4 mt-10">
+          {agendaLoading ? (
+            <span className="text-sm text-zinc-400">Carregando...</span>
+          ) : mainList && mainList.length > 0 ? (
+            <div className="w-full overflow-x-auto mt-4">
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead className="w-[180px]">Paciente</TableHead>
+                    <TableHead className="w-[130px]">Data/Hora</TableHead>
+                    <TableHead className="w-[130px]">Médico</TableHead>
+                    <TableHead className="w-[90px]">Status</TableHead>
+                    <TableHead className="w-[80px]">Urgência</TableHead>
+                    <TableHead className="w-[120px]">Motivo</TableHead>
+                    <TableHead className="w-[90px] text-right">Ações</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {mainList.map((agenda: any) => (
+                    <TableRow key={agenda.id}>
+                      <TableCell>
+                        <div className="flex items-center gap-2">
+                          <Avatar className="w-8 h-8">
+                            <AvatarFallback>{agenda.paciente.nome.charAt(0)}</AvatarFallback>
+                          </Avatar>
+                          <span className="truncate">{agenda.paciente.nome}</span>
+                        </div>
+                      </TableCell>
+                      <TableCell>
+                        <span className="text-sm">{new Date(agenda.horario_atend).toLocaleString("pt-BR", {
+                          day: "2-digit", month: "2-digit", year: "numeric",
+                          hour: "2-digit", minute: "2-digit"
+                        })}</span>
+                      </TableCell>
+                      <TableCell>
+                        <span className="truncate">{agenda.medico.user.nome}</span>
+                      </TableCell>
+                      <TableCell>
+                        <Badge className={`${statusColors[agenda.displayStatus ?? agenda.status] || ""}`}>
+                          {(agenda.displayStatus ?? agenda.status)?.toUpperCase()}
+                        </Badge>
+                      </TableCell>
+                      <TableCell>
+                        {agenda.statusUrgencia ? (
+                          <Badge className={`${urgenciaColor[agenda.statusUrgencia] || ""}`}>
+                            {agenda.statusUrgencia?.toUpperCase()}
+                          </Badge>
+                        ) : "-"}
+                      </TableCell>
+                      <TableCell>
+                        <span className="truncate max-w-[110px]">{agenda.motivo ?? "-"}</span>
+                      </TableCell>
+                      <TableCell className="text-right">
+                        {(user.role === "ADMIN" || user.role === "ATENDENTE") && (
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            className="h-8 px-2 cursor-pointer"
+                            onClick={(e) => { e.preventDefault(); cancelarAgendamento(agenda.id); }}
+                          >
+                            <XCircle className="w-3 h-3 mr-1" />
+                            Cancelar
+                          </Button>
+                        )}
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </div>
+          ) : (
+            <div className="flex justify-center items-center py-8">
+              <span className="text-sm text-zinc-700/50">Nenhum agendamento encontrado</span>
+            </div>
+          )}
 
-            <Card className="px-3">
-              <div>
-                <h1 className="text-xl font-bold text-zinc-700">Buscar agendamentos</h1>
-                <span className="text-sm text-zinc-800/50">Encontre os agendamentos pelo nome ou CPF do paciente</span>
-              </div>
-              <form onSubmit={(e) => {
-                e.preventDefault();
-                setBusca(inputValue);
-                setStatus(inputStatus === "ATIVOS" ? "AGENDADO" : inputStatus === "TODOS" ? "" : inputStatus);
-                setStatusUrgencia(inputUrgencia === "TODOS" ? "" : inputUrgencia);
-                setCurrent(1);
-              }} className="w-full flex flex-col lg:flex-row lg:justify-between lg:items-center gap-2">
-                <div className="flex flex-row gap-1 flex-1">
-                  <InputField
-                    id="barra-busca"
-                    type="search"
-                    label=""
-                    className="w-full"
-                    placeholder="Nome ou CPF do paciente..."
-                    value={inputValue}
-                    onChange={(e) => setInputValue(e.target.value)}
-                  />
-                  <Select value={inputStatus} onValueChange={setInputStatus}>
-                    <SelectTrigger className="w-1/4 self-center">
-                      <SelectValue placeholder="Status" />
-                    </SelectTrigger>
-                    <SelectContent position="popper">
-                      <SelectItem value="ATIVOS">Ativos</SelectItem>
-                      <SelectItem value="AGENDADO">Agendado</SelectItem>
-                      <SelectItem value="CANCELADO">Cancelado</SelectItem>
-                    </SelectContent>
-                  </Select>
-                  <Select value={inputUrgencia} onValueChange={setInputUrgencia}>
-                    <SelectTrigger className="w-1/4 self-center">
-                      <SelectValue placeholder="Urgência" />
-                    </SelectTrigger>
-                    <SelectContent position="popper">
-                      <SelectItem value="TODOS">Todos</SelectItem>
-                      <SelectItem value="URGENTE">Urgente</SelectItem>
-                      <SelectItem value="MODERADO">Moderado</SelectItem>
-                      <SelectItem value="BAIXO">Baixo</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-                <Button className="bg-blue-600 hover:bg-blue-700 font-bold text-white px-10 cursor-pointer" type="submit">
-                  Buscar
-                </Button>
-              </form>
-            </Card>
+          <div className="flex flex-row w-full gap-3 items-center justify-center mt-4">
+            <Button disabled={!hasPreviousPage} onClick={() => setCurrent(current - 1)}>
+              Página Anterior
+            </Button>
+            <Button className="bg-blue-600 font-bold text-white" disabled={!hasNextPage} onClick={() => setCurrent(current + 1)}>
+              Próxima página
+            </Button>
+          </div>
+        </Card>
 
-            <Card className="w-full px-4">
-              <div className="w-full flex flex-col">
-                <h1 className="text-lg font-bold text-zinc-700">Lista de Agendamentos</h1>
-                <span className="text-sm text-zinc-800/50">{mainList.length} agendamento(s) encontrado(s)</span>
-              </div>
+        {overdueList && overdueList.length > 0 && (
+          <Card className="w-full px-4">
+            <div className="w-full flex flex-col">
+              <h1 className="text-lg font-bold text-zinc-700">Agendamentos Atrasados</h1>
+              <span className="text-sm text-zinc-800/50">{overdueList.length} agendamento(s) atrasado(s)</span>
+            </div>
 
-              {agendaLoading ? (
-                <span className="text-sm text-zinc-400">Carregando...</span>
-              ) : mainList && mainList.length > 0 ? (
-                <div className="w-full overflow-x-auto mt-4">
-                  <Table>
-                    <TableHeader>
-                      <TableRow>
-                        <TableHead className="w-[180px]">Paciente</TableHead>
-                        <TableHead className="w-[130px]">Data/Hora</TableHead>
-                        <TableHead className="w-[130px]">Médico</TableHead>
-                        <TableHead className="w-[90px]">Status</TableHead>
-                        <TableHead className="w-[80px]">Urgência</TableHead>
-                        <TableHead className="w-[120px]">Motivo</TableHead>
-                        <TableHead className="w-[90px] text-right">Ações</TableHead>
-                      </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                      {mainList.map((agenda: any) => (
-                        <TableRow key={agenda.id}>
-                          <TableCell>
-                            <div className="flex items-center gap-2">
-                              <Avatar className="w-8 h-8">
-                                <AvatarFallback>{agenda.paciente.nome.charAt(0)}</AvatarFallback>
-                              </Avatar>
-                              <span className="truncate">{agenda.paciente.nome}</span>
-                            </div>
-                          </TableCell>
-                          <TableCell>
-                            <span className="text-sm">{new Date(agenda.horario_atend).toLocaleString("pt-BR", {
-                              day: "2-digit", month: "2-digit", year: "numeric",
-                              hour: "2-digit", minute: "2-digit"
-                            })}</span>
-                          </TableCell>
-                          <TableCell>
-                            <span className="truncate">{agenda.medico.user.nome}</span>
-                          </TableCell>
-                          <TableCell>
-                            <Badge className={`${statusColors[agenda.displayStatus ?? agenda.status] || ""}`}>
-                              {(agenda.displayStatus ?? agenda.status)?.toUpperCase()}
-                            </Badge>
-                          </TableCell>
-                          <TableCell>
-                            {agenda.statusUrgencia ? (
-                              <Badge className={`${urgenciaColor[agenda.statusUrgencia] || ""}`}>
-                                {agenda.statusUrgencia?.toUpperCase()}
-                              </Badge>
-                            ) : "-"}
-                          </TableCell>
-                          <TableCell>
-                            <span className="truncate max-w-[110px]">{agenda.motivo ?? "-"}</span>
-                          </TableCell>
-                          <TableCell className="text-right">
-                            {(user.role === "ADMIN" || user.role === "ATENDENTE") && (
-                              <Button
-                                size="sm"
-                                variant="outline"
-                                className="h-8 px-2 cursor-pointer"
-                                onClick={(e) => { e.preventDefault(); cancelarAgendamento(agenda.id); }}
-                              >
-                                <XCircle className="w-3 h-3 mr-1" />
-                                Cancelar
-                              </Button>
-                            )}
-                          </TableCell>
-                        </TableRow>
-                      ))}
-                    </TableBody>
-                  </Table>
-                </div>
-              ) : (
-                <div className="flex justify-center items-center py-8">
-                  <span className="text-sm text-zinc-700/50">Nenhum agendamento encontrado</span>
-                </div>
-              )}
-
-              <div className="flex flex-row w-full gap-3 items-center justify-center mt-4">
-                <Button disabled={!hasPreviousPage} onClick={() => setCurrent(current - 1)}>
-                  Página Anterior
-                </Button>
-                <Button className="bg-blue-600 font-bold text-white" disabled={!hasNextPage} onClick={() => setCurrent(current + 1)}>
-                  Próxima página
-                </Button>
-              </div>
-            </Card>
-
-            {/* Tabela de Agendamentos Atrasados (aparece somente se existirem) */}
-            {overdueList && overdueList.length > 0 && (
-              <Card className="w-full px-4">
-                <div className="w-full flex flex-col">
-                  <h1 className="text-lg font-bold text-zinc-700">Agendamentos Atrasados</h1>
-                  <span className="text-sm text-zinc-800/50">{overdueList.length} agendamento(s) atrasado(s)</span>
-                </div>
-
-                <div className="w-full overflow-x-auto mt-4">
-                  <Table>
-                    <TableHeader>
-                      <TableRow>
-                        <TableHead className="w-[180px]">Paciente</TableHead>
-                        <TableHead className="w-[130px]">Horário</TableHead>
-                        <TableHead className="w-[130px]">Médico</TableHead>
-                        <TableHead className="w-[90px]">Status</TableHead>
-                        <TableHead className="w-[80px]">Urgência</TableHead>
-                        <TableHead className="w-[120px]">Motivo</TableHead>
-                        <TableHead className="w-[90px] text-right">Ações</TableHead>
-                      </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                      {overdueList.map((agenda: any) => (
-                        <TableRow key={agenda.id}>
-                          <TableCell>
-                            <div className="flex items-center gap-2">
-                              <Avatar className="w-8 h-8">
-                                <AvatarFallback>{agenda.paciente.nome.charAt(0)}</AvatarFallback>
-                              </Avatar>
-                              <span className="truncate max-w-[140px]">{agenda.paciente.nome}</span>
-                            </div>
-                          </TableCell>
-                          <TableCell>
-                            <span className="text-sm">{new Date(agenda.horario_atend).toLocaleString("pt-BR", {
-                              day: "2-digit", month: "2-digit", year: "numeric",
-                              hour: "2-digit", minute: "2-digit"
-                            })}</span>
-                          </TableCell>
-                          <TableCell>{agenda.medico.user.nome}</TableCell>
-                          <TableCell>
-                            <Badge className={`${statusColors["ATRASADO"]}`}>
-                              ATRASADO
-                            </Badge>
-                          </TableCell>
-                          <TableCell>
-                            {agenda.statusUrgencia ? (
-                              <Badge className={`${urgenciaColor[agenda.statusUrgencia] || ""}`}>
-                                {agenda.statusUrgencia?.toUpperCase()}
-                              </Badge>
-                            ) : "-"}
-                          </TableCell>
-                          <TableCell>
-                            <span className="truncate max-w-[110px]">{agenda.motivo ?? "-"}</span>
-                          </TableCell>
-                          <TableCell className="text-right">
-                            {(user.role === "ADMIN" || user.role === "ATENDENTE") && (
-                              <Button
-                                size="sm"
-                                variant="outline"
-                                className="h-8 px-2 cursor-pointer"
-                                onClick={(e) => { e.preventDefault(); cancelarAgendamento(agenda.id); }}
-                              >
-                                <XCircle className="w-3 h-3 mr-1" />
-                                Cancelar
-                              </Button>
-                            )}
-                          </TableCell>
-                        </TableRow>
-                      ))}
-                    </TableBody>
-                  </Table>
-                </div>
-              </Card>
-            )}
-
-          </section>
-
-          <Modal size="xl" isOpen={openAgend} onClose={handleCloseAgend} title="Novo agendamento">
-            <AgendamentoForm onSuccess={() => { handleCloseAgend(); mutate(); }} userId={user.id} />
-          </Modal>
-
-        </section>
+            <div className="w-full overflow-x-auto mt-4">
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead className="w-[180px]">Paciente</TableHead>
+                    <TableHead className="w-[130px]">Horário</TableHead>
+                    <TableHead className="w-[130px]">Médico</TableHead>
+                    <TableHead className="w-[90px]">Status</TableHead>
+                    <TableHead className="w-[80px]">Urgência</TableHead>
+                    <TableHead className="w-[120px]">Motivo</TableHead>
+                    <TableHead className="w-[90px] text-right">Ações</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {overdueList.map((agenda: any) => (
+                    <TableRow key={agenda.id}>
+                      <TableCell>
+                        <div className="flex items-center gap-2">
+                          <Avatar className="w-8 h-8">
+                            <AvatarFallback>{agenda.paciente.nome.charAt(0)}</AvatarFallback>
+                          </Avatar>
+                          <span className="truncate max-w-[140px]">{agenda.paciente.nome}</span>
+                        </div>
+                      </TableCell>
+                      <TableCell>
+                        <span className="text-sm">{new Date(agenda.horario_atend).toLocaleString("pt-BR", {
+                          day: "2-digit", month: "2-digit", year: "numeric",
+                          hour: "2-digit", minute: "2-digit"
+                        })}</span>
+                      </TableCell>
+                      <TableCell>{agenda.medico.user.nome}</TableCell>
+                      <TableCell>
+                        <Badge className={`${statusColors["ATRASADO"]}`}>
+                          ATRASADO
+                        </Badge>
+                      </TableCell>
+                      <TableCell>
+                        {agenda.statusUrgencia ? (
+                          <Badge className={`${urgenciaColor[agenda.statusUrgencia] || ""}`}>
+                            {agenda.statusUrgencia?.toUpperCase()}
+                          </Badge>
+                        ) : "-"}
+                      </TableCell>
+                      <TableCell>
+                        <span className="truncate max-w-[110px]">{agenda.motivo ?? "-"}</span>
+                      </TableCell>
+                      <TableCell className="text-right">
+                        {(user.role === "ADMIN" || user.role === "ATENDENTE") && (
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            className="h-8 px-2 cursor-pointer"
+                            onClick={(e) => { e.preventDefault(); cancelarAgendamento(agenda.id); }}
+                          >
+                            <XCircle className="w-3 h-3 mr-1" />
+                            Cancelar
+                          </Button>
+                        )}
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </div>
+          </Card>
+        )}
       </section>
 
-    </main>
+      <Modal size="xl" isOpen={openAgend} onClose={handleCloseAgend} title="Novo agendamento">
+        <AgendamentoForm onSuccess={() => { handleCloseAgend(); mutate(); }} userId={user.id} />
+      </Modal>
+    </>
   );
 }
