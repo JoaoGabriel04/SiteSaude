@@ -233,7 +233,7 @@ export class UserService {
     await this.userRepo.updateUser(id, updateData);
 
     if (data.especialidade && user.medico) {
-      await this.userRepo.updateMedico(user.userId, { especialidade: data.especialidade });
+      await this.userRepo.updateMedico(user.id, { especialidade: data.especialidade });
     }
 
     return this.userRepo.findById(id);
