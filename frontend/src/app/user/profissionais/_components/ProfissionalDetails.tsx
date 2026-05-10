@@ -1,6 +1,9 @@
 import { User } from "@/types/user";
 import { Badge } from "@/components/ui/badge";
 import { Stethoscope, ClipboardList, Calendar, User2 } from "lucide-react";
+import { useUserStore } from "@/stores/userStore";
+import AusenciasManager from "./AusenciasManager";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 
 type ProfissionalDetailsProps = {
   profissional: User;
@@ -22,11 +25,22 @@ export default function ProfissionalDetails({
   profissional,
   onClose,
 }: ProfissionalDetailsProps) {
+  const { user } = useUserStore()
+
+  const podeEditar = user && (
+    user.role === "ADMIN" ||
+    user.role === "ATENDENTE" ||
+    (profissional.role === "MEDICO" && user.id === profissional.id)
+  )
+
   return (
     <div className="flex flex-col gap-4">
       <div className="flex items-center gap-3 pb-3 border-b">
         <div className="w-12 h-12 rounded-full bg-zinc-200 flex items-center justify-center">
-          <User2 className="w-6 h-6 text-zinc-500" />
+          <Avatar className="w-full h-full">
+            <AvatarImage src={profissional.avatar ?? ""} />
+            <AvatarFallback>{profissional.nome.charAt(0)}</AvatarFallback>
+          </Avatar>
         </div>
         <div>
           <h2 className="text-lg font-semibold text-zinc-800">{profissional.nome}</h2>
@@ -98,6 +112,15 @@ export default function ProfissionalDetails({
             <p className="text-sm text-zinc-700">{profissional.atendente.setor}</p>
           </div>
         )}
+
+        {profissional.role === "MEDICO" && profissional.medico && podeEditar && (
+          <div className="pt-2 border-t">
+            <AusenciasManager
+              docId={profissional.id}
+              podeEditar={podeEditar}
+            />
+          </div>
+        )}
       </div>
 
       <div className="space-y-3 pt-2 border-t">
@@ -108,12 +131,12 @@ export default function ProfissionalDetails({
           <p className="text-sm text-zinc-700">
             {profissional.createdAt
               ? new Date(profissional.createdAt).toLocaleString("pt-BR", {
-                  day: "2-digit",
-                  month: "2-digit",
-                  year: "numeric",
-                  hour: "2-digit",
-                  minute: "2-digit",
-                })
+                day: "2-digit",
+                month: "2-digit",
+                year: "numeric",
+                hour: "2-digit",
+                minute: "2-digit",
+              })
               : "-"}
           </p>
         </div>
@@ -123,12 +146,12 @@ export default function ProfissionalDetails({
           <p className="text-sm text-zinc-700">
             {profissional.updatedAt
               ? new Date(profissional.updatedAt).toLocaleString("pt-BR", {
-                  day: "2-digit",
-                  month: "2-digit",
-                  year: "numeric",
-                  hour: "2-digit",
-                  minute: "2-digit",
-                })
+                day: "2-digit",
+                month: "2-digit",
+                year: "numeric",
+                hour: "2-digit",
+                minute: "2-digit",
+              })
               : "-"}
           </p>
         </div>

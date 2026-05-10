@@ -15,6 +15,8 @@ const routeToPageName: Record<string, string> = {
   "/user/finalizados": "Finalizados",
   "/user/cancelados": "Cancelados",
   "/user/meusAgendamentos": "Meus Agendamentos",
+  "/user/solicitacoes": "Solicitações",
+  "/user/ausencias": "Ausências",
 };
 
 function UserGuard({ children }: { children: React.ReactNode }) {

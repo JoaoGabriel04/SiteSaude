@@ -89,4 +89,23 @@ export class UserController {
       next(error);
     }
   }
+
+  async updateProfile(req: Request, res: Response, next: NextFunction) {
+    if (!req.user) return res.status(401).json({ error: "Unauthorized" });
+
+    const { nome, email, password, avatar, especialidade } = req.body;
+
+    try {
+      const result = await userService.updateProfile(req.user.id, {
+        nome,
+        email,
+        password,
+        avatar,
+        especialidade
+      });
+      return res.json(result);
+    } catch (error) {
+      next(error);
+    }
+  }
 }

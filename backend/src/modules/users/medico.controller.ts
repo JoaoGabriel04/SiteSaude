@@ -3,8 +3,14 @@ import { MedicoService } from "../../services/MedicoService.js";
 import MedicoRepository from "../../repositories/MedicoRepository.js";
 import { AppError } from "../../errors/AppError.js";
 import AgendaRepository from "../../repositories/AgendaRepository.js";
+import NotificacaoRepository from "../../repositories/NotificacaoRepository.js";
+import { NotificacaoService } from "../../services/NotificacaoService.js";
 
-const medicoService = new MedicoService(new MedicoRepository(), new AgendaRepository());
+const medicoService = new MedicoService(
+  new MedicoRepository(), 
+  new AgendaRepository(),
+  new NotificacaoService(new NotificacaoRepository())
+);
 
 export class MedicoController {
 
@@ -88,10 +94,83 @@ export class MedicoController {
 
   async deletarExcecao(req: Request, res: Response, next: NextFunction) {
     const id = req.params.id as string;
+    const userId = req.user?.id;
 
     try {
-      await medicoService.deletarExcecao(id);
+      await medicoService.deletarExcecao(id, userId);
       return res.status(204).send();
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  async cadastrarExcecaoPeriodo(req: Request, res: Response, next: NextFunction) {
+    try {
+      const { docId, dataInicio, dataFim, motivo } = req.body;
+      const resultado = await medicoService.cadastrarExcecaoPeriodo({
+        docId,
+        dataInicio: new Date(dataInicio),
+        dataFim: new Date(dataFim),
+        motivo
+      });
+      return res.status(201).json({ message: "Solicitação enviada com sucesso! Aguarde a aprovação.", count: resultado.count });
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  /* === Solicitações === */
+
+  async buscarSolicitacoesPendentes(req: Request, res: Response, next: NextFunction) {
+    try {
+      const solicitacoes = await medicoService.buscarSolicitacoesPendentes();
+      return res.json(solicitacoes);
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  async buscarSolicitacaoById(req: Request, res: Response, next: NextFunction) {
+    const id = req.params.id as string;
+    try {
+      const solicitacao = await medicoService.buscarSolicitacaoById(id);
+      if (!solicitacao) {
+        return res.status(404).json({ error: "Solicitação não encontrada" });
+      }
+      return res.json(solicitacao);
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  async buscarMinhasSolicitacoes(req: Request, res: Response, next: NextFunction) {
+    const docId = req.params.docId as string;
+    try {
+      const solicitacoes = await medicoService.buscarMinhasSolicitacoes(docId);
+      return res.json(solicitacoes);
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  async aprobarSolicitacao(req: Request, res: Response, next: NextFunction) {
+    const id = req.params.id as string;
+    const aprovadoPorId = req.user!.id;
+    try {
+      const resultado = await medicoService.aprovarSolicitacao(id, aprovadoPorId);
+      return res.json(resultado);
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  async negarSolicitacao(req: Request, res: Response, next: NextFunction) {
+    const id = req.params.id as string;
+    const aprovadoPorId = req.user!.id;
+    const { observacao } = req.body;
+    try {
+      const resultado = await medicoService.negarSolicitacao(id, aprovadoPorId, observacao);
+      return res.json(resultado);
     } catch (error) {
       next(error);
     }

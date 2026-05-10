@@ -266,7 +266,7 @@ export default function ProfissionaisPage() {
       </Modal>
 
       {profissional && (
-        <Modal size="sm" isOpen={openDetails} onClose={handleCloseDetails} title="Detalhes do Profissional">
+        <Modal size="md" isOpen={openDetails} onClose={handleCloseDetails} title="Detalhes do Profissional">
           <ProfissionalDetails profissional={profissional} onClose={handleCloseDetails} />
         </Modal>
       )}

@@ -75,7 +75,8 @@ export default class MedicoRepository {
         data: {
           gte: inicio,
           lte: fim
-        }
+        },
+        status: "APROVADO"
       }
     });
   }
@@ -90,6 +91,99 @@ export default class MedicoRepository {
   async deleteExcecao(id: string) {
     return prisma.excecaoMedico.delete({
       where: { id }
+    });
+  }
+
+  async createExcecoesEmPeriodo(datas: Date[], docId: string, motivo?: string) {
+    const excecoes = datas.map(data => ({
+      docId,
+      data,
+      motivo,
+      status: "PENDENTE" as const
+    }));
+    return prisma.excecaoMedico.createMany({
+      data: excecoes,
+      skipDuplicates: true
+    });
+  }
+
+  /* =======================
+     SOLICITAÇÕES (PENDENTES)
+  ======================= */
+
+  async findSolicitacoesPendentes() {
+    return prisma.excecaoMedico.findMany({
+      where: { status: "PENDENTE" },
+      orderBy: { dataSolicitacao: "asc" },
+      include: {
+        medico: {
+          include: {
+            user: {
+              select: { id: true, nome: true, email: true }
+            }
+          }
+        }
+      }
+    });
+  }
+
+  async findSolicitacaoById(id: string) {
+    return prisma.excecaoMedico.findUnique({
+      where: { id },
+      include: {
+        medico: {
+          include: {
+            user: {
+              select: { id: true, nome: true, email: true }
+            }
+          }
+        },
+        aprovadoPor: {
+          select: { nome: true }
+        }
+      }
+    });
+  }
+
+  async findMinhasSolicitacoes(docId: string) {
+    return prisma.excecaoMedico.findMany({
+      where: { docId },
+      orderBy: { dataSolicitacao: "desc" },
+      include: {
+        aprovadoPor: {
+          select: { nome: true }
+        }
+      }
+    });
+  }
+
+  async findExcecoesAprovadasByDoc(docId: string) {
+    return prisma.excecaoMedico.findMany({
+      where: { docId, status: "APROVADO" },
+      orderBy: { data: "asc" }
+    });
+  }
+
+  async aprovarSolicitacao(id: string, aprovadoPorId: string) {
+    return prisma.excecaoMedico.update({
+      where: { id },
+      data: {
+        status: "APROVADO",
+        aprovadoPorId,
+        dataResposta: new Date()
+      }
+    });
+  }
+
+  async negarSolicitacao(id: string, aprovadoPorId: string, observacao: string) {
+    return prisma.excecaoMedico.update({
+      where: { id },
+      data: {
+        status: "NEGADO",
+        aprovadoPorId,
+        observacaoAdmin: observacao,
+        dataResposta: new Date()
+      }
     });
   }
 }

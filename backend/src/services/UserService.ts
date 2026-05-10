@@ -203,6 +203,42 @@ export class UserService {
     });
   }
 
+  async updateProfile(
+    id: string,
+    data: {
+      nome?: string;
+      email?: string;
+      password?: string;
+      avatar?: string;
+      especialidade?: string;
+    }
+  ) {
+    const user = await this.userRepo.findById(id);
+
+    if (!user) {
+      throw new AppError("Usuário não encontrado", 404);
+    }
+
+    let password: string | undefined;
+    if (data.password) {
+      password = await bcrypt.hash(data.password, 10);
+    }
+
+    const updateData: any = {};
+    if (data.nome) updateData.nome = data.nome;
+    if (data.email) updateData.email = data.email;
+    if (password) updateData.password = password;
+    if (data.avatar !== undefined) updateData.avatar = data.avatar;
+
+    await this.userRepo.updateUser(id, updateData);
+
+    if (data.especialidade && user.medico) {
+      await this.userRepo.updateMedico(user.userId, { especialidade: data.especialidade });
+    }
+
+    return this.userRepo.findById(id);
+  }
+
   async deleteUser(id: string) {
     const user = await this.userRepo.findById(id);
 

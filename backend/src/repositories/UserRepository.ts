@@ -306,6 +306,18 @@ export default class UserRepository {
     });
   }
 
+  async updateMedico(userId: string, data: { especialidade?: string }) {
+    return prisma.doctor.update({
+      where: { userId },
+      data: {
+        ...(data.especialidade && { especialidade: data.especialidade }),
+      },
+      include: {
+        user: true,
+      }
+    });
+  }
+
   async deleteUser(id: string) {
     return prisma.$transaction(async (tx) => {
       // Deleta agendamentos do médico

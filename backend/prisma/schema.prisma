@@ -43,6 +43,12 @@ enum StatusProfissional {
   INATIVO
 }
 
+enum StatusSolicitacao {
+  PENDENTE
+  APROVADO
+  NEGADO
+}
+
 model Agenda {
   id            String   @id @default(uuid())
   horario_atend DateTime
@@ -94,13 +100,64 @@ model Disponibilidade {
 model ExcecaoMedico {
   id     String   @id @default(uuid())
   docId  String
-  data   DateTime // dia específico que ele não atenderá
-  motivo String? // opcional: "férias", "imprevisto", etc.
+  data   DateTime
+  motivo String?
 
-  medico Doctor @relation(fields: [docId], references: [userId])
+  status          StatusSolicitacao @default(PENDENTE)
+  observacaoAdmin String?
+  aprovadoPorId   String?
+  dataSolicitacao DateTime @default(now())
+  dataResposta    DateTime?
+
+  medico       Doctor @relation(fields: [docId], references: [userId])
+  aprovadoPor  User?  @relation("AprovadoPor", fields: [aprovadoPorId], references: [id])
 
   @@unique([docId, data])
   @@map("excecoes_medico")
+}
+
+model SolicitacaoAusencia {
+  id     String   @id @default(uuid())
+  docId  String
+  motivo String?
+
+  status          StatusSolicitacao @default(PENDENTE)
+  observacaoAdmin String?
+  aprovadoPorId   String?
+  dataSolicitacao DateTime @default(now())
+  dataResposta    DateTime?
+
+  medico       Doctor @relation(fields: [docId], references: [userId])
+  aprovadoPor  User?  @relation("AprovadoPorSolicitacao", fields: [aprovadoPorId], references: [id])
+
+  dias SolicitacaoAusenciaDia[]
+
+  @@map("solicitacoes_ausencia")
+}
+
+model SolicitacaoAusenciaDia {
+  id             String   @id @default(uuid())
+  solicitacaoId  String
+  data           DateTime
+
+  solicitacao SolicitacaoAusencia @relation(fields: [solicitacaoId], references: [id], onDelete: Cascade)
+
+  @@unique([solicitacaoId, data])
+  @@map("solicitacoes_ausencia_dias")
+}
+
+model Notificacao {
+  id        String   @id @default(uuid())
+  userId    String
+  titulo    String
+  mensagem  String
+  tipo      String   // "SOLICITACAO_APROVADA", "SOLICITACAO_NEGADA", etc.
+  lida      Boolean  @default(false)
+  createdAt DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id])
+
+  @@map("notificacoes")
 }
 
 model User {
@@ -120,6 +177,9 @@ model User {
 
   createdAgendas  Agenda[] @relation("CreatedBy")
   canceledAgendas Agenda[] @relation("CanceledBy")
+  notificacoes    Notificacao[]
+  excecoesAprovadas ExcecaoMedico[] @relation("AprovadoPor")
+  solicitacoesAprovadas SolicitacaoAusencia[] @relation("AprovadoPorSolicitacao")
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -136,6 +196,7 @@ model Doctor {
 
   disponibilidades Disponibilidade[]
   excecoes         ExcecaoMedico[]
+  solicitacoes     SolicitacaoAusencia[]
 
   agendas Agenda[]
 

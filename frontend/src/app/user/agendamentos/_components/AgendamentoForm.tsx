@@ -261,6 +261,7 @@ export default function AgendamentoForm({ onSuccess, userId }: AgendamentoFormPr
               register={form.register("data")}
               errorInvalid={form.formState.errors.data !== undefined}
               errorMessage={form.formState.errors.data?.message}
+              min={new Date().toISOString().split("T")[0]}
             />
 
             {/* Slots */}

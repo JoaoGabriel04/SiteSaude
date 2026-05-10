@@ -90,6 +90,41 @@ export default class AgendaRepository {
     });
   }
 
+  async findExcecaoByDocEData(docId: string, data: Date) {
+    const inicio = new Date(data);
+    inicio.setHours(0, 0, 0, 0);
+    const fim = new Date(data);
+    fim.setHours(23, 59, 59, 999);
+
+    return prisma.excecaoMedico.findFirst({
+      where: {
+        docId,
+        data: { gte: inicio, lte: fim },
+        status: "APROVADO",
+      },
+    });
+  }
+
+  async findSolicitacaoAusenciaByData(docId: string, data: Date) {
+    const inicio = new Date(data);
+    inicio.setHours(0, 0, 0, 0);
+    const fim = new Date(data);
+    fim.setHours(23, 59, 59, 999);
+
+    return prisma.solicitacaoAusencia.findFirst({
+      where: {
+        docId,
+        status: "APROVADO",
+        dias: {
+          some: {
+            data: { gte: inicio, lte: fim }
+          }
+        }
+      },
+      include: { dias: true }
+    });
+  }
+
   async checkHour(docId: string) {
     return prisma.agenda.findFirst({ where: { docId } });
   }

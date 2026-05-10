@@ -74,6 +74,11 @@ export class AgendaService {
   // ============================================
   async registerAgenda(data: Prisma.AgendaUncheckedCreateInput) {
     const horarioNorm = new Date(data.horario_atend);
+    const agora = new Date();
+
+    if (horarioNorm < agora) {
+      throw new AppError("Não é possível agendar em um horário no passado", 400);
+    }
 
     const foundPatient = await this.userRepository.findByIdPatient(data.patientId);
     const foundDoc = await this.userRepository.findById(data.docId);
@@ -83,6 +88,19 @@ export class AgendaService {
     }
     if (!foundDoc) {
       throw new AppError("Médico não encontrado", 404);
+    }
+
+    // 🔒 Valida se médico tem exceção cadastrada para este dia
+    const excecao = await this.agendaRepository.findExcecaoByDocEData(
+      data.docId,
+      horarioNorm
+    );
+
+    if (excecao) {
+      throw new AppError(
+        `Médico não atendimento nesta data${excecao.motivo ? `: ${excecao.motivo}` : ""}`,
+        400
+      );
     }
 
     // 🔒 Valida se já existe agendamento ativo no mesmo slot

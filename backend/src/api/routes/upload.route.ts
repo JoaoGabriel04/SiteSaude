@@ -7,7 +7,7 @@ import { AppError } from "../../errors/AppError.js";
 const uploadRouter = Router();
 const uploadService = new UploadService();
 
-uploadRouter.post("/avatar", upload.single("avatar"), async (req: Request, res: Response) => {
+uploadRouter.post("/avatar", authToken, upload.single("avatar"), async (req: Request, res: Response) => {
   try {
     if (!req.file) {
       throw new AppError("Nenhuma imagem enviada", 400);
