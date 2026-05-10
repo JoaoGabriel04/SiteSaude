@@ -6,6 +6,7 @@
     "rootDir": "src",
     "outDir": "dist",
     "esModuleInterop": true,
+    "allowSyntheticDefaultImports": true, // 👈 adicione isso
     "strict": true,
     "skipLibCheck": true,
     "forceConsistentCasingInFileNames": true,

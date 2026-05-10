@@ -5,9 +5,13 @@ import cookieParser from "cookie-parser"
 import apiRouter from "./api/routes/index.js"
 import cors from "cors";
 import { getMasterAdminId } from "./utils/getMasterAdmin.js";
-import helmet from "helmet";
-import rateLimit from "express-rate-limit";
 import { errorHandler } from "./api/middlewares/errorHandler.js";
+
+import { createRequire } from "module";
+const require = createRequire(import.meta.url);
+
+const helmet = require("helmet");
+const rateLimit = require("express-rate-limit");
 
 const app = express();
 const PORT = process.env.PORT || 7000;
