@@ -3,7 +3,12 @@ import { AuthController } from "../../modules/auth/auth.controller.js";
 import { validate } from "../middlewares/validate.js";
 import { registerUser } from "../../schemas/registerUserSchema.js";
 import { loginUser } from "../../schemas/loginUserSchema.js";
-import rateLimit from "express-rate-limit";
+
+import { createRequire } from "module";
+const require = createRequire(import.meta.url);
+
+const rateLimit = require("express-rate-limit");
+
 const authRouter = Router();
 const controller = new AuthController();
 
