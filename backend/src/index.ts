@@ -5,7 +5,7 @@ import cookieParser from "cookie-parser"
 import apiRouter from "./api/routes/index.js"
 import cors from "cors";
 import { getMasterAdminId } from "./utils/getMasterAdmin.js";
-import * as helmet from "helmet";
+import helmet from "helmet";
 import rateLimit from "express-rate-limit";
 import { errorHandler } from "./api/middlewares/errorHandler.js";
 
@@ -17,9 +17,7 @@ const urlsAllowed = [
   "https://intercarpellary-bess-subdenticulated.ngrok-free.dev",
 ]
 
-app.use((helmet as any)({
-  crossOriginResourcePolicy: { policy: "cross-origin" },
-}));
+app.use(helmet());
 
 app.use(cors({
   origin: urlsAllowed,
