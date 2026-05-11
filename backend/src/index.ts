@@ -18,7 +18,7 @@ const PORT = process.env.PORT || 7000;
 
 const urlsAllowed = [
   "http://localhost:3000",
-  "https://intercarpellary-bess-subdenticulated.ngrok-free.dev",
+  "https://site-saude-three.vercel.app",
 ]
 
 app.use(helmet());
