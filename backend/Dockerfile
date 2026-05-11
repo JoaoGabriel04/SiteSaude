@@ -1,22 +1,24 @@
-# Usando Node 20
-FROM node:24-alpine
+FROM node:20-alpine
 
-# Diretório dentro do container
 WORKDIR /app
 
-# Copia apenas package.json primeiro (melhor cache)
 COPY package*.json ./
+COPY prisma ./prisma/
 
-RUN npm install
+# Instala tudo (incluindo dev) para gerar o prisma client
+RUN npm ci
 
-# Copia o resto do código
+# Gera o Prisma Client separado do build
+RUN npx prisma generate
+
 COPY . .
 
-# Compila TypeScript
-RUN npm run build
+# Compila só o TypeScript
+RUN npx tsc
 
-# Expõe porta
+# Remove devDependencies após o build
+RUN npm prune --omit=dev
+
 EXPOSE 7000
 
-# Comando para rodar
 CMD ["npm", "run", "start"]
