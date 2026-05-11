@@ -1,13 +1,13 @@
-import { NextFunction, Request, Response } from "express";
+import { CookieOptions, NextFunction, Request, Response } from "express";
 import { AuthService } from "../../services/AuthService.js";
 import UserRepository from "../../repositories/UserRepository.js";
 
 const authService = new AuthService(new UserRepository());
 
-const cookieConfig = {
+const cookieConfig: CookieOptions = {
   httpOnly: true,
   secure: process.env.NODE_ENV === "production",
-  sameSite: "lax" as const,
+  sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
   path: "/",
   maxAge: 7 * 24 * 60 * 60 * 1000,
 };
