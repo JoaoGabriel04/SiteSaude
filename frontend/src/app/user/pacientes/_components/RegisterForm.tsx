@@ -1,7 +1,6 @@
 "use client";
 
 import { Button } from "@/components/ui/button";
-import { Card } from "@/components/ui/card";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { RegisterFormPatient, regFormPatient } from "@/schemas/registerSchema";
@@ -9,9 +8,6 @@ import { useRouter } from "next/navigation";
 import { toast } from "@/toast/toastManager";
 import { SubmitHandler } from "react-hook-form";
 import { InputField } from "@/components/inputField";
-import Image from "next/image";
-import Link from "next/link";
-import { ArrowLeft } from "lucide-react";
 import { AxiosError } from "axios";
 import { useUserStore } from "@/stores/userStore";
 import api from "@/services/api";

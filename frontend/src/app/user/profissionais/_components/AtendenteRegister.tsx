@@ -41,7 +41,7 @@ export default function AtendenteRegister({ onSubmit }: AtendenteRegProps) {
       setUploadingAvatar(true);
       const formData = new FormData();
       formData.append("avatar", file);
-      const res = await api.post("http://localhost:7000/api/upload/avatar", formData, {
+      const res = await api.post("/api/upload/avatar", formData, {
         headers: { "Content-Type": "multipart/form-data" }
       });
       return res.data.url;

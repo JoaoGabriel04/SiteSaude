@@ -1,21 +1,18 @@
 'use client'
-import { InputField } from "@/components/inputField";
-import Subtitle from "@/components/Subtitle";
-import { Button } from "@/components/ui/button";
-import { regFormMedico, RegisterFormMedico } from "@/schemas/registerMedico";
-import api from "@/services/api";
-import { toast } from "@/toast/toastManager";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { useForm } from "react-hook-form";
-import { Role } from "@/types/user";
-import { useState, useRef } from "react";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Camera, CheckCircle, ChevronRight, User, Clock } from "lucide-react";
-import { Card } from "@/components/ui/card";
 
-type MedicoRegProps = {
-  onSubmit: () => void;
-}
+import { useState, useRef, useEffect } from "react"
+import { useForm } from "react-hook-form"
+import { zodResolver } from "@hookform/resolvers/zod"
+import { Role } from "@/types/user"
+import { regFormMedico, RegisterFormMedico } from "@/schemas/registerMedico"
+import api from "@/services/api"
+import { toast } from "@/toast/toastManager"
+import { InputField } from "@/components/inputField"
+import { Button } from "@/components/ui/button"
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
+import { Card } from "@/components/ui/card"
+import Subtitle from "@/components/Subtitle"
+import { Camera, CheckCircle, ChevronRight, User, Clock } from "lucide-react"
 
 const DIAS = [
   { label: "D", value: 0, nome: "Domingo" },
@@ -25,131 +22,149 @@ const DIAS = [
   { label: "Q", value: 4, nome: "Quinta" },
   { label: "S", value: 5, nome: "Sexta" },
   { label: "S", value: 6, nome: "Sábado" },
-];
+]
 
-type Disponibilidade = {
-  diaSemana: number;
-  horaInicio: string;
-  horaFim: string;
-  almocoInicio: string;
-  almocoFim: string;
+const ETAPAS = [
+  { num: 1, label: "Dados do Médico", icon: User },
+  { num: 2, label: "Disponibilidade", icon: Clock },
+]
+
+interface Props {
+  onSubmit: () => void
 }
 
-export default function ProfissionalRegister({ onSubmit }: MedicoRegProps) {
+export default function ProfissionalRegister({ onSubmit }: Props) {
+  const [etapa, setEtapa] = useState(1)
+  const [avatarPreview, setAvatarPreview] = useState<string | null>(null)
+  const [avatarFile, setAvatarFile] = useState<File | null>(null)
+  const [uploadingAvatar, setUploadingAvatar] = useState(false)
+  const [isSubmittingFinal, setIsSubmittingFinal] = useState(false)
+  const [medicoId, setMedicoId] = useState<string | null>(null)
+  const [diasSelecionados, setDiasSelecionados] = useState<number[]>([])
+  const [horaInicio, setHoraInicio] = useState("07:00")
+  const [horaFim, setHoraFim] = useState("18:00")
+  const [almocoInicio, setAlmocoInicio] = useState("12:00")
+  const [almocoFim, setAlmocoFim] = useState("14:00")
 
-  const [etapa, setEtapa] = useState(1);
-  const [avatarPreview, setAvatarPreview] = useState<string | null>(null);
-  const [avatarFile, setAvatarFile] = useState<File | null>(null);
-  const [uploadingAvatar, setUploadingAvatar] = useState(false);
-  const [isSubmittingFinal, setIsSubmittingFinal] = useState(false);
-  const fileInputRef = useRef<HTMLInputElement>(null);
-
-  // Estado do médico registrado (após etapa 1)
-  const [medicoId, setMedicoId] = useState<string | null>(null);
-
-  // Estado da disponibilidade
-  const [diasSelecionados, setDiasSelecionados] = useState<number[]>([]);
-  const [horaInicio, setHoraInicio] = useState("07:00");
-  const [horaFim, setHoraFim] = useState("18:00");
-  const [almocoInicio, setAlmocoInicio] = useState("12:00");
-  const [almocoFim, setAlmocoFim] = useState("14:00");
+  const fileInputRef = useRef<HTMLInputElement>(null)
 
   const form = useForm<RegisterFormMedico>({
     resolver: zodResolver(regFormMedico),
-  });
+  })
 
-  const { isSubmitting } = form.formState;
+  const { isSubmitting } = form.formState
+
+  useEffect(() => {
+    return () => {
+      if (avatarPreview) {
+        URL.revokeObjectURL(avatarPreview)
+      }
+    }
+  }, [avatarPreview])
 
   function handleAvatarChange(e: React.ChangeEvent<HTMLInputElement>) {
-    const file = e.target.files?.[0];
-    if (!file) return;
-    setAvatarFile(file);
-    setAvatarPreview(URL.createObjectURL(file));
+    const file = e.target.files?.[0]
+    if (!file) return
+
+    if (avatarPreview) {
+      URL.revokeObjectURL(avatarPreview)
+    }
+
+    setAvatarFile(file)
+    setAvatarPreview(URL.createObjectURL(file))
   }
 
   async function uploadAvatar(file: File): Promise<string | null> {
     try {
-      setUploadingAvatar(true);
-      const formData = new FormData();
-      formData.append("avatar", file);
-      const res = await api.post("http://localhost:7000/api/upload/avatar", formData, {
-        headers: { "Content-Type": "multipart/form-data" }
-      });
-      return res.data.url;
-    } catch {
-      toast.error("Erro ao fazer upload da imagem");
-      return null;
+      setUploadingAvatar(true)
+      const formData = new FormData()
+      formData.append("avatar", file)
+      const res = await api.post("/api/upload/avatar", formData, {
+        headers: { "Content-Type": "multipart/form-data" },
+      })
+      return res.data.url
+    } catch (error: unknown) {
+      const err = error as { response?: { status?: number; data?: { error?: string; message?: string } }; message?: string }
+      const status = err.response?.status
+      const message = err.response?.data?.error ?? err.response?.data?.message ?? err.message ?? "Erro desconhecido"
+      console.error("[uploadAvatar] Erro:", { status, message, error })
+      toast.error(`Erro ao fazer upload da imagem: ${message}`)
+      return null
     } finally {
-      setUploadingAvatar(false);
+      setUploadingAvatar(false)
     }
   }
 
   function toggleDia(dia: number) {
-    setDiasSelecionados(prev =>
-      prev.includes(dia) ? prev.filter(d => d !== dia) : [...prev, dia]
-    );
+    setDiasSelecionados((prev) =>
+      prev.includes(dia) ? prev.filter((d) => d !== dia) : [...prev, dia]
+    )
   }
 
   async function registerProfissional(data: RegisterFormMedico) {
     try {
-      let avatarUrl: string | null = null;
+      let avatarUrl: string | null = null
 
       if (avatarFile) {
-        avatarUrl = await uploadAvatar(avatarFile);
-        if (!avatarUrl) return;
+        avatarUrl = await uploadAvatar(avatarFile)
+        if (!avatarUrl) return
       }
 
-      const { confirmPassword, ...payload } = data;
+      const { confirmPassword, ...payload } = data
       const newData = {
         ...payload,
         role: Role.MEDICO,
-        ...(avatarUrl && { avatar: avatarUrl })
-      };
+        ...(avatarUrl && { avatar: avatarUrl }),
+      }
 
-      const res = await api.post("http://localhost:7000/api/auth/registerU", newData);
-      setMedicoId(res.data.user.id);
-      setEtapa(2);
-
-    } catch (error: any) {
-      const message = error?.response?.data?.message ?? "Erro ao cadastrar médico";
-      toast.error(message);
+      const res = await api.post("/api/auth/registerU", newData)
+      setMedicoId(res.data.user.id)
+      setEtapa(2)
+    } catch (error: unknown) {
+      const err = error as { response?: { status?: number; data?: { error?: string; message?: string } }; message?: string }
+      const status = err.response?.status
+      const message = err.response?.data?.message ?? err.response?.data?.error ?? err.message ?? "Erro desconhecido"
+      console.error("[registerProfissional] Erro:", { status, message, error })
+      toast.error(`Erro ao cadastrar médico: ${message}`)
     }
   }
 
   async function registrarDisponibilidade() {
     if (diasSelecionados.length === 0) {
-      toast.error("Selecione pelo menos um dia de atendimento");
-      return;
+      toast.error("Selecione pelo menos um dia de atendimento")
+      return
     }
 
     try {
-      setIsSubmittingFinal(true);
+      setIsSubmittingFinal(true)
 
-      await Promise.all(diasSelecionados.map(dia =>
-        api.post("/api/medico/disponibilidade", {
-          docId: medicoId,
-          diaSemana: dia,
-          horaInicio,
-          horaFim,
-          almocoInicio,
-          almocoFim,
-        })
-      ));
+      await Promise.all(
+        diasSelecionados.map((dia) =>
+          api.post("/api/medico/disponibilidade", {
+            docId: medicoId,
+            diaSemana: dia,
+            horaInicio,
+            horaFim,
+            almocoInicio,
+            almocoFim,
+          })
+        )
+      )
 
-      toast.success("Médico cadastrado com sucesso!");
-      onSubmit();
-    } catch (error: any) {
-      const message = error?.response?.data?.error ?? "Erro ao cadastrar médico";
-      toast.error(message);
+      toast.success("Médico cadastrado com sucesso!")
+      onSubmit()
+    } catch (error: unknown) {
+      const err = error as { response?: { status?: number; data?: { error?: string; message?: string } }; message?: string }
+      const message = err.response?.data?.error ?? err.response?.data?.message ?? err.message ?? "Erro desconhecido"
+      console.error("[registrarDisponibilidade] Erro:", { error })
+      toast.error(`Erro ao cadastrar disponibilidade: ${message}`)
     } finally {
-      setIsSubmittingFinal(false);
+      setIsSubmittingFinal(false)
     }
   }
 
-  const etapas = [
-    { num: 1, label: "Dados do Médico", icon: User },
-    { num: 2, label: "Disponibilidade", icon: Clock },
-  ];
+  const isLoading = isSubmitting || uploadingAvatar
+  const isLoadingFinal = isSubmittingFinal
 
   return (
     <main className="w-full">
@@ -159,30 +174,39 @@ export default function ProfissionalRegister({ onSubmit }: MedicoRegProps) {
         <hr className="w-[calc(100%-4px)]" />
       </div>
 
-      {/* Indicador de etapas */}
       <div className="w-full flex items-center justify-center gap-2 mb-6">
-        {etapas.map((e, i) => {
-          const Icon = e.icon;
-          const ativa = etapa === e.num;
-          const concluida = etapa > e.num;
+        {ETAPAS.map((etapaItem, index) => {
+          const Icon = etapaItem.icon
+          const ativa = etapa === etapaItem.num
+          const concluida = etapa > etapaItem.num
+
           return (
-            <div key={e.num} className="flex items-center gap-2">
-              <div className={`flex items-center gap-1 px-3 py-1 rounded-full text-sm font-medium transition-all
-                ${concluida ? "bg-green-100 text-green-600" : ativa ? "bg-blue-100 text-blue-600" : "bg-zinc-100 text-zinc-400"}`}>
-                {concluida ? <CheckCircle className="w-4 h-4" /> : <Icon className="w-4 h-4" />}
-                {e.label}
+            <div key={etapaItem.num} className="flex items-center gap-2">
+              <div
+                className={`flex items-center gap-1 px-3 py-1 rounded-full text-sm font-medium transition-all
+                  ${
+                    concluida
+                      ? "bg-green-100 text-green-600"
+                      : ativa
+                      ? "bg-blue-100 text-blue-600"
+                      : "bg-zinc-100 text-zinc-400"
+                  }`}
+              >
+                {concluida ? (
+                  <CheckCircle className="w-4 h-4" />
+                ) : (
+                  <Icon className="w-4 h-4" />
+                )}
+                {etapaItem.label}
               </div>
-              {i < etapas.length - 1 && <ChevronRight className="w-4 h-4 text-zinc-300" />}
+              {index < ETAPAS.length - 1 && <ChevronRight className="w-4 h-4 text-zinc-300" />}
             </div>
-          );
+          )
         })}
       </div>
 
-      {/* ETAPA 1 - Dados do médico */}
       {etapa === 1 && (
         <form onSubmit={form.handleSubmit(registerProfissional)} className="w-full">
-
-          {/* Avatar */}
           <div className="w-full flex justify-center mb-4">
             <div className="relative cursor-pointer group" onClick={() => fileInputRef.current?.click()}>
               <Avatar className="w-20 h-20">
@@ -210,18 +234,20 @@ export default function ProfissionalRegister({ onSubmit }: MedicoRegProps) {
             placeholder="Digite seu nome completo"
             label="Nome Completo *"
             register={form.register("nome")}
-            errorInvalid={form.formState.errors.nome !== undefined}
+            errorInvalid={!!form.formState.errors.nome}
             errorMessage={form.formState.errors.nome?.message}
           />
+
           <InputField
             id="email"
             type="email"
             placeholder="Digite seu email"
             label="Email *"
             register={form.register("email")}
-            errorInvalid={form.formState.errors.email !== undefined}
+            errorInvalid={!!form.formState.errors.email}
             errorMessage={form.formState.errors.email?.message}
           />
+
           <div className="w-full grid grid-cols-2 gap-2">
             <InputField
               id="password"
@@ -230,7 +256,7 @@ export default function ProfissionalRegister({ onSubmit }: MedicoRegProps) {
               label="Senha *"
               className="w-full"
               register={form.register("password")}
-              errorInvalid={form.formState.errors.password !== undefined}
+              errorInvalid={!!form.formState.errors.password}
               errorMessage={form.formState.errors.password?.message}
             />
             <InputField
@@ -240,7 +266,7 @@ export default function ProfissionalRegister({ onSubmit }: MedicoRegProps) {
               label="Confirmar Senha *"
               className="w-full"
               register={form.register("confirmPassword")}
-              errorInvalid={form.formState.errors.confirmPassword !== undefined}
+              errorInvalid={!!form.formState.errors.confirmPassword}
               errorMessage={form.formState.errors.confirmPassword?.message}
             />
           </div>
@@ -253,9 +279,10 @@ export default function ProfissionalRegister({ onSubmit }: MedicoRegProps) {
             className="w-full"
             mask="cpf"
             register={form.register("cpf")}
-            errorInvalid={form.formState.errors.cpf !== undefined}
+            errorInvalid={!!form.formState.errors.cpf}
             errorMessage={form.formState.errors.cpf?.message}
           />
+
           <InputField
             id="nascimento"
             type="date"
@@ -263,9 +290,10 @@ export default function ProfissionalRegister({ onSubmit }: MedicoRegProps) {
             label="Data de Nascimento *"
             className="w-full"
             register={form.register("nascimento")}
-            errorInvalid={form.formState.errors.nascimento !== undefined}
+            errorInvalid={!!form.formState.errors.nascimento}
             errorMessage={form.formState.errors.nascimento?.message}
           />
+
           <InputField
             id="fone"
             type="tel"
@@ -274,7 +302,7 @@ export default function ProfissionalRegister({ onSubmit }: MedicoRegProps) {
             className="w-full"
             mask="phone"
             register={form.register("fone")}
-            errorInvalid={form.formState.errors.fone !== undefined}
+            errorInvalid={!!form.formState.errors.fone}
             errorMessage={form.formState.errors.fone?.message}
           />
 
@@ -286,7 +314,7 @@ export default function ProfissionalRegister({ onSubmit }: MedicoRegProps) {
               label="CRM *"
               className="w-full"
               register={form.register("crm")}
-              errorInvalid={form.formState.errors.crm !== undefined}
+              errorInvalid={!!form.formState.errors.crm}
               errorMessage={form.formState.errors.crm?.message}
             />
             <InputField
@@ -296,24 +324,19 @@ export default function ProfissionalRegister({ onSubmit }: MedicoRegProps) {
               label="Especialidade *"
               className="w-full"
               register={form.register("especialidade")}
-              errorInvalid={form.formState.errors.especialidade !== undefined}
+              errorInvalid={!!form.formState.errors.especialidade}
               errorMessage={form.formState.errors.especialidade?.message}
             />
           </div>
 
           <div className="w-full flex justify-end mt-4">
-            <Button
-              type="submit"
-              disabled={isSubmitting || uploadingAvatar}
-              className="cursor-pointer"
-            >
+            <Button type="submit" disabled={isLoading} className="cursor-pointer">
               {uploadingAvatar ? "Enviando imagem..." : isSubmitting ? "Cadastrando..." : "Próximo"}
             </Button>
           </div>
         </form>
       )}
 
-      {/* ETAPA 2 - Disponibilidade */}
       {etapa === 2 && (
         <div className="w-full flex flex-col gap-4">
           <div>
@@ -321,7 +344,6 @@ export default function ProfissionalRegister({ onSubmit }: MedicoRegProps) {
             <span className="text-sm text-zinc-400">Selecione os dias que o médico atende</span>
           </div>
 
-          {/* Seletor de dias */}
           <div className="flex gap-2 justify-center">
             {DIAS.map((dia) => (
               <button
@@ -330,16 +352,17 @@ export default function ProfissionalRegister({ onSubmit }: MedicoRegProps) {
                 onClick={() => toggleDia(dia.value)}
                 title={dia.nome}
                 className={`w-9 h-9 rounded-full text-sm font-bold transition cursor-pointer border
-                  ${diasSelecionados.includes(dia.value)
-                    ? "bg-blue-600 text-white border-blue-600"
-                    : "bg-white text-zinc-500 border-zinc-200 hover:border-blue-400"}`}
+                  ${
+                    diasSelecionados.includes(dia.value)
+                      ? "bg-blue-600 text-white border-blue-600"
+                      : "bg-white text-zinc-500 border-zinc-200 hover:border-blue-400"
+                  }`}
               >
                 {dia.label}
               </button>
             ))}
           </div>
 
-          {/* Horários */}
           <Card className="p-4 flex flex-col gap-3">
             <h3 className="text-sm font-semibold text-zinc-700">Horários</h3>
 
@@ -386,11 +409,11 @@ export default function ProfissionalRegister({ onSubmit }: MedicoRegProps) {
           <div className="w-full flex justify-end mt-2">
             <Button
               type="button"
-              disabled={isSubmittingFinal || diasSelecionados.length === 0}
+              disabled={isLoadingFinal || diasSelecionados.length === 0}
               className="cursor-pointer"
               onClick={registrarDisponibilidade}
             >
-              {isSubmittingFinal ? "Cadastrando..." : "Confirmar cadastro"}
+              {isLoadingFinal ? "Cadastrando..." : "Confirmar cadastro"}
             </Button>
           </div>
         </div>

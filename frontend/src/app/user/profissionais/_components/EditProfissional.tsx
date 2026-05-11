@@ -124,7 +124,7 @@ export default function EditProfissional({ profissional, onClose, onSuccess }: E
         ...(data.setor && { setor: data.setor }),
       };
 
-      await api.patch(`http://localhost:7000/api/atendente/profissional/${profissional.id}`, payload);
+      await api.patch(`/api/atendente/profissional/${profissional.id}`, payload);
       toast.success("Profissional atualizado com sucesso!");
       onSuccess();
     } catch (error: any) {
@@ -137,7 +137,7 @@ export default function EditProfissional({ profissional, onClose, onSuccess }: E
   async function deleteProfissional() {
     try {
       setIsDeleting(true);
-      await api.delete(`http://localhost:7000/api/atendente/profissional/${profissional.id}`);
+      await api.delete(`/api/atendente/profissional/${profissional.id}`);
       toast.success("Profissional excluído com sucesso!");
       onSuccess();
     } catch (error: any) {
