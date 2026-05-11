@@ -87,10 +87,13 @@ export default function SolicitacoesAusenciasPage() {
       toast.success("Solicitação aprovada!")
       setShowModal(false)
       mutate()
-    } catch (error: any) {
-      toast.error(error?.response?.data?.message || "Erro ao aprovar")
+    } catch (error: unknown) {
+      const err = error as { response?: { data?: { message?: string } } }
+      console.error("[handleAprovar] Erro:", error)
+      toast.error(err.response?.data?.message || "Erro ao aprovar")
     } finally {
       setIsSubmitting(false)
+      setShowModal(false)
     }
   }
 
@@ -110,10 +113,13 @@ export default function SolicitacoesAusenciasPage() {
       toast.success("Solicitação negada!")
       setShowModal(false)
       mutate()
-    } catch (error: any) {
-      toast.error(error?.response?.data?.message || "Erro ao negar")
+    } catch (error: unknown) {
+      const err = error as { response?: { data?: { message?: string } } }
+      console.error("[handleNegar] Erro:", error)
+      toast.error(err.response?.data?.message || "Erro ao negar")
     } finally {
       setIsSubmitting(false)
+      setShowModal(false)
     }
   }
 

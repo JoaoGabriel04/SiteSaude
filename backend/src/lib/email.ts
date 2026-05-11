@@ -3,12 +3,16 @@ import nodemailer from "nodemailer";
 const transporter = nodemailer.createTransport({
   host: process.env.EMAIL_HOST || "smtp.gmail.com",
   port: parseInt(process.env.EMAIL_PORT || "587"),
-  secure: false,
+  secure: process.env.EMAIL_PORT === "465",
   auth: {
     user: process.env.EMAIL_USER,
     pass: process.env.EMAIL_PASS,
   },
 });
+
+if (!process.env.EMAIL_USER || !process.env.EMAIL_PASS) {
+  console.warn("[Email] AVISO: EMAIL_USER ou EMAIL_PASS não configurados!");
+}
 
 export async function enviarEmail(destinatario: string, assunto: string, html: string) {
   try {

@@ -60,7 +60,7 @@ export default function NotificationBell({ user }: NotificationBellProps) {
           <div className="absolute right-0 top-full mt-2 w-80 bg-white rounded-lg shadow-lg border border-zinc-200 z-50 max-h-96 overflow-hidden">
             <div className="flex items-center justify-between p-3 border-b">
               <span className="font-medium text-sm">Notificações</span>
-              <button onClick={() => setIsOpen(false)} className="text-zinc-400 hover:text-zinc-600">
+              <button onClick={() => setIsOpen(false)} className="text-zinc-400 hover:text-zinc-6000">
                 <X className="w-4 h-4" />
               </button>
             </div>
@@ -82,7 +82,7 @@ export default function NotificationBell({ user }: NotificationBellProps) {
                           <p className="text-sm font-medium text-zinc-800 flex-1">{notif.titulo}</p>
                           <button
                             onClick={(e) => handleDelete(notif.id, e)}
-                            className="text-zinc-400 hover:text-zinc-600 opacity-0 group-hover:opacity-100 transition-opacity p-1 -mr-1 -mt-1"
+                            className="text-zinc-400 hover:text-zinc-600 opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-opacity p-1 -mr-1 -mt-1"
                           >
                             <X className="w-3 h-3" />
                           </button>

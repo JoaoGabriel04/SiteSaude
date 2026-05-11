@@ -282,8 +282,8 @@ export default function Dashboard() {
                     </p>
                     <p className="text-xs text-zinc-500 truncate">
                       {med.especialidade} ·{" "}
-                      {med.disponibilidade?.[0]?.horaInicio ?? "--:--"} às{" "}
-                      {med.disponibilidade?.[0]?.horaFim ?? "--:--"}
+                      {med.disponibilidades?.[0]?.horaInicio ?? "--:--"} às{" "}
+                      {med.disponibilidades?.[0]?.horaFim ?? "--:--"}
                     </p>
                   </div>
                 </div>
