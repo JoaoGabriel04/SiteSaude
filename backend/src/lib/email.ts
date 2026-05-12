@@ -1,32 +1,26 @@
-import nodemailer from "nodemailer";
+import { Resend } from "resend";
 
-const transporter = nodemailer.createTransport({
-  host: process.env.EMAIL_HOST || "smtp.gmail.com",
-  port: parseInt(process.env.EMAIL_PORT || "587"),
-  secure: process.env.EMAIL_PORT === "465",
-  auth: {
-    user: process.env.EMAIL_USER,
-    pass: process.env.EMAIL_PASS,
-  },
-});
+const resend = new Resend(process.env.RESEND_API_KEY);
 
-if (!process.env.EMAIL_USER || !process.env.EMAIL_PASS) {
-  console.warn("[Email] AVISO: EMAIL_USER ou EMAIL_PASS não configurados!");
+const FROM_EMAIL = process.env.FROM_EMAIL || "medflowgrajau@gmail.com";
+
+if (!process.env.RESEND_API_KEY) {
+  console.warn("[Email] AVISO: RESEND_API_KEY não configurada!");
 }
 
 export async function enviarEmail(destinatario: string, assunto: string, html: string) {
   try {
-    const info = await transporter.sendMail({
-      from: `"Medflow - Sistema de Saúde" <${process.env.EMAIL_USER}>`,
+    const data = await resend.emails.send({
+      from: FROM_EMAIL,
       to: destinatario,
       subject: assunto,
       html,
     });
 
-    console.log("Email enviado: %s", info.messageId);
-    return { success: true, messageId: info.messageId };
+    console.log("[Email] Enviado com sucesso:", data.data?.id);
+    return { success: true, messageId: data.data?.id };
   } catch (error) {
-    console.error("Erro ao enviar email:", error);
+    console.error("[Email] Erro ao enviar:", error);
     return { success: false, error };
   }
 }

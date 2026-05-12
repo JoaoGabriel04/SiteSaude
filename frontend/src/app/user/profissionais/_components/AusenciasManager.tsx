@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button"
 import { Calendar } from "lucide-react"
 import Link from "next/link"
 import { useExcecoesMedico } from "@/hooks/useExcecoesMedico"
-import AusenciasList from "./AusenciasList"
+import AusenciasList from "./AusienciasList"
 import { useUserStore } from "@/stores/userStore"
 
 type AusenciasManagerProps = {
@@ -18,6 +18,10 @@ export default function AusenciasManager({ docId, podeEditar }: AusenciasManager
 
   const isOwner = user?.id === docId
 
+  function handleDeleteSuccess(id: string) {
+    mutate()
+  }
+
   return (
     <div className="space-y-3">
       <div className="flex items-center justify-between">
@@ -29,11 +33,11 @@ export default function AusenciasManager({ docId, podeEditar }: AusenciasManager
         </Link>
       </div>
 
-      <AusenciasList
+      <AusienciasList
         excecoes={excecoes}
         isLoading={isLoading}
         podeEditar={podeEditar || isOwner}
-        onRefresh={mutate}
+        onDeleteSuccess={handleDeleteSuccess}
       />
     </div>
   )

@@ -25,11 +25,12 @@ export default function PerfilModal({ isOpen, onClose }: PerfilModalProps) {
   const { user, setUser } = useUserStore()
   const [activeTab, setActiveTab] = useState<"info" | "senha">("info")
   const [isLoading, setIsLoading] = useState(false)
-  const [isUploading, setIsUploading] = useState(false)
   
   const [nome, setNome] = useState("")
   const [email, setEmail] = useState("")
   const [avatar, setAvatar] = useState<string | null>(null)
+  const [avatarPreview, setAvatarPreview] = useState<string | null>(null)
+  const [avatarFile, setAvatarFile] = useState<File | null>(null)
   const [crm, setCrm] = useState<string | null>(null)
   const [especialidade, setEspecialidade] = useState<string | null>(null)
   const [setor, setSetor] = useState<string | null>(null)
@@ -37,18 +38,28 @@ export default function PerfilModal({ isOpen, onClose }: PerfilModalProps) {
   
   const [novaSenha, setNovaSenha] = useState("")
   const [confirmarSenha, setConfirmarSenha] = useState("")
-  
+
   useEffect(() => {
     if (isOpen && user) {
       setNome(user.nome || "")
       setEmail(user.email || "")
       setAvatar(user.avatar || null)
+      setAvatarPreview(null)
+      setAvatarFile(null)
       setRole(user.role || "")
       setEspecialidade((user as any).medico?.especialidade || null)
       setCrm((user as any).medico?.crm || null)
       setSetor((user as any).atendente?.setor || null)
     }
   }, [isOpen, user])
+
+  useEffect(() => {
+    return () => {
+      if (avatarPreview) {
+        URL.revokeObjectURL(avatarPreview)
+      }
+    }
+  }, [avatarPreview])
 
   async function handleSaveInfo() {
     if (!nome.trim()) {
@@ -58,42 +69,37 @@ export default function PerfilModal({ isOpen, onClose }: PerfilModalProps) {
 
     setIsLoading(true)
     try {
-      const dataToSend: any = { nome }
+      const dataToSend: Record<string, unknown> = { nome }
+
       if (role === "MEDICO" && especialidade) {
         dataToSend.especialidade = especialidade
+      }
+
+      if (avatarFile) {
+        const formData = new FormData()
+        formData.append("avatar", avatarFile)
+        
+        const res = await api.post("/api/upload/avatar", formData, {
+          headers: { "Content-Type": "multipart/form-data" }
+        })
+        
+        dataToSend.avatar = res.data.url
+        setAvatar(res.data.url)
       }
 
       const res = await api.put("/api/user/profile", dataToSend)
       
       setUser(res.data)
       toast.success("Perfil atualizado com sucesso!")
+      setAvatarFile(null)
+      setAvatarPreview(null)
       onClose()
-    } catch (error: any) {
-      toast.error(error?.response?.data?.message || "Erro ao salvar")
+    } catch (error: unknown) {
+      const err = error as { response?: { data?: { message?: string } } }
+      console.error("[handleSaveInfo] Erro:", error)
+      toast.error(err.response?.data?.message || "Erro ao salvar")
     } finally {
       setIsLoading(false)
-    }
-  }
-
-  async function handleUploadAvatar(file: File) {
-    setIsUploading(true)
-    try {
-      const formData = new FormData()
-      formData.append("avatar", file)
-      
-      const res = await api.post("/api/upload/avatar", formData, {
-        headers: { "Content-Type": "multipart/form-data" }
-      })
-      
-      setAvatar(res.data.url)
-      
-      await api.put("/api/user/profile", { avatar: res.data.url })
-      
-      toast.success("Avatar atualizado!")
-    } catch (error: any) {
-      toast.error(error?.response?.data?.error || "Erro ao fazer upload")
-    } finally {
-      setIsUploading(false)
     }
   }
 
@@ -104,8 +110,20 @@ export default function PerfilModal({ isOpen, onClose }: PerfilModalProps) {
         toast.error("Arquivo muito grande (máx 5MB)")
         return
       }
-      handleUploadAvatar(file)
+      if (avatarPreview) {
+        URL.revokeObjectURL(avatarPreview)
+      }
+      setAvatarFile(file)
+      setAvatarPreview(URL.createObjectURL(file))
     }
+  }
+
+  function handleRemoveAvatar() {
+    if (avatarPreview) {
+      URL.revokeObjectURL(avatarPreview)
+    }
+    setAvatarFile(null)
+    setAvatarPreview(null)
   }
 
   async function handleSaveSenha() {
@@ -131,14 +149,18 @@ export default function PerfilModal({ isOpen, onClose }: PerfilModalProps) {
       setNovaSenha("")
       setConfirmarSenha("")
       onClose()
-    } catch (error: any) {
-      toast.error(error?.response?.data?.message || "Erro ao salvar")
+    } catch (error: unknown) {
+      const err = error as { response?: { data?: { message?: string } } }
+      console.error("[handleSaveSenha] Erro:", error)
+      toast.error(err.response?.data?.message || "Erro ao salvar")
     } finally {
       setIsLoading(false)
     }
   }
 
   const isAdmin = role === "ADMIN"
+  const displayAvatar = avatarPreview || avatar || "/images/avatar-1.png"
+  const hasNewAvatar = !!avatarFile
 
   return (
     <Modal isOpen={isOpen} onClose={onClose} title="Meu Perfil" size="xl">
@@ -147,7 +169,7 @@ export default function PerfilModal({ isOpen, onClose }: PerfilModalProps) {
         <div className="flex flex-col items-center gap-3">
           <div className="relative">
             <Avatar className="w-24 h-24">
-              <AvatarImage src={avatar || "/images/avatar-1.png"} />
+              <AvatarImage src={displayAvatar} />
               <AvatarFallback className="text-2xl">
                 {nome.charAt(0).toUpperCase()}
               </AvatarFallback>
@@ -160,12 +182,18 @@ export default function PerfilModal({ isOpen, onClose }: PerfilModalProps) {
                   accept="image/*"
                   className="hidden"
                   onChange={handleAvatarChange}
-                  disabled={isUploading}
                 />
               </label>
             )}
           </div>
-          {isUploading && <span className="text-xs text-zinc-500">Enviando...</span>}
+          {hasNewAvatar && (
+            <button
+              onClick={handleRemoveAvatar}
+              className="text-xs text-red-500 hover:text-red-700"
+            >
+              Remover nova imagem
+            </button>
+          )}
         </div>
 
         {/* Tabs */}
