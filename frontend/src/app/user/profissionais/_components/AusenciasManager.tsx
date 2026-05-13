@@ -1,11 +1,10 @@
 'use client'
 
 import { Button } from "@/components/ui/button"
-import { Calendar } from "lucide-react"
 import Link from "next/link"
 import { useExcecoesMedico } from "@/hooks/useExcecoesMedico"
-import AusenciasList from "./AusienciasList"
 import { useUserStore } from "@/stores/userStore"
+import AusenciasList from "./AusenciasList"
 
 type AusenciasManagerProps = {
   docId: string
@@ -33,7 +32,7 @@ export default function AusenciasManager({ docId, podeEditar }: AusenciasManager
         </Link>
       </div>
 
-      <AusienciasList
+      <AusenciasList
         excecoes={excecoes}
         isLoading={isLoading}
         podeEditar={podeEditar || isOwner}

@@ -2,7 +2,8 @@
 
 import { Button } from "@/components/ui/button"
 import { Card } from "@/components/ui/card"
-import { Trash2, Calendar, Plane, Briefcase, Heart } from "lucide-react"
+import { Badge } from "@/components/ui/badge"
+import { Trash2, Calendar, Plane, Briefcase, Heart, List } from "lucide-react"
 import api from "@/services/api"
 import { toast } from "@/toast/toastManager"
 
@@ -10,14 +11,18 @@ type Excecao = {
   id: string
   docId: string
   data: string
+  dataFim?: string
   motivo: string | null
+  tipo?: "unico" | "periodo"
+  totalDias?: number
 }
 
 type AusenciasListProps = {
   excecoes: Excecao[] | null
   isLoading: boolean
   podeEditar: boolean
-  onRefresh: () => void
+  onRefresh?: () => void
+  onDeleteSuccess?: (id: string) => void
 }
 
 const getMotivoIcon = (motivo: string | null) => {
@@ -34,15 +39,25 @@ const getMotivoLabel = (motivo: string | null) => {
   return 'Ausência'
 }
 
-export default function AusenciasList({ excecoes, isLoading, podeEditar, onRefresh }: AusenciasListProps) {
+export default function AusenciasList({ excecoes, isLoading, podeEditar, onRefresh, onDeleteSuccess }: AusenciasListProps) {
   async function handleDelete(id: string) {
     try {
       await api.delete(`/api/medico/excecao/${id}`)
       toast.success("Ausência removida com sucesso")
-      onRefresh()
+      onRefresh?.()
+      onDeleteSuccess?.(id)
     } catch (error) {
       toast.error("Erro ao remover ausência")
     }
+  }
+
+  function formatarPeriodo(exc: Excecao) {
+    if (exc.tipo === "periodo" && exc.dataFim) {
+      const inicio = new Date(exc.data).toLocaleDateString("pt-BR")
+      const fim = new Date(exc.dataFim).toLocaleDateString("pt-BR")
+      return `${inicio} a ${fim}`
+    }
+    return new Date(exc.data).toLocaleDateString("pt-BR")
   }
 
   if (isLoading) {
@@ -67,11 +82,23 @@ export default function AusenciasList({ excecoes, isLoading, podeEditar, onRefre
         return (
           <Card key={excecao.id} className="flex items-center justify-between p-2">
             <div className="flex items-center gap-2">
+              {excecao.tipo === "periodo" && (
+                <List className="w-4 h-4 text-blue-500" />
+              )}
               <Icon className="w-4 h-4 text-zinc-500" />
-              <span className="text-sm text-zinc-700">
-                {new Date(excecao.data).toLocaleDateString('pt-BR')}
-              </span>
-              <span className="text-xs text-zinc-400">({label})</span>
+              <div className="flex flex-col">
+                <span className="text-sm text-zinc-700 flex items-center gap-1">
+                  {excecao.motivo || label}
+                  {excecao.totalDias && excecao.totalDias > 1 && (
+                    <Badge variant="outline" className="text-xs ml-1 h-5">
+                      {excecao.totalDias} dias
+                    </Badge>
+                  )}
+                </span>
+                <span className="text-xs text-zinc-400">
+                  {formatarPeriodo(excecao)}
+                </span>
+              </div>
             </div>
             {podeEditar && (
               <Button

@@ -148,15 +148,21 @@ return {
       tipo: "unico" as const
     }));
 
-    const solicitacoesFormatadas = solicitacoesAusencia.flatMap(s => 
-      s.dias.map(d => ({
-        id: d.id,
-        solicitacaoId: s.id,
-        data: d.data,
+    // Agrupar solicitações de ausência por ID da solicitação
+    const solicitacoesFormatadas = solicitacoesAusencia.map(s => {
+      const diasOrdenados = s.dias.sort((a, b) => new Date(a.data).getTime() - new Date(b.data).getTime());
+      const primeiroDia = diasOrdenados[0];
+      const ultimoDia = diasOrdenados[diasOrdenados.length - 1];
+      
+      return {
+        id: s.id,
+        data: primeiroDia.data,
+        dataFim: ultimoDia.data,
         motivo: s.motivo,
-        tipo: "periodo" as const
-      }))
-    );
+        tipo: "periodo" as const,
+        totalDias: s.dias.length
+      };
+    });
 
     return [...excecoesFormatadas, ...solicitacoesFormatadas];
   }
