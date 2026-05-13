@@ -103,13 +103,27 @@ export class AgendaService {
       );
     }
 
-    // 🔒 Valida se já existe agendamento ativo no mesmo slot
-    const slotOcupado = await this.agendaRepository.findAgendamentosByDocEData(
+    // 🔒 Valida se paciente e médico são a mesma pessoa (mesmo CPF)
+    if (foundPatient.cpf === foundDoc.cpf) {
+      throw new AppError(
+        "Um profissional não pode agendar consulta consigo mesmo",
+        400
+      );
+    }
+
+    // 🔒 Valida se já existe agendamento ativo no mesmo slot (horário específico)
+    const agendamentosNoDia = await this.agendaRepository.findAgendamentosByDocEData(
       data.docId,
       horarioNorm
     );
 
-    if (slotOcupado) {
+    const horarioNovo = `${String(horarioNorm.getHours()).padStart(2, "0")}:${String(horarioNorm.getMinutes()).padStart(2, "0")}`;
+    const horariosOcupados = agendamentosNoDia.map((agenda) => {
+      const dataAgenda = new Date(agenda.horario_atend);
+      return `${String(dataAgenda.getHours()).padStart(2, "0")}:${String(dataAgenda.getMinutes()).padStart(2, "0")}`;
+    });
+
+    if (horariosOcupados.includes(horarioNovo)) {
       throw new AppError(
         "Já existe um agendamento neste horário para este profissional",
         409

@@ -16,7 +16,7 @@ agendaRouter.get(
 );
 agendaRouter.get("/agendamentos", agendaController.getAgendamentos);
 
-agendaRouter.post("/agendamento", authorize(Role.ATENDENTE, Role.ADMIN), agendaController.registerAgenda);
+agendaRouter.post("/agendamento", authToken, authorize(Role.ATENDENTE, Role.ADMIN), agendaController.registerAgenda);
 
 agendaRouter.patch(
   "/:id/finalizar",

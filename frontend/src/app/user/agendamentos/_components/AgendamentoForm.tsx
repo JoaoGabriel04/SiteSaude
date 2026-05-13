@@ -94,7 +94,7 @@ export default function AgendamentoForm({ onSuccess, userId }: AgendamentoFormPr
       toast.success("Agendamento criado com sucesso!");
       onSuccess();
     } catch (error: any) {
-      const message = error?.response?.data?.message ?? "Erro ao criar agendamento";
+      const message = error?.response?.data?.error ?? "Erro ao criar agendamento";
       toast.error(message);
     }
   }
