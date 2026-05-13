@@ -80,7 +80,7 @@ export default function AgendamentoForm({ onSuccess, userId }: AgendamentoFormPr
       const [hora, minuto] = data.horario.split(":").map(Number);
       const horario_atend = new Date(ano, mes - 1, dia, hora, minuto);
 
-      await api.post("/api/atendente/agendamento", {
+      await api.post("/api/agenda/agendamento", {
         patientId: data.patientId,
         docId: data.docId,
         horario_atend,
