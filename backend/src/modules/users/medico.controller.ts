@@ -47,7 +47,7 @@ export class MedicoController {
 
   async buscarSlotsDisponiveis(req: Request, res: Response, next: NextFunction) {
     const docId = req.params.docId as string;
-    const { data } = req.query as { data: string };
+    const { data, patientId } = req.query as { data: string; patientId?: string };
 
     if (!data) {
       return res.status(400).json({ error: "Data é obrigatória" });
@@ -58,7 +58,7 @@ export class MedicoController {
     const dataLocal = new Date(ano, mes - 1, dia);
 
     try {
-      const slots = await medicoService.buscarSlotsDisponiveis(docId, dataLocal);
+      const slots = await medicoService.buscarSlotsDisponiveis(docId, dataLocal, patientId);
       return res.json(slots);
     } catch (error) {
       next(error);

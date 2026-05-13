@@ -26,6 +26,7 @@ import {
   TableHead,
   TableCell,
 } from "@/components/ui/table";
+import { formatDataHora } from "@/utils/formatDate";
 
 type AgendaData = {
   id: string;
@@ -223,10 +224,7 @@ export default function Agendamentos() {
                         </div>
                       </TableCell>
                       <TableCell>
-                        <span className="text-sm">{new Date(agenda.horario_atend).toLocaleString("pt-BR", {
-                          day: "2-digit", month: "2-digit", year: "numeric",
-                          hour: "2-digit", minute: "2-digit"
-                        })}</span>
+                        <span className="text-sm">{formatDataHora(agenda.horario_atend)}</span>
                       </TableCell>
                       <TableCell>
                         <span className="truncate">{agenda.medico.user.nome}</span>
@@ -312,10 +310,7 @@ export default function Agendamentos() {
                         </div>
                       </TableCell>
                       <TableCell>
-                        <span className="text-sm">{new Date(agenda.horario_atend).toLocaleString("pt-BR", {
-                          day: "2-digit", month: "2-digit", year: "numeric",
-                          hour: "2-digit", minute: "2-digit"
-                        })}</span>
+                        <span className="text-sm">{formatDataHora(agenda.horario_atend)}</span>
                       </TableCell>
                       <TableCell>{agenda.medico.user.nome}</TableCell>
                       <TableCell>

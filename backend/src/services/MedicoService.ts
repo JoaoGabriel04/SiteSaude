@@ -53,8 +53,8 @@ export class MedicoService {
     return this.medicoRepo.deleteDisponibilidade(id);
   }
 
-  async buscarSlotsDisponiveis(docId: string, data: Date) {
-    const diaSemana = data.getDay();
+  async buscarSlotsDisponiveis(docId: string, data: Date, patientId?: string) {
+    const diaSemana = data.getUTCDay();
 
     const excecao = await this.agendaRepo.findExcecaoByDocEData(docId, data);
     if (excecao) {
@@ -86,13 +86,29 @@ export class MedicoService {
     }
 
     const agendamentos = await this.agendaRepo.findAgendamentosByDocEData(docId, data);
-    const horariosOcupados = agendamentos.map((a) => {
+    const horariosOcupadosMedico = agendamentos.map((a) => {
       const d = new Date(a.horario_atend);
-      return `${String(d.getHours()).padStart(2, "0")}:${String(d.getMinutes()).padStart(2, "0")}`;
+      const hours = d.getUTCHours();
+      const minutes = d.getUTCMinutes();
+      return `${String(hours).padStart(2, "0")}:${String(minutes).padStart(2, "0")}`;
     });
 
+    // Busca horários que o paciente já tem com outros médicos
+    let horariosOcupadosPaciente: string[] = [];
+    if (patientId) {
+      const agendamentosPaciente = await this.agendaRepo.findAgendamentosByPatientEHorario(patientId, data);
+      horariosOcupadosPaciente = agendamentosPaciente.map((a) => {
+        const d = new Date(a.horario_atend);
+        const hours = d.getUTCHours();
+        const minutes = d.getUTCMinutes();
+        return `${String(hours).padStart(2, "0")}:${String(minutes).padStart(2, "0")}`;
+      });
+    }
+
+    const todosHorariosOcupados = [...horariosOcupadosMedico, ...horariosOcupadosPaciente];
+
     const slotsDisponiveis = slots.filter((slot) => {
-      if (horariosOcupados.includes(slot)) return false;
+      if (todosHorariosOcupados.includes(slot)) return false;
 
       if (disponibilidade.almocoInicio && disponibilidade.almocoFim) {
         if (slot >= disponibilidade.almocoInicio && slot < disponibilidade.almocoFim) return false;
@@ -101,10 +117,10 @@ export class MedicoService {
       return true;
     });
 
-    return {
+return {
       disponibilidade,
       slots: slotsDisponiveis,
-      ocupados: horariosOcupados
+      ocupados: todosHorariosOcupados
     };
   }
 

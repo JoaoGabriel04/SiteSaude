@@ -73,7 +73,38 @@ export class AgendaService {
   // CRIAÇÃO DE AGENDAMENTO
   // ============================================
   async registerAgenda(data: Prisma.AgendaUncheckedCreateInput) {
-    const horarioNorm = new Date(data.horario_atend);
+    let horarioNorm: Date;
+    
+    const horarioValue = data.horario_atend as any;
+    
+    if (typeof horarioValue === 'number') {
+      // Frontend enviou timestamp
+      const d = new Date(horarioValue);
+      horarioNorm = new Date(Date.UTC(d.getFullYear(), d.getMonth(), d.getDate(), d.getHours(), d.getMinutes()));
+    } else if (typeof horarioValue === 'string') {
+      const isoMatch = horarioValue.match(/^(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2})/);
+      if (isoMatch) {
+        const [, ano, mes, dia, hora, minuto] = isoMatch.map(Number);
+        horarioNorm = new Date(Date.UTC(ano, mes - 1, dia, hora, minuto));
+      } else if (horarioValue.includes(' ')) {
+        const [dataPart, horaPart] = horarioValue.split(' ');
+        const [ano, mes, dia] = dataPart.split('-').map(Number);
+        const [hora, minuto] = horaPart.split(':').map(Number);
+        horarioNorm = new Date(Date.UTC(ano, mes - 1, dia, hora, minuto));
+      } else {
+        horarioNorm = new Date(horarioValue);
+      }
+    } else if (horarioValue && typeof horarioValue === 'object') {
+      const d = horarioValue as Date;
+      if (!isNaN(d.getTime())) {
+        horarioNorm = new Date(Date.UTC(d.getUTCFullYear(), d.getUTCMonth(), d.getUTCDate(), d.getUTCHours(), d.getUTCMinutes()));
+      } else {
+        horarioNorm = new Date(horarioValue);
+      }
+    } else {
+      horarioNorm = new Date(horarioValue);
+    }
+
     const agora = new Date();
 
     if (horarioNorm < agora) {
@@ -117,15 +148,37 @@ export class AgendaService {
       horarioNorm
     );
 
-    const horarioNovo = `${String(horarioNorm.getHours()).padStart(2, "0")}:${String(horarioNorm.getMinutes()).padStart(2, "0")}`;
+    const horarioNovo = `${String(horarioNorm.getUTCHours()).padStart(2, "0")}:${String(horarioNorm.getUTCMinutes()).padStart(2, "0")}`;
     const horariosOcupados = agendamentosNoDia.map((agenda) => {
       const dataAgenda = new Date(agenda.horario_atend);
-      return `${String(dataAgenda.getHours()).padStart(2, "0")}:${String(dataAgenda.getMinutes()).padStart(2, "0")}`;
+      const hours = dataAgenda.getUTCHours();
+      const minutes = dataAgenda.getUTCMinutes();
+      return `${String(hours).padStart(2, "0")}:${String(minutes).padStart(2, "0")}`;
     });
 
     if (horariosOcupados.includes(horarioNovo)) {
       throw new AppError(
         "Já existe um agendamento neste horário para este profissional",
+        409
+      );
+    }
+
+    // 🔒 Valida se o paciente já tem agendamento neste horário (com outro médico)
+    const agendamentosPaciente = await this.agendaRepository.findAgendamentosByPatientEHorario(
+      data.patientId,
+      horarioNorm
+    );
+
+    const horariosPaciente = agendamentosPaciente.map((agenda) => {
+      const dataAgenda = new Date(agenda.horario_atend);
+      const hours = dataAgenda.getUTCHours();
+      const minutes = dataAgenda.getUTCMinutes();
+      return `${String(hours).padStart(2, "0")}:${String(minutes).padStart(2, "0")}`;
+    });
+
+    if (horariosPaciente.includes(horarioNovo)) {
+      throw new AppError(
+        "Você já possui um agendamento neste horário",
         409
       );
     }
