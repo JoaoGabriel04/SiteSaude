@@ -86,6 +86,54 @@ Repositories:
 
 ---
 
+# Variáveis de ambiente
+
+Criar arquivos `.env` em:
+
+- `backend/.env` - variáveis do servidor
+- `frontend/.env` - variáveis do Next.js
+
+Consultar `.env.example` em cada diretório para as variáveis obrigatórias.
+
+---
+
+# Scripts
+
+## Backend
+
+\`\`\`bash
+npm run dev      # desenvolvimento
+npm run build    # produção
+npm run lint     # verificar código
+npm run typecheck # verificar tipos
+\`\`\`
+
+## Frontend
+
+\`\`\`bash
+npm run dev      # desenvolvimento
+npm run build    # produção
+npm run lint     # verificar código
+npm run typecheck # verificar tipos
+\`\`\`
+
+---
+
+# Portas padr�o
+
+- Frontend: 3000
+- Backend: 7000
+- PostgreSQL: 5433 (externo) / 5432 (interno)
+
+---
+
+# Docker
+
+- Usar `docker-compose.override.yml` para dados sensíveis (já está no `.gitignore`)
+- Nunca commitar dados sensíveis no `docker-compose.yml`
+
+---
+
 # Git
 
 Commits devem seguir Conventional Commits.
