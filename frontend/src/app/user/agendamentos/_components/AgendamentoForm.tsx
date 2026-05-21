@@ -66,19 +66,21 @@ export default function AgendamentoForm({ onSuccess, userId }: AgendamentoFormPr
   const { isSubmitting } = form.formState;
   const dataWatch = form.watch("data");
   const docIdWatch = form.watch("docId");
+  const patientIdWatch = form.watch("patientId");
 
   const { data: pacienteData, isLoading: pacienteLoading } = useViewPacientes({ busca: buscaPaciente });
   const { medicos, isLoading: medicoLoading } = useBuscarMedicos();
   const { slots, isLoading: slotsLoading, error: slotsError } = useSlotsDisponiveis({
     docId: docIdWatch,
-    data: dataWatch
+    data: dataWatch,
+    patientId: patientIdWatch
   });
 
   async function onSubmit(data: AgendamentoForm) {
     try {
-      const [ano, mes, dia] = data.data.split("-").map(Number);
-      const [hora, minuto] = data.horario.split(":").map(Number);
-      const horario_atend = new Date(ano, mes - 1, dia, hora, minuto);
+
+      // Criar data local e enviar como timestamp number (Express não converte automaticamente)
+      const horario_atend = `${data.data}T${data.horario}:00`;
 
       await api.post("/api/agenda/agendamento", {
         patientId: data.patientId,

@@ -76,25 +76,66 @@ export default class AgendaRepository {
   }
 
   async findAgendamentosByDocEData(docId: string, data: Date) {
-    const inicio = new Date(data);
-    inicio.setHours(0, 0, 0, 0);
-    const fim = new Date(data);
-    fim.setHours(23, 59, 59, 999);
-
+    const inicio = new Date(Date.UTC(
+      data.getUTCFullYear(),
+      data.getUTCMonth(),
+      data.getUTCDate(),
+      0, 0, 0, 0
+    ));
+    const fim = new Date(Date.UTC(
+      data.getUTCFullYear(),
+      data.getUTCMonth(),
+      data.getUTCDate(),
+      23, 59, 59, 999
+    ));
+  
     return prisma.agenda.findMany({
       where: {
         docId,
         horario_atend: { gte: inicio, lte: fim },
+        status: { notIn: ["CANCELADO", "FINALIZADO"] },
+      },
+      orderBy: { horario_atend: "asc" },
+    });
+  }
+
+  async findAgendamentosByPatientEHorario(patientId: string, data: Date) {
+    const inicio = new Date(Date.UTC(
+      data.getUTCFullYear(),
+      data.getUTCMonth(),
+      data.getUTCDate(),
+      0, 0, 0, 0
+    ));
+    const fim = new Date(Date.UTC(
+      data.getUTCFullYear(),
+      data.getUTCMonth(),
+      data.getUTCDate(),
+      23, 59, 59, 999
+    ));
+
+    return prisma.agenda.findMany({
+      where: {
+        patientId,
+        horario_atend: { gte: inicio, lte: fim },
+        status: { notIn: ["CANCELADO", "FINALIZADO"] },
       },
       orderBy: { horario_atend: "asc" },
     });
   }
 
   async findExcecaoByDocEData(docId: string, data: Date) {
-    const inicio = new Date(data);
-    inicio.setHours(0, 0, 0, 0);
-    const fim = new Date(data);
-    fim.setHours(23, 59, 59, 999);
+    const inicio = new Date(Date.UTC(
+      data.getUTCFullYear(),
+      data.getUTCMonth(),
+      data.getUTCDate(),
+      0, 0, 0, 0
+    ));
+    const fim = new Date(Date.UTC(
+      data.getUTCFullYear(),
+      data.getUTCMonth(),
+      data.getUTCDate(),
+      23, 59, 59, 999
+    ));
 
     return prisma.excecaoMedico.findFirst({
       where: {
@@ -106,10 +147,18 @@ export default class AgendaRepository {
   }
 
   async findSolicitacaoAusenciaByData(docId: string, data: Date) {
-    const inicio = new Date(data);
-    inicio.setHours(0, 0, 0, 0);
-    const fim = new Date(data);
-    fim.setHours(23, 59, 59, 999);
+    const inicio = new Date(Date.UTC(
+      data.getUTCFullYear(),
+      data.getUTCMonth(),
+      data.getUTCDate(),
+      0, 0, 0, 0
+    ));
+    const fim = new Date(Date.UTC(
+      data.getUTCFullYear(),
+      data.getUTCMonth(),
+      data.getUTCDate(),
+      23, 59, 59, 999
+    ));
 
     return prisma.solicitacaoAusencia.findFirst({
       where: {
