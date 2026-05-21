@@ -1,6 +1,7 @@
 import AgendaRepository from "../repositories/AgendaRepository.js";
 import UserRepository from "../repositories/UserRepository.js";
 import { AppError } from "../errors/AppError.js";
+
 import {
   StatusAtendimento,
   StatusUrgencia,

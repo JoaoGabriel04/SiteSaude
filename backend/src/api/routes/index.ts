@@ -8,6 +8,7 @@ import uploadRouter from "./upload.route.js";
 import agendaRouter from "./agenda.route.js";
 import dashboardRouter from "./dashboard.route.js";
 import notificacaoRouter from "./notificacao.route.js";
+import acessarConsultaRouter from "./acessarConsulta.route.js";
 
 const apiRouter = Router();
 
@@ -19,6 +20,7 @@ apiRouter.use("/medico", authToken, medicoRouter);
 apiRouter.use("/upload", uploadRouter);
 apiRouter.use("/agenda", agendaRouter);
 apiRouter.use("/notificacoes", authToken, notificacaoRouter);
+apiRouter.use("/", acessarConsultaRouter);
 
 apiRouter.get("/test", (req: Request, res: Response) => {
   res.send("Hello World!")

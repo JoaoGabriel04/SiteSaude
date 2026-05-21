@@ -58,7 +58,7 @@ export default class AgendaRepository {
       orderBy: { horario_atend: "asc" },
       include: {
         paciente: {
-          select: { id: true, nome: true, cpf: true, fone: true },
+          select: { id: true, nome: true, cpf: true, fone: true, nascimento: true, email: true, sexo: true, cartaoSus: true },
         },
         medico: {
           select: {
@@ -202,7 +202,15 @@ export default class AgendaRepository {
      UPDATE / DELETE
   ======================= */
   async findById(id: string) {
-    return prisma.agenda.findUnique({ where: { id } });
+    return prisma.agenda.findUnique({
+      where: { id },
+      include: {
+        paciente: true,
+        medico: { include: { user: true } },
+        createdBy: { select: { nome: true } },
+        canceledBy: { select: { nome: true } },
+      },
+    });
   }
 
   async updateStatus(id: string, status: StatusAtendimento, cancelReason?: string, canceledById?: string) {
