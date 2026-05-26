@@ -52,9 +52,6 @@ const urgenciaColors: Record<string, string> = {
   'Baixo': 'bg-emerald-100 text-emerald-700 border-emerald-200',
 };
 
-const STORAGE_KEY = 'pacienteConsultas';
-const SESSION_MAX_AGE = 30 * 60 * 1000; // 30 minutos
-
 function PaginaConsulta() {
   const router = useRouter();
   const [dados, setDados] = useState<DadosPaciente | null>(null);
@@ -63,31 +60,35 @@ function PaginaConsulta() {
   const [openModal, setOpenModal] = useState(false);
 
   useEffect(() => {
-    const verified = sessionStorage.getItem('consultVerified');
-    if (!verified) {
-      notFound();
-      return;
+    let cancelled = false;
+
+    async function load() {
+      try {
+        const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/paciente/consultas`, {
+          method: "GET",
+          credentials: "include",
+        });
+
+        if (!response.ok) {
+          notFound();
+          return;
+        }
+
+        const json = (await response.json()) as DadosPaciente;
+        if (!cancelled) {
+          setDados(json);
+        }
+      } catch {
+        notFound();
+      } finally {
+        if (!cancelled) setLoading(false);
+      }
     }
 
-    const raw = localStorage.getItem(STORAGE_KEY);
-    if (!raw) {
-      notFound();
-      return;
-    }
-    try {
-      const parsed = JSON.parse(raw);
-      if (!parsed.paciente || !parsed.paciente.nomeCompleto || !parsed.paciente.cpf) {
-        localStorage.removeItem(STORAGE_KEY);
-        notFound();
-        return;
-      }
-      setDados(parsed as DadosPaciente);
-    } catch {
-      localStorage.removeItem(STORAGE_KEY);
-      notFound();
-    } finally {
-      setLoading(false);
-    }
+    load();
+    return () => {
+      cancelled = true;
+    };
   }, []);
 
   function handleOpenModal(consulta: Consulta) {

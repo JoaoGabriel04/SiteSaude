@@ -5,7 +5,8 @@ import LoadingScreen from "@/components/LoadingScreen";
 import { useViewportHeight } from "@/hooks/useViewportHeight";
 import AuthProvider from "@/providers/AuthProvider";
 import Header from "@/components/Header";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
+import { useEffect } from "react";
 
 const routeToPageName: Record<string, string> = {
   "/user/dashboard": "Dashboard",
@@ -23,10 +24,25 @@ function UserGuard({ children }: { children: React.ReactNode }) {
   const { user, loading } = useUserStore();
   const vh = useViewportHeight();
   const pathname = usePathname();
+  const router = useRouter();
 
   const pageName = routeToPageName[pathname] || "";
 
-  if (loading || !user) {
+  useEffect(() => {
+    if (!loading && !user) {
+      router.replace("/auth/login");
+    }
+  }, [loading, user, router]);
+
+  if (loading) {
+    return (
+      <main style={{ height: vh }} className="w-full">
+        <LoadingScreen fullPage />
+      </main>
+    );
+  }
+
+  if (!user) {
     return (
       <main style={{ height: vh }} className="w-full">
         <LoadingScreen fullPage />

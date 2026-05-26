@@ -1,5 +1,15 @@
 import axios, { AxiosError, InternalAxiosRequestConfig } from "axios";
 
+function getCookie(name: string): string | null {
+  if (typeof document === "undefined") return null;
+  const value = `; ${document.cookie}`;
+  const parts = value.split(`; ${name}=`);
+  if (parts.length === 2) {
+    return parts.pop()!.split(";").shift() ?? null;
+  }
+  return null;
+}
+
 const api = axios.create({
   baseURL: process.env.NEXT_PUBLIC_API_URL,
   withCredentials: true, // 👈 essencial pro refresh_token
@@ -77,10 +87,14 @@ api.interceptors.response.use(
 
     try {
       // 🔄 chama refresh (cookie vai automaticamente)
+      const csrfToken = getCookie("csrf_token");
       const res = await axios.post(
         `${process.env.NEXT_PUBLIC_API_URL}/api/auth/refresh`,
         {},
-        { withCredentials: true }
+        {
+          withCredentials: true,
+          headers: csrfToken ? { "x-csrf-token": csrfToken } : undefined,
+        }
       );
 
       const newToken = res.data.accessToken;

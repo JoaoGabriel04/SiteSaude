@@ -1,11 +1,15 @@
 import NotificacaoRepository from "../repositories/notificacao.repository.js";
 import { enviarEmailSolicitacaoAprovada, enviarEmailSolicitacaoNegada } from "../lib/email.js";
 import { emitirNotificacao } from "../lib/socket.js";
+import type { Notificacao } from "../../generated/prisma/index.js";
+import { AppError } from "../errors/AppError.js";
+
+type BatchResult = { count: number };
 
 export class NotificacaoService {
   constructor(private notificacaoRepo: NotificacaoRepository) {}
 
-  async criarNotificacao(userId: string, titulo: string, mensagem: string, tipo: string) {
+  async criarNotificacao(userId: string, titulo: string, mensagem: string, tipo: string): Promise<Notificacao> {
     const notificacao = await this.notificacaoRepo.createNotificacao({ userId, titulo, mensagem, tipo });
     emitirNotificacao(userId, notificacao);
     return notificacao;
@@ -18,7 +22,7 @@ export class NotificacaoService {
     tipo: string,
     dataInicio: string,
     dataFim: string
-  ) {
+  ): Promise<void> {
     await Promise.all([
       this.criarNotificacao(
         userId,
@@ -38,7 +42,7 @@ export class NotificacaoService {
     dataInicio: string,
     dataFim: string,
     observacao: string
-  ) {
+  ): Promise<void> {
     await Promise.all([
       this.criarNotificacao(
         userId,
@@ -50,27 +54,33 @@ export class NotificacaoService {
     ]);
   }
 
-  async getNotificacoes(userId: string) {
+  async getNotificacoes(userId: string): Promise<Notificacao[]> {
     return this.notificacaoRepo.findByUserId(userId);
   }
 
-  async countNaoLidas(userId: string) {
+  async countNaoLidas(userId: string): Promise<number> {
     return this.notificacaoRepo.countNaoLidas(userId);
   }
 
-  async marcarComoLida(id: string) {
-    return this.notificacaoRepo.marcarComoLida(id);
+  async marcarComoLida(id: string, userId: string): Promise<void> {
+    const result = await this.notificacaoRepo.marcarComoLida(id, userId);
+    if (!result.count) {
+      throw new AppError("Notificação não encontrada", 404);
+    }
   }
 
-  async marcarTodasComoLidas(userId: string) {
+  async marcarTodasComoLidas(userId: string): Promise<BatchResult> {
     return this.notificacaoRepo.marcarTodasComoLidas(userId);
   }
 
-  async delete(id: string) {
-    return this.notificacaoRepo.delete(id);
+  async delete(id: string, userId: string): Promise<void> {
+    const result = await this.notificacaoRepo.delete(id, userId);
+    if (!result.count) {
+      throw new AppError("Notificação não encontrada", 404);
+    }
   }
 
-  async deleteOldRead(userId: string) {
+  async deleteOldRead(userId: string): Promise<BatchResult> {
     return this.notificacaoRepo.deleteOldRead(userId);
   }
 }

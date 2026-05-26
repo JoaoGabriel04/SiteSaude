@@ -9,7 +9,6 @@ import { useForm } from "react-hook-form";
 import { Role } from "@/types/user";
 import { regFormAtendente, RegisterFormAtendente } from "@/schemas/registerAtendente";
 import { useState, useRef } from "react";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Camera } from "lucide-react";
 
 type AtendenteRegProps = {
@@ -53,10 +52,18 @@ export default function AtendenteRegister({ onSubmit }: AtendenteRegProps) {
     }
   }
 
-  async function registerAtendente(data: RegisterFormAtendente) {
+  async function deleteAvatarFromCloudinary(url: string) {
     try {
-      let avatarUrl: string | null = null;
+      await api.delete("/api/upload/avatar", { data: { url } });
+    } catch {
+      // silencia erro na limpeza
+    }
+  }
 
+  async function registerAtendente(data: RegisterFormAtendente) {
+    let avatarUrl: string | null = null;
+
+    try {
       if (avatarFile) {
         avatarUrl = await uploadAvatar(avatarFile);
         if (!avatarUrl) return;
@@ -77,6 +84,10 @@ export default function AtendenteRegister({ onSubmit }: AtendenteRegProps) {
       const apiError = error as { response?: { data?: { message?: string; error?: string } } };
       const message = apiError.response?.data?.error ?? "Erro ao cadastrar atendente";
       toast.error(message);
+
+      if (avatarUrl) {
+        await deleteAvatarFromCloudinary(avatarUrl);
+      }
     }
   }
 
@@ -93,12 +104,13 @@ export default function AtendenteRegister({ onSubmit }: AtendenteRegProps) {
         {/* Avatar */}
         <div className="w-full flex justify-center mb-4">
           <div className="relative cursor-pointer group" onClick={() => fileInputRef.current?.click()}>
-            <Avatar className="w-20 h-20">
-              <AvatarImage src={avatarPreview ?? ""} />
-              <AvatarFallback className="text-2xl bg-zinc-100">
+            {avatarPreview ? (
+              <img src={avatarPreview} alt="Preview" className="w-20 h-20 object-cover rounded-full border border-zinc-200" />
+            ) : (
+              <div className="w-20 h-20 bg-zinc-100 rounded-full flex items-center justify-center border border-zinc-200">
                 <Camera className="w-6 h-6 text-zinc-400" />
-              </AvatarFallback>
-            </Avatar>
+              </div>
+            )}
             <div className="absolute inset-0 bg-black/30 rounded-full opacity-0 group-hover:opacity-100 transition flex items-center justify-center">
               <Camera className="w-5 h-5 text-white" />
             </div>

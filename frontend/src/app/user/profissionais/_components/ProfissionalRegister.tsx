@@ -9,7 +9,7 @@ import api from "@/services/api"
 import { toast } from "@/toast/toastManager"
 import { InputField } from "@/components/inputField"
 import { Button } from "@/components/ui/button"
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
+
 import { Card } from "@/components/ui/card"
 import Subtitle from "@/components/Subtitle"
 import { Camera, CheckCircle, ChevronRight, User, Clock } from "lucide-react"
@@ -87,11 +87,18 @@ export default function ProfissionalRegister({ onSubmit }: Props) {
       const err = error as { response?: { status?: number; data?: { error?: string; message?: string } }; message?: string }
       const status = err.response?.status
       const message = err.response?.data?.error ?? err.response?.data?.message ?? err.message ?? "Erro desconhecido"
-      console.error("[uploadAvatar] Erro:", { status, message, error })
       toast.error(`Erro ao fazer upload da imagem: ${message}`)
       return null
     } finally {
       setUploadingAvatar(false)
+    }
+  }
+
+  async function deleteAvatarFromCloudinary(url: string) {
+    try {
+      await api.delete("/api/upload/avatar", { data: { url } })
+    } catch {
+      // silencia erro na limpeza
     }
   }
 
@@ -103,18 +110,10 @@ export default function ProfissionalRegister({ onSubmit }: Props) {
 
   async function registerProfissional(data: RegisterFormMedico) {
     try {
-      let avatarUrl: string | null = null
-
-      if (avatarFile) {
-        avatarUrl = await uploadAvatar(avatarFile)
-        if (!avatarUrl) return
-      }
-
       const { confirmPassword, ...payload } = data
       const newData = {
         ...payload,
         role: Role.MEDICO,
-        ...(avatarUrl && { avatar: avatarUrl }),
       }
 
       const res = await api.post("/api/auth/registerU", newData)
@@ -124,7 +123,6 @@ export default function ProfissionalRegister({ onSubmit }: Props) {
       const err = error as { response?: { status?: number; data?: { error?: string; message?: string } }; message?: string }
       const status = err.response?.status
       const message = err.response?.data?.message ?? err.response?.data?.error ?? err.message ?? "Erro desconhecido"
-      console.error("[registerProfissional] Erro:", { status, message, error })
       toast.error(`Erro ao cadastrar médico: ${message}`)
     }
   }
@@ -135,8 +133,19 @@ export default function ProfissionalRegister({ onSubmit }: Props) {
       return
     }
 
+    let avatarUrl: string | null = null
+
     try {
       setIsSubmittingFinal(true)
+
+      if (avatarFile) {
+        avatarUrl = await uploadAvatar(avatarFile)
+        if (!avatarUrl) return
+      }
+
+      if (avatarUrl && medicoId) {
+        await api.patch(`/api/atendente/profissional/${medicoId}`, { avatar: avatarUrl })
+      }
 
       await Promise.all(
         diasSelecionados.map((dia) =>
@@ -154,16 +163,19 @@ export default function ProfissionalRegister({ onSubmit }: Props) {
       toast.success("Médico cadastrado com sucesso!")
       onSubmit()
     } catch (error: unknown) {
+      if (avatarUrl) {
+        await deleteAvatarFromCloudinary(avatarUrl)
+      }
+
       const err = error as { response?: { status?: number; data?: { error?: string; message?: string } }; message?: string }
       const message = err.response?.data?.error ?? err.response?.data?.message ?? err.message ?? "Erro desconhecido"
-      console.error("[registrarDisponibilidade] Erro:", { error })
       toast.error(`Erro ao cadastrar disponibilidade: ${message}`)
     } finally {
       setIsSubmittingFinal(false)
     }
   }
 
-  const isLoading = isSubmitting || uploadingAvatar
+  const isLoading = isSubmitting
   const isLoadingFinal = isSubmittingFinal
 
   return (
@@ -209,12 +221,13 @@ export default function ProfissionalRegister({ onSubmit }: Props) {
         <form onSubmit={form.handleSubmit(registerProfissional)} className="w-full">
           <div className="w-full flex justify-center mb-4">
             <div className="relative cursor-pointer group" onClick={() => fileInputRef.current?.click()}>
-              <Avatar className="w-20 h-20">
-                <AvatarImage src={avatarPreview ?? ""} />
-                <AvatarFallback className="text-2xl bg-zinc-100">
+              {avatarPreview ? (
+                <img src={avatarPreview} alt="Preview" className="w-20 h-20 object-cover rounded-full border border-zinc-200" />
+              ) : (
+                <div className="w-20 h-20 bg-zinc-100 rounded-full flex items-center justify-center border border-zinc-200">
                   <Camera className="w-6 h-6 text-zinc-400" />
-                </AvatarFallback>
-              </Avatar>
+                </div>
+              )}
               <div className="absolute inset-0 bg-black/30 rounded-full opacity-0 group-hover:opacity-100 transition flex items-center justify-center">
                 <Camera className="w-5 h-5 text-white" />
               </div>
@@ -331,7 +344,7 @@ export default function ProfissionalRegister({ onSubmit }: Props) {
 
           <div className="w-full flex justify-end mt-4">
             <Button type="submit" disabled={isLoading} className="cursor-pointer">
-              {uploadingAvatar ? "Enviando imagem..." : isSubmitting ? "Cadastrando..." : "Próximo"}
+              {isSubmitting ? "Cadastrando..." : "Próximo"}
             </Button>
           </div>
         </form>
@@ -413,7 +426,7 @@ export default function ProfissionalRegister({ onSubmit }: Props) {
               className="cursor-pointer"
               onClick={registrarDisponibilidade}
             >
-              {isLoadingFinal ? "Cadastrando..." : "Confirmar cadastro"}
+              {uploadingAvatar ? "Enviando imagem..." : isLoadingFinal ? "Cadastrando..." : "Confirmar cadastro"}
             </Button>
           </div>
         </div>

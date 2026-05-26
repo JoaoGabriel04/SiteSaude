@@ -3,12 +3,13 @@
 import React, { useState } from 'react';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
-import { User, Fingerprint, ArrowRight, Loader2, ArrowLeft } from 'lucide-react';
+import { User, Fingerprint, ArrowRight, Loader2, ArrowLeft, CalendarDays } from 'lucide-react';
 
 const AcessoConsulta = () => {
   const router = useRouter();
   const [nome, setNome] = useState('');
   const [cpf, setCpf] = useState('');
+  const [nascimento, setNascimento] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
 
@@ -23,13 +24,20 @@ const AcessoConsulta = () => {
       return;
     }
 
+    if (!nascimento.trim()) {
+      setError("Por favor, informe a data de nascimento.");
+      setLoading(false);
+      return;
+    }
+
     try {
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/acessar-consultas`, {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/paciente/session`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
+        credentials: "include",
         body: JSON.stringify({
-          nomeCompleto: nome.trim() || undefined,
-          cpf: cpf.trim()
+          cpf: cpf.trim(),
+          nascimento: nascimento.trim(),
         }),
       });
 
@@ -40,8 +48,6 @@ const AcessoConsulta = () => {
         return;
       }
 
-      localStorage.setItem('pacienteConsultas', JSON.stringify(data));
-      sessionStorage.setItem('consultVerified', 'true');
       router.push('/consult-acess/consult');
 
     } catch (err) {
@@ -108,6 +114,20 @@ const AcessoConsulta = () => {
                   value={cpf}
                   onChange={(e) => setCpf(e.target.value)}
                   placeholder="000.000.000-00"
+                  className="w-full bg-gray-50 border border-gray-200 rounded-xl py-3 pl-10 pr-4 outline-none focus:border-blue-400 focus:ring-1 focus:ring-blue-400 transition-all text-gray-700"
+                />
+              </div>
+            </div>
+
+            <div>
+              <label className="block text-xs font-bold text-gray-400 uppercase mb-2 ml-1">Data de Nascimento</label>
+              <div className="relative">
+                <CalendarDays className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={18} />
+                <input
+                  type="date"
+                  required
+                  value={nascimento}
+                  onChange={(e) => setNascimento(e.target.value)}
                   className="w-full bg-gray-50 border border-gray-200 rounded-xl py-3 pl-10 pr-4 outline-none focus:border-blue-400 focus:ring-1 focus:ring-blue-400 transition-all text-gray-700"
                 />
               </div>

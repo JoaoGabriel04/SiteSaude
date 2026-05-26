@@ -40,14 +40,14 @@ agendaRouter.patch(
 agendaRouter.patch(
   "/:id/restaurar",
   authToken,
-  authorize(Role.ATENDENTE, Role.ADMIN),
+  authorize(Role.ADMIN),
   agendaController.restaurarAgendamento
 );
 
 agendaRouter.delete(
   "/:id",
   authToken,
-  authorize(Role.ATENDENTE, Role.ADMIN),
+  authorize(Role.ADMIN),
   agendaController.deleteAgenda
 );
 

@@ -21,4 +21,24 @@ export class PacienteRepository {
             }
         });
     }
+
+    async findById(id: string) {
+        return await prisma.patient.findUnique({
+            where: { id },
+            include: {
+                agendas: {
+                    include: {
+                        medico: {
+                            include: {
+                                user: true
+                            }
+                        }
+                    },
+                    orderBy: {
+                        horario_atend: 'desc'
+                    }
+                }
+            }
+        });
+    }
 }

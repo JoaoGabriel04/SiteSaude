@@ -5,6 +5,89 @@ import AgendaRepository from "../repositories/agenda.repository.js";
 import NotificacaoRepository from "../repositories/notificacao.repository.js";
 import { NotificacaoService } from "./notificacao.service.js";
 
+import type { Disponibilidade, ExcecaoMedico, SolicitacaoAusencia } from "../../generated/prisma/index.js";
+
+type DisponibilidadeWithSlots = {
+  disponibilidade: Disponibilidade;
+  slots: string[];
+  ocupados: string[];
+};
+
+type ExcecaoUnica = {
+  id: string;
+  data: Date;
+  motivo: string | null;
+  tipo: "unico";
+};
+
+type ExcecaoPeriodo = {
+  id: string;
+  data: Date;
+  dataFim: Date;
+  motivo: string | null;
+  tipo: "periodo";
+  totalDias: number;
+};
+
+type ExcecaoList = (ExcecaoUnica | ExcecaoPeriodo)[];
+
+type SolicitacaoOld = Awaited<ReturnType<MedicoRepository["findMinhasSolicitacoes"]>>[number];
+type SolicitacaoNew = Awaited<ReturnType<SolicitacaoRepository["findByDocId"]>>[number];
+
+type SolicitacaoMinha = {
+  id: string;
+  docId: string;
+  data: Date | undefined;
+  dataFim: Date | undefined;
+  motivo: string | null;
+  status: string;
+  observacaoAdmin: string | null;
+  dataSolicitacao: Date;
+  dataResposta: Date | null;
+  aprovadoPor: { nome: string } | null;
+  tipo: "unico" | "periodo";
+  totalDias?: number;
+};
+
+type SolicitacaoPendenteUnica = {
+  id: string;
+  docId: string;
+  data: Date;
+  motivo: string | null;
+  status: string;
+  dataSolicitacao: Date;
+  medico: any;
+  tipo: "unico";
+};
+
+type SolicitacaoPendentePeriodo = {
+  id: string;
+  docId: string;
+  data: Date | undefined;
+  dataFim: Date | undefined;
+  motivo: string | null;
+  status: string;
+  dataSolicitacao: Date;
+  medico: any;
+  dias: any[];
+  tipo: "periodo";
+  totalDias: number;
+};
+
+type SolicitacaoPendente = SolicitacaoPendenteUnica | SolicitacaoPendentePeriodo;
+
+type SolicitacaoComDatas = Awaited<ReturnType<SolicitacaoRepository["findById"]>> & {
+  data: Date | undefined;
+  dataFim: Date | undefined;
+  totalDias: number;
+};
+
+type SolicitacaoOuExcecao = SolicitacaoComDatas | Awaited<ReturnType<MedicoRepository["findSolicitacaoById"]>>;
+
+type ResultMessage = {
+  message: string;
+};
+
 export class MedicoService {
   private solicitacaoRepo: SolicitacaoRepository;
   private notificacaoService: NotificacaoService;
@@ -26,7 +109,7 @@ export class MedicoService {
     horaFim: string;
     almocoInicio?: string;
     almocoFim?: string;
-  }) {
+  }): Promise<Disponibilidade> {
     if (data.diaSemana < 0 || data.diaSemana > 6) {
       throw new AppError("Dia da semana inválido", 400);
     }
@@ -44,15 +127,15 @@ export class MedicoService {
     return result;
   }
 
-  async buscarDisponibilidade(docId: string) {
+  async buscarDisponibilidade(docId: string): Promise<Disponibilidade[]> {
     return this.medicoRepo.findDisponibilidadeByDoc(docId);
   }
 
-  async deletarDisponibilidade(id: string) {
+  async deletarDisponibilidade(id: string): Promise<Disponibilidade> {
     return this.medicoRepo.deleteDisponibilidade(id);
   }
 
-  async buscarSlotsDisponiveis(docId: string, data: Date, patientId?: string) {
+  async buscarSlotsDisponiveis(docId: string, data: Date, patientId?: string): Promise<DisponibilidadeWithSlots> {
     const diaSemana = data.getUTCDay();
 
     const excecao = await this.agendaRepo.findExcecaoByDocEData(docId, data);
@@ -127,7 +210,7 @@ return {
     docId: string;
     data: Date;
     motivo?: string;
-  }) {
+  }): Promise<ExcecaoMedico> {
     const excecaoExiste = await this.medicoRepo.findExcecaoByDocEData(data.docId, data.data);
     if (excecaoExiste) {
       throw new AppError("Já existe uma exceção cadastrada para esse dia", 400);
@@ -136,7 +219,7 @@ return {
     return this.medicoRepo.createExcecao(data);
   }
 
-  async buscarExcecoes(docId: string) {
+  async buscarExcecoes(docId: string): Promise<ExcecaoList> {
     const excecoesMedico = await this.medicoRepo.findExcecoesAprovadasByDoc(docId);
     const solicitacoesAusencia = await this.solicitacaoRepo.findApprovedByDocId(docId);
     

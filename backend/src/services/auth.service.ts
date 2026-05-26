@@ -2,20 +2,30 @@ import jwt from "jsonwebtoken";
 import bcrypt from "bcryptjs";
 import UserRepository from "../repositories/user.repository.js";
 import { Role } from "../../generated/prisma/index.js";
+import type { User, Doctor, Attend } from "../../generated/prisma/index.js";
 import { AppError } from "../errors/AppError.js";
-import { getMasterAdminId } from "../utils/getMasterAdmin.js";
 
-export const generateAccessToken = (payload: object) => {
+type UserWithMedico = Awaited<ReturnType<UserRepository["createDoctor"]>>;
+type UserWithAtendente = Awaited<ReturnType<UserRepository["createAttend"]>>;
+type UserWithRelations = Awaited<ReturnType<UserRepository["findByEmail"]>>;
+type UserWithoutPassword = Omit<NonNullable<UserWithRelations>, "password">;
+
+type TokenPair = {
+  accessToken: string;
+  refreshToken: string;
+};
+
+export const generateAccessToken = (payload: object): string => {
   const secret = process.env.JWT_SECRET;
   if (!secret) {
     throw new AppError("JWT secret not found", 500);
   }
   return jwt.sign(payload, secret, { expiresIn: "15m" });
 }
-export const generateRefreshToken = (payload: object) => {
-  const secret = process.env.JWT_SECRET;
+export const generateRefreshToken = (payload: object): string => {
+  const secret = process.env.JWT_REFRESH_SECRET;
   if (!secret) {
-    throw new AppError("JWT secret not found", 500);
+    throw new AppError("JWT refresh secret not found", 500);
   }
   return jwt.sign(payload, secret, { expiresIn: "7d" });
 }
@@ -35,7 +45,7 @@ export class AuthService {
     crm?: string;
     especialidade?: string;
     setor?: string;
-  }) {
+  }): Promise<{ user: UserWithMedico | UserWithAtendente }> {
 
     const userFound = await this.userRepo.findByEmail(data.email);
     const cpfFound = await this.userRepo.findByCpfUser(data.cpf);
@@ -98,45 +108,7 @@ export class AuthService {
     }
   }
 
-  async loginCredentials(email: string, password: string) {
-    if (
-      email === process.env.MASTER_ADMIN_EMAIL &&
-      password === process.env.MASTER_ADMIN_PASSWORD
-    ) {
-      const adminId = await getMasterAdminId();
-
-      const accessToken = generateAccessToken({
-        sub: adminId,
-        role: Role.ADMIN,
-      });
-
-      const refreshToken = generateRefreshToken({
-        sub: adminId,
-        role: Role.ADMIN,
-      });
-
-      const token = { accessToken, refreshToken };
-
-      return {
-        user: {
-          id: adminId,
-          nome: "Master Admin",
-          cpf: null,
-          nascimento: null,
-          fone: null,
-          avatar: null,
-          email,
-          role: Role.ADMIN,
-          crm: null,
-          especialidade: null,
-          setor: null,
-          medico: null,
-          atendente: null,
-        },
-        token,
-      };
-    }
-
+  async loginCredentials(email: string, password: string): Promise<{ user: UserWithoutPassword; token: TokenPair }> {
     let user = await this.userRepo.findByEmail(email);
 
     if (!user || !user.password) {
@@ -161,15 +133,15 @@ export class AuthService {
     return { user: userSafe, token };
   }
 
-  async refreshToken(oldRefreshToken: string) {
+  async refreshToken(oldRefreshToken: string): Promise<{ token: TokenPair }> {
     try {
 
-      const jwtSecret = process.env.JWT_SECRET;
-      if (!jwtSecret) {
-        throw new AppError("JWT secret not found", 500);
+      const jwtRefreshSecret = process.env.JWT_REFRESH_SECRET;
+      if (!jwtRefreshSecret) {
+        throw new AppError("JWT refresh secret not found", 500);
       }
 
-      const decoded = jwt.verify(oldRefreshToken, jwtSecret) as jwt.JwtPayload;
+      const decoded = jwt.verify(oldRefreshToken, jwtRefreshSecret) as jwt.JwtPayload;
 
       const userId = decoded.sub;
       const userRole = decoded.role as Role;
@@ -178,8 +150,17 @@ export class AuthService {
         throw new AppError("Invalid token payload", 400);
       }
 
-      const accessToken = generateAccessToken({ sub: userId, role: userRole });
-      const refreshToken = generateRefreshToken({ sub: userId, role: userRole });
+      const user = await this.userRepo.findById(String(userId));
+      if (!user) {
+        throw new AppError("Invalid refresh token", 400);
+      }
+
+      if (user.role !== userRole) {
+        throw new AppError("Invalid refresh token", 400);
+      }
+
+      const accessToken = generateAccessToken({ sub: user.id, role: user.role });
+      const refreshToken = generateRefreshToken({ sub: user.id, role: user.role });
 
       return {
         token: {

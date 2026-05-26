@@ -1,11 +1,20 @@
 import { CookieOptions, NextFunction, Request, Response } from "express";
 import { AuthService } from "../../services/auth.service.js";
 import UserRepository from "../../repositories/user.repository.js";
+import crypto from "crypto";
 
 const authService = new AuthService(new UserRepository());
 
 const cookieConfig: CookieOptions = {
   httpOnly: true,
+  secure: process.env.NODE_ENV === "production",
+  sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
+  path: "/",
+  maxAge: 7 * 24 * 60 * 60 * 1000,
+};
+
+const csrfCookieConfig: CookieOptions = {
+  httpOnly: false,
   secure: process.env.NODE_ENV === "production",
   sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
   path: "/",
@@ -32,6 +41,7 @@ export class AuthController {
       const result = await authService.loginCredentials(email, password);
 
       res.cookie("refresh_token", result.token.refreshToken, cookieConfig);
+      res.cookie("csrf_token", crypto.randomUUID(), csrfCookieConfig);
 
       return res.json({
         accessToken: result.token.accessToken,
@@ -46,14 +56,21 @@ export class AuthController {
   async refreshToken(req: Request, res: Response, next: NextFunction) {
     try {
       const refreshToken = req.cookies.refresh_token;
+      const csrfCookie = req.cookies.csrf_token;
+      const csrfHeader = req.headers["x-csrf-token"];
 
       if (!refreshToken) {
         return res.status(401).json({ error: "Refresh token ausente" });
       }
 
+      if (!csrfCookie || !csrfHeader || String(csrfHeader) !== String(csrfCookie)) {
+        return res.status(403).json({ error: "CSRF token inválido" });
+      }
+
       const result = await authService.refreshToken(refreshToken);
 
       res.cookie("refresh_token", result.token.refreshToken, cookieConfig);
+      res.cookie("csrf_token", crypto.randomUUID(), csrfCookieConfig);
 
       return res.json({
         accessToken: result.token.accessToken,

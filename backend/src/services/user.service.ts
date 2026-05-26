@@ -188,6 +188,15 @@ export class UserService {
       throw new AppError("Usuário não encontrado", 404);
     }
 
+    if (data.avatar && user.avatar && data.avatar !== user.avatar) {
+      try {
+        const uploadService = new UploadService();
+        await uploadService.deleteAvatar(user.avatar);
+      } catch {
+        // ignora erro do Cloudinary
+      }
+    }
+
     const foneNormalized = data.fone ? data.fone.replace(/\D/g, "") : undefined;
     let password = undefined;
 
@@ -217,6 +226,15 @@ export class UserService {
 
     if (!user) {
       throw new AppError("Usuário não encontrado", 404);
+    }
+
+    if (data.avatar && user.avatar && data.avatar !== user.avatar) {
+      try {
+        const uploadService = new UploadService();
+        await uploadService.deleteAvatar(user.avatar);
+      } catch {
+        // ignora erro do Cloudinary
+      }
     }
 
     let password: string | undefined;

@@ -4,7 +4,7 @@ import { useState, useEffect } from "react"
 import Modal from "@/components/Modal"
 import { Button } from "@/components/ui/button"
 import { InputField } from "@/components/inputField"
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
+
 import { toast } from "@/toast/toastManager"
 import { Camera, Lock, User } from "lucide-react"
 import { useUserStore } from "@/stores/userStore"
@@ -68,6 +68,8 @@ export default function PerfilModal({ isOpen, onClose }: PerfilModalProps) {
     }
 
     setIsLoading(true)
+    let newAvatarUrl: string | null = null
+
     try {
       const dataToSend: Record<string, unknown> = { nome }
 
@@ -83,8 +85,9 @@ export default function PerfilModal({ isOpen, onClose }: PerfilModalProps) {
           headers: { "Content-Type": "multipart/form-data" }
         })
         
-        dataToSend.avatar = res.data.url
-        setAvatar(res.data.url)
+        newAvatarUrl = res.data.url
+        dataToSend.avatar = newAvatarUrl
+        setAvatar(newAvatarUrl)
       }
 
       const res = await api.put("/api/user/profile", dataToSend)
@@ -95,8 +98,11 @@ export default function PerfilModal({ isOpen, onClose }: PerfilModalProps) {
       setAvatarPreview(null)
       onClose()
     } catch (error: unknown) {
+      if (newAvatarUrl) {
+        try { await api.delete("/api/upload/avatar", { data: { url: newAvatarUrl } }); } catch { /* silencia */ }
+      }
+
       const err = error as { response?: { data?: { message?: string } } }
-      console.error("[handleSaveInfo] Erro:", error)
       toast.error(err.response?.data?.message || "Erro ao salvar")
     } finally {
       setIsLoading(false)
@@ -168,12 +174,13 @@ export default function PerfilModal({ isOpen, onClose }: PerfilModalProps) {
         {/* Avatar */}
         <div className="flex flex-col items-center gap-3">
           <div className="relative">
-            <Avatar className="w-24 h-24">
-              <AvatarImage src={displayAvatar} />
-              <AvatarFallback className="text-2xl">
+            {displayAvatar ? (
+              <img src={displayAvatar} alt="Avatar" className="w-24 h-24 object-cover rounded-full border border-zinc-200" />
+            ) : (
+              <div className="w-24 h-24 bg-zinc-100 rounded-full flex items-center justify-center text-2xl border border-zinc-200">
                 {nome.charAt(0).toUpperCase()}
-              </AvatarFallback>
-            </Avatar>
+              </div>
+            )}
             {!isAdmin && (
               <label className="absolute bottom-0 right-0 bg-blue-600 text-white p-1.5 rounded-full cursor-pointer hover:bg-blue-700 transition-colors">
                 <Camera className="w-4 h-4" />

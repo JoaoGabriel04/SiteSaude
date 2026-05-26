@@ -7,7 +7,23 @@ import {
   StatusUrgencia,
   TipoAtendimento,
 } from "../../generated/prisma/index.js";
-import type { Prisma } from "../../generated/prisma/index.js";
+import type { Prisma, Agenda, ExcecaoMedico } from "../../generated/prisma/index.js";
+
+type CreatedAgenda = Awaited<ReturnType<AgendaRepository["createAgenda"]>>;
+type AgendamentoList = Awaited<ReturnType<AgendaRepository["findAgendamentos"]>>;
+type MeusAgendamentosResult = Awaited<ReturnType<AgendaRepository["findMeusAgendamentos"]>>;
+type AgendaFull = Awaited<ReturnType<AgendaRepository["findById"]>>;
+type UpdatedAgenda = Awaited<ReturnType<AgendaRepository["updateStatus"]>>;
+type RestoredAgenda = Awaited<ReturnType<AgendaRepository["restoreStatus"]>>;
+type DeletedAgenda = Awaited<ReturnType<AgendaRepository["deleteAgenda"]>>;
+type Excecao = ExcecaoMedico | null;
+
+type PaginatedAgendamentos = {
+  agendamentos: MeusAgendamentosResult["agendamentos"];
+  total: number;
+  page: number;
+  totalPages: number;
+};
 
 export class AgendaService {
   constructor(
@@ -25,7 +41,7 @@ export class AgendaService {
     statusUrgencia?: string;
     data?: string;
     page?: number;
-  }) {
+  }): Promise<AgendamentoList> {
     const { busca, docId, status, statusUrgencia, data, page = 1 } = params;
     const where: Prisma.AgendaWhereInput = {};
 
@@ -73,7 +89,7 @@ export class AgendaService {
   // ============================================
   // CRIAÇÃO DE AGENDAMENTO
   // ============================================
-  async registerAgenda(data: Prisma.AgendaUncheckedCreateInput) {
+  async registerAgenda(data: Prisma.AgendaUncheckedCreateInput): Promise<CreatedAgenda> {
     let horarioNorm: Date;
     
     const horarioValue = data.horario_atend as string | number | Date;
@@ -215,7 +231,7 @@ export class AgendaService {
     status?: StatusAtendimento;
     page?: number;
     limit?: number;
-  }) {
+  }): Promise<PaginatedAgendamentos> {
     const page = params.page && params.page > 0 ? params.page : 1;
     const limit = params.limit && params.limit > 0 ? params.limit : 20;
 
@@ -236,7 +252,7 @@ export class AgendaService {
   // ============================================
   // FINALIZAR
   // ============================================
-  async marcarComoFinalizado(id: string, docId: string) {
+  async marcarComoFinalizado(id: string, docId: string): Promise<UpdatedAgenda> {
     const agendamento = await this.agendaRepository.findById(id);
 
     if (!agendamento) {
@@ -261,7 +277,7 @@ export class AgendaService {
   // ============================================
   // CANCELAR
   // ============================================
-  async cancelarAgendamento(id: string, docId: string, userId: string, motivo?: string) {
+  async cancelarAgendamento(id: string, docId: string, userId: string, motivo?: string): Promise<UpdatedAgenda> {
     const agendamento = await this.agendaRepository.findById(id);
 
     if (!agendamento) {
@@ -282,7 +298,7 @@ export class AgendaService {
   // ============================================
   // RESTAURAR
   // ============================================
-  async restaurarAgendamento(id: string, docId: string) {
+  async restaurarAgendamento(id: string, docId: string): Promise<RestoredAgenda> {
     const agendamento = await this.agendaRepository.findById(id);
 
     if (!agendamento) {
@@ -299,7 +315,7 @@ export class AgendaService {
   // ============================================
   // EXCLUIR AGENDAMENTO
   // ============================================
-  async excluirAgendamento(id: string) {
+  async excluirAgendamento(id: string): Promise<DeletedAgenda> {
     const agendamento = await this.agendaRepository.findById(id);
 
     if (!agendamento) {

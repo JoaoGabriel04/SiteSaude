@@ -1,6 +1,6 @@
 import { z } from "zod";
 
-export const acessarConsultaSchema = z.object({
+export const pacienteSessionSchema = z.object({
   cpf: z
     .string()
     .trim()
@@ -14,4 +14,5 @@ export const acessarConsultaSchema = z.object({
     .transform((v) => new Date(v)),
 });
 
-export type AcessarConsultaInput = z.infer<typeof acessarConsultaSchema>;
+export type PacienteSessionInput = z.infer<typeof pacienteSessionSchema>;
+

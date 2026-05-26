@@ -1,0 +1,12 @@
+.git
+**/.env
+**/.env.*
+**/node_modules
+**/.next
+**/dist
+**/.turbo
+**/coverage
+npm-debug.log
+yarn.lock
+pnpm-lock.yaml
+*.log

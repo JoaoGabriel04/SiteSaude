@@ -25,9 +25,9 @@ export default class NotificacaoRepository {
     });
   }
 
-  async marcarComoLida(id: string) {
-    return prisma.notificacao.update({
-      where: { id },
+  async marcarComoLida(id: string, userId: string) {
+    return prisma.notificacao.updateMany({
+      where: { id, userId },
       data: { lida: true }
     });
   }
@@ -39,9 +39,9 @@ export default class NotificacaoRepository {
     });
   }
 
-  async delete(id: string) {
-    return prisma.notificacao.delete({
-      where: { id }
+  async delete(id: string, userId: string) {
+    return prisma.notificacao.deleteMany({
+      where: { id, userId }
     });
   }
 

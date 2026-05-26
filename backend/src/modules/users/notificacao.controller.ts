@@ -23,7 +23,8 @@ export class NotificacaoController {
   async marcarComoLida(req: Request, res: Response, next: NextFunction) {
     const id = req.params.id as string;
     try {
-      await notificacaoService.marcarComoLida(id);
+      const userId = req.user!.id;
+      await notificacaoService.marcarComoLida(id, userId);
       return res.status(204).send();
     } catch (error) {
       next(error);
@@ -44,7 +45,8 @@ export class NotificacaoController {
   async deletar(req: Request, res: Response, next: NextFunction) {
     const id = req.params.id as string;
     try {
-      await notificacaoService.delete(id);
+      const userId = req.user!.id;
+      await notificacaoService.delete(id, userId);
       return res.status(204).send();
     } catch (error) {
       next(error);

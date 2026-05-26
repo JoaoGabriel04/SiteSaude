@@ -4,6 +4,42 @@ import { PacienteRepository } from '../repositories/paciente.repository.js';
 import { AppError } from '../errors/AppError.js';
 import { AcessarConsultaInput } from '../schemas/AcessarConsultaSchema.js';
 
+type PacienteComAgendas = NonNullable<Awaited<ReturnType<PacienteRepository["findByCpf"]>>>;
+type AgendaItem = PacienteComAgendas["agendas"][number];
+
+type ConsultaDetalhada = {
+  id: string;
+  atendimento: string;
+  medico: string;
+  medicoCrm: string;
+  medicoEspecialidade: string;
+  data: string;
+  hora: string;
+  status: string;
+  statusVariant: string;
+  motivo: string;
+  statusUrgencia: string;
+  observacoes: string;
+  tipo: string;
+  duracaoMin: number | null;
+};
+
+type PacienteDetalhado = {
+  id: string;
+  nomeCompleto: string;
+  cpf: string;
+  fone: string | null;
+  nascimento: Date | null;
+  email: string | null;
+  cartaoSus: string | null;
+  sexo: string;
+};
+
+type AcessarConsultaResult = {
+  paciente: PacienteDetalhado;
+  consultas: ConsultaDetalhada[];
+};
+
 const tipoLabels: Record<string, string> = {
     CONSULTA: 'Consulta',
     EXAME: 'Exame',
@@ -32,7 +68,7 @@ const sexoLabels: Record<string, string> = {
 export class AcessarConsultaService {
     private pacienteRepository = new PacienteRepository();
 
-    async execute({ nomeCompleto, cpf }: AcessarConsultaInput) {
+    async execute({ nomeCompleto, cpf }: AcessarConsultaInput): Promise<AcessarConsultaResult> {
         const cpfLimpo = cpf.replace(/\D/g, '');
 
         const paciente = await this.pacienteRepository.findByCpf(cpfLimpo);
