@@ -2,6 +2,7 @@
 import { useState, useEffect, useCallback } from "react"
 import api from "@/services/api"
 import { useUserStore } from "@/stores/userStore"
+import { connectSocket, disconnectSocket, getSocket } from "@/services/socket"
 
 type Notificacao = {
   id: string;
@@ -20,42 +21,37 @@ export function useNotificacoes() {
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState<any>(null)
 
-  useEffect(() => {
+  const fetchData = useCallback(async () => {
     if (loading || !isAuthenticated) return
-
-    async function fetchData() {
-      setIsLoading(true)
-      try {
-        const res = await api.get("/api/notificacoes")
-        setNotificacoes(res.data.notificacoes)
-        setNaoLidas(res.data.naoLidas)
-      } catch (err: any) {
-        setError(err)
-      } finally {
-        setIsLoading(false)
-      }
+    setIsLoading(true)
+    try {
+      const res = await api.get("/api/notificacoes")
+      setNotificacoes(res.data.notificacoes)
+      setNaoLidas(res.data.naoLidas)
+    } catch (err: any) {
+      setError(err)
+    } finally {
+      setIsLoading(false)
     }
-
-    fetchData()
-    const interval = setInterval(fetchData, 30000)
-    return () => clearInterval(interval)
   }, [isAuthenticated, loading])
 
-  const mutate = useCallback(() => {
-    async function fetchData() {
-      setIsLoading(true)
-      try {
-        const res = await api.get("/api/notificacoes")
-        setNotificacoes(res.data.notificacoes)
-        setNaoLidas(res.data.naoLidas)
-      } catch (err: any) {
-        setError(err)
-      } finally {
-        setIsLoading(false)
-      }
-    }
+  useEffect(() => {
+    if (!isAuthenticated || loading) return
+
     fetchData()
-  }, [])
+
+    connectSocket()
+    const socket = getSocket()
+    socket.on("nova-notificacao", fetchData)
+
+    return () => {
+      socket.off("nova-notificacao", fetchData)
+    }
+  }, [isAuthenticated, loading, fetchData])
+
+  const mutate = useCallback(() => {
+    fetchData()
+  }, [fetchData])
 
   return { notificacoes, naoLidas, isLoading, error, mutate }
 }

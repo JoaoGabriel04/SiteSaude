@@ -1,11 +1,14 @@
 import NotificacaoRepository from "../repositories/NotificacaoRepository.js";
 import { enviarEmailSolicitacaoAprovada, enviarEmailSolicitacaoNegada } from "../lib/email.js";
+import { emitirNotificacao } from "../lib/socket.js";
 
 export class NotificacaoService {
   constructor(private notificacaoRepo: NotificacaoRepository) {}
 
   async criarNotificacao(userId: string, titulo: string, mensagem: string, tipo: string) {
-    return this.notificacaoRepo.createNotificacao({ userId, titulo, mensagem, tipo });
+    const notificacao = await this.notificacaoRepo.createNotificacao({ userId, titulo, mensagem, tipo });
+    emitirNotificacao(userId, notificacao);
+    return notificacao;
   }
 
   async notificarSolicitacaoAprovada(

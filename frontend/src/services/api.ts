@@ -13,6 +13,8 @@ export const setAccessToken = (token: string) => {
   accessToken = token;
 };
 
+export const getAccessToken = () => accessToken;
+
 // 👉 Controle de refresh simultâneo
 let isRefreshing = false;
 let failedQueue: {

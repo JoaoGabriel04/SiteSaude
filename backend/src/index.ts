@@ -1,11 +1,13 @@
 import "dotenv/config";
 
+import http from "http";
 import express from "express";
 import cookieParser from "cookie-parser"
 import apiRouter from "./api/routes/index.js"
 import cors from "cors";
 import { getMasterAdminId } from "./utils/getMasterAdmin.js";
 import { errorHandler } from "./api/middlewares/errorHandler.js";
+import { configureSocket } from "./lib/socket.js";
 
 import { createRequire } from "module";
 const require = createRequire(import.meta.url);
@@ -33,8 +35,8 @@ app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser())
 
 const generalLimiter = rateLimit({
-  windowMs: 15 * 60 * 1000, // 15 minutos
-  max: 300,                  // 300 requests por IP nesse período
+  windowMs: 15 * 60 * 1000,
+  max: 300,
   message: { error: "Muitas requisições. Tente novamente mais tarde." },
   standardHeaders: true,
   legacyHeaders: false,
@@ -42,13 +44,15 @@ const generalLimiter = rateLimit({
 
 app.use("/api", generalLimiter, apiRouter);
 
-// 404 fallback
 app.use((req, res) => {
   res.status(404).json({ error: "Rota não encontrada" });
 });
 
-// Error handler — SEMPRE por último
 app.use(errorHandler);
+
+const server = http.createServer(app);
+
+configureSocket(server);
 
 async function bootstrap() {
   try {
@@ -59,7 +63,7 @@ async function bootstrap() {
     process.exit(1);
   }
 
-  app.listen(PORT, () => console.log(`🚀 Server on ${PORT}`));
+  server.listen(PORT, () => console.log(`🚀 Server on ${PORT}`));
 }
 
 bootstrap();
