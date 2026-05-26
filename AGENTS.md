@@ -143,3 +143,7 @@ Exemplo:
 - fix:
 - refactor:
 - docs:
+
+## Build
+
+Antes de qualquer commit, rodar `npm run build` no backend e no frontend para garantir que não há erros de compilação.
