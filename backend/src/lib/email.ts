@@ -2,7 +2,7 @@ import { Resend } from "resend";
 
 const resend = new Resend(process.env.RESEND_API_KEY);
 
-const FROM_EMAIL = process.env.FROM_EMAIL || "medflowgrajau@gmail.com";
+const FROM_EMAIL = process.env.FROM_EMAIL || "noreply@medflowgra.uk";
 
 if (!process.env.RESEND_API_KEY) {
   console.warn("[Email] AVISO: RESEND_API_KEY não configurada!");

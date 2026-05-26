@@ -14,13 +14,13 @@ medicoRouter.get("/solicitacoes/:id", authorize(Role.ATENDENTE, Role.ADMIN), ctr
 medicoRouter.get("/minhas-solicitacoes/:docId", authorize(Role.MEDICO, Role.ATENDENTE, Role.ADMIN), ctrlMedico.buscarMinhasSolicitacoes);
 
 medicoRouter.post("/disponibilidade", authorize(Role.ATENDENTE, Role.ADMIN), ctrlMedico.cadastrarDisponibilidade);
-medicoRouter.post("/excecao", authorize(Role.ATENDENTE, Role.ADMIN), ctrlMedico.cadastrarExcecao);
-medicoRouter.post("/excecao/periodo", authorize(Role.ATENDENTE, Role.ADMIN), ctrlMedico.cadastrarExcecaoPeriodo);
+medicoRouter.post("/excecao", authorize(Role.MEDICO, Role.ADMIN), ctrlMedico.cadastrarExcecao);
+medicoRouter.post("/excecao/periodo", authorize(Role.MEDICO, Role.ADMIN), ctrlMedico.cadastrarExcecaoPeriodo);
 
 medicoRouter.put("/solicitacoes/:id/aprovar", authorize(Role.ATENDENTE, Role.ADMIN), ctrlMedico.aprobarSolicitacao);
 medicoRouter.put("/solicitacoes/:id/negar", authorize(Role.ATENDENTE, Role.ADMIN), ctrlMedico.negarSolicitacao);
 
 medicoRouter.delete("/disponibilidade/:id", authorize(Role.ATENDENTE, Role.ADMIN), ctrlMedico.deletarDisponibilidade);
-medicoRouter.delete("/excecao/:id", authorize(Role.ATENDENTE, Role.ADMIN), ctrlMedico.deletarExcecao);
+medicoRouter.delete("/excecao/:id", authorize(Role.ADMIN, Role.MEDICO), ctrlMedico.deletarExcecao);
 
 export default medicoRouter;
