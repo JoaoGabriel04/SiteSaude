@@ -1,10 +1,10 @@
 import { NextFunction, Request, Response } from "express";
-import { MedicoService } from "../../services/MedicoService.js";
-import MedicoRepository from "../../repositories/MedicoRepository.js";
+import { MedicoService } from "../../services/medico.service.js";
+import MedicoRepository from "../../repositories/medico.repository.js";
 import { AppError } from "../../errors/AppError.js";
-import AgendaRepository from "../../repositories/AgendaRepository.js";
-import NotificacaoRepository from "../../repositories/NotificacaoRepository.js";
-import { NotificacaoService } from "../../services/NotificacaoService.js";
+import AgendaRepository from "../../repositories/agenda.repository.js";
+import NotificacaoRepository from "../../repositories/notificacao.repository.js";
+import { NotificacaoService } from "../../services/notificacao.service.js";
 
 const medicoService = new MedicoService(
   new MedicoRepository(), 

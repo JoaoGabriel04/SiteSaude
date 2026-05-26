@@ -1,6 +1,6 @@
 import { format, parseISO } from 'date-fns';
 import { ptBR } from 'date-fns/locale/pt-BR';
-import { PacienteRepository } from '../repositories/PacienteRepository.js';
+import { PacienteRepository } from '../repositories/paciente.repository.js';
 import { AppError } from '../errors/AppError.js';
 import { AcessarConsultaInput } from '../schemas/AcessarConsultaSchema.js';
 
@@ -52,7 +52,7 @@ export class AcessarConsultaService {
                 cartaoSus: paciente.cartaoSus,
                 sexo: sexoLabels[paciente.sexo as string] || paciente.sexo,
             },
-            consultas: paciente.agendas?.map((agenda: any) => {
+            consultas: paciente.agendas?.map((agenda) => {
                 const dataObj = typeof agenda.horario_atend === 'string'
                     ? parseISO(agenda.horario_atend)
                     : agenda.horario_atend;

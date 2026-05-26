@@ -16,7 +16,7 @@ export function useExcecoesMedico(docId: string) {
   const { isAuthenticated, loading } = useUserStore()
   const [excecoes, setExcecoes] = useState<ExcecaoMedico[] | null>(null)
   const [isLoading, setIsLoading] = useState(false)
-  const [error, setError] = useState<any>(null)
+  const [error, setError] = useState<unknown>(null)
 
   useEffect(() => {
     if (loading || !isAuthenticated || !docId) return
@@ -26,7 +26,7 @@ export function useExcecoesMedico(docId: string) {
       try {
         const res = await api.get(`/api/medico/excecao/${docId}`)
         setExcecoes(res.data)
-      } catch (err: any) {
+      } catch (err: unknown) {
         setError(err)
       } finally {
         setIsLoading(false)
@@ -43,7 +43,7 @@ export function useExcecoesMedico(docId: string) {
       try {
         const res = await api.get(`/api/medico/excecao/${docId}`)
         setExcecoes(res.data)
-      } catch (err: any) {
+      } catch (err: unknown) {
         setError(err)
       } finally {
         setIsLoading(false)

@@ -9,11 +9,8 @@ import { getMasterAdminId } from "./utils/getMasterAdmin.js";
 import { errorHandler } from "./api/middlewares/errorHandler.js";
 import { configureSocket } from "./lib/socket.js";
 
-import { createRequire } from "module";
-const require = createRequire(import.meta.url);
-
-const helmet = require("helmet");
-const rateLimit = require("express-rate-limit");
+import helmet from "helmet";
+import rateLimit from "express-rate-limit";
 
 const app = express();
 const PORT = process.env.PORT || 7000;

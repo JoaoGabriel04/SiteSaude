@@ -1,56 +1,114 @@
-import Joi from "joi"
-import { Role } from "../../generated/prisma/index.js"
-import { validationCPF } from "../utils/validaCpfCns.js"
+import { z } from "zod";
+import { Role } from "../../generated/prisma/index.js";
+import { validationCPF } from "../utils/validaCpfCns.js";
 
-export const registerUser = Joi.object({
+export const registerUser = z
+  .object({
+    nome: z.string().min(3).max(100),
 
-        nome: Joi.string().min(3).max(100).required(),
+    cpf: z
+      .string()
+      .refine((val) => {
+        try { validationCPF(val); return true; } catch { return false; }
+      }, "CPF inválido")
+      .transform((val) => val.replace(/\D/g, "")),
 
-        cpf: Joi.string().required().custom(validationCPF)
-            .messages({
-                "any.invalid": "CPF Invalido"
-            }),
+    password: z
+      .string()
+      .min(8)
+      .regex(
+        /^(?=.*[A-Z])(?=.*[a-z])(?=.*\d)(?=.*[^a-zA-Z0-9]).{8,30}$/,
+        "A senha deve ter no mínimo 8 caracteres, com letras maiúsculas, minúsculas, número e caractere especial"
+      ),
 
-        password: Joi.string().min(8).pattern(/^(?=.*[A-Z])(?=.*[a-z])(?=.*\d)(?=.*[^a-zA-Z0-9]).{8,30}$/).required()
-            .messages({ "string.pattern.base": "A senha deve ter no mínimo 8 caracteres, com letras maiúsculas, minúsculas, número e caractere especial " }),
+    nascimento: z.string()
+      .refine((v) => !isNaN(new Date(v).getTime()), { message: "Data de nascimento inválida" })
+      .transform((v) => new Date(v).toISOString()),
 
-        nascimento: Joi.date().iso().required(),
+    email: z.string().email(),
 
-        email: Joi.string().email().required(),
-        
-        avatar: Joi.string().uri().optional(),
+    avatar: z.string().url().optional(),
 
-        role: Joi.string().required().valid(...Object.values(Role))
-            .messages({
-                "any.only": "Opção ínvalida para campo função",
-                "any.required": "O campo role é obrigatório"
-            }),
+    role: z.nativeEnum(Role),
 
-        fone: Joi.string().pattern(/^\(?\d{2}\)?\s?\d{4,5}-?\d{4}$/).required(),
+    fone: z.string().regex(/^\(?\d{2}\)?\s?\d{4,5}-?\d{4}$/),
 
-        crm: Joi.when("role", {
-            is: Role.MEDICO,
-            then: Joi.string().pattern(/^[A-Z]{2,3}[\/-]?[A-Z]{2}\s?\d{4,6}$/).required().messages({
-                "string.empty": "CRM é obrigatório para médico",
-                "string.pattern.base": "Formato inválido do CRM"
-            }), otherwise: Joi.forbidden().messages({
-                "any.unknown": "CRM só pode ser informado para médicos"
-            })
-        }),
+    crm: z.string().optional(),
 
-        especialidade: Joi.when("role", {
-            is: Role.MEDICO,
-            then: Joi.string().min(4).required(),
-            otherwise: Joi.forbidden().messages({
-                "any.unknown": "Especialidade só pode ser informado para médicos"
-            })
-        }),
+    especialidade: z.string().optional(),
 
-        setor: Joi.when("role", {
-            is: Role.ATENDENTE,
-            then: Joi.string().min(4).required(),
-            otherwise: Joi.forbidden().messages({
-                "any.unknown": "Setor só pode ser informado para atendentes"
-            })
-        })
-    })
+    setor: z.string().optional(),
+  })
+  .superRefine((data, ctx) => {
+    if (data.role === Role.MEDICO) {
+      if (!data.crm) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          message: "CRM é obrigatório para médico",
+          path: ["crm"],
+        });
+      }
+      if (!data.especialidade) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          message: "Especialidade é obrigatória para médico",
+          path: ["especialidade"],
+        });
+      }
+      if (data.setor) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          message: "Setor só pode ser informado para atendentes",
+          path: ["setor"],
+        });
+      }
+    }
+
+    if (data.role === Role.ATENDENTE) {
+      if (!data.setor) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          message: "Setor é obrigatório para atendente",
+          path: ["setor"],
+        });
+      }
+      if (data.crm) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          message: "CRM só pode ser informado para médicos",
+          path: ["crm"],
+        });
+      }
+      if (data.especialidade) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          message: "Especialidade só pode ser informada para médicos",
+          path: ["especialidade"],
+        });
+      }
+    }
+
+    if (data.role === Role.ADMIN) {
+      if (data.crm) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          message: "CRM só pode ser informado para médicos",
+          path: ["crm"],
+        });
+      }
+      if (data.especialidade) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          message: "Especialidade só pode ser informada para médicos",
+          path: ["especialidade"],
+        });
+      }
+      if (data.setor) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          message: "Setor só pode ser informado para atendentes",
+          path: ["setor"],
+        });
+      }
+    }
+  });

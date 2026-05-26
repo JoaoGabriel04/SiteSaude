@@ -30,12 +30,11 @@ export default function PatientRegisterForm({ onSubmit }: PacRegProps) {
       toast.success("Registro realizado com sucesso.");
       onSubmit();
 
-    } catch (error: any) {
-
-      const message = error?.response?.data?.message ?? "Erro ao cadastrar paciente";
+    } catch (error: unknown) {
+      const apiError = error as { response?: { data?: { message?: string; error?: string } } };
+      const message = apiError.response?.data?.message ?? "Erro ao cadastrar paciente";
       toast.error(message);
       console.log(error);
-
     }
   }
 

@@ -8,7 +8,7 @@ import { Mars, Venus, CircleDashed, Pencil, PlusIcon } from "lucide-react";
 import LoadingScreen from "@/components/LoadingScreen";
 import { toast } from "@/toast/toastManager";
 import { useViewPacientes } from "@/hooks/useViewPacientes";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card } from "@/components/ui/card";
 import { InputField } from "@/components/inputField";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";

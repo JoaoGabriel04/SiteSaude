@@ -15,7 +15,7 @@ export function useBuscarMedicos() {
   const { data, error, isLoading } = useSWR(url, fetcher);
 
   // filtra só os médicos
-  const medicos = data?.filter((u: any) => u.role === "MEDICO") ?? [];
+  const medicos = data?.filter((u: { role: string }) => u.role === "MEDICO") ?? [];
 
   return { medicos, error, isLoading };
 }

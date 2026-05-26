@@ -95,8 +95,9 @@ export default function AgendamentoForm({ onSuccess, userId }: AgendamentoFormPr
 
       toast.success("Agendamento criado com sucesso!");
       onSuccess();
-    } catch (error: any) {
-      const message = error?.response?.data?.error ?? "Erro ao criar agendamento";
+    } catch (error: unknown) {
+      const apiError = error as { response?: { data?: { message?: string; error?: string } } };
+      const message = apiError.response?.data?.error ?? "Erro ao criar agendamento";
       toast.error(message);
     }
   }
@@ -233,7 +234,7 @@ export default function AgendamentoForm({ onSuccess, userId }: AgendamentoFormPr
                 render={({ field }) => (
                   <Select onValueChange={(value) => {
                     field.onChange(value);
-                    const med = medicos.find((m: any) => m.id === value);
+                    const med = medicos.find((m: MedicoData) => m.id === value);
                     setMedicoSelecionado(med ?? null);
                     form.setValue("horario", "");
                   }} value={field.value}>
@@ -241,7 +242,7 @@ export default function AgendamentoForm({ onSuccess, userId }: AgendamentoFormPr
                       <SelectValue placeholder="Selecione o médico" />
                     </SelectTrigger>
                     <SelectContent>
-                      {medicos.map((m: any) => (
+                      {medicos.map((m: MedicoData) => (
                         <SelectItem key={m.id} value={m.id}>
                           {m.nome} — {m.medico?.especialidade}
                         </SelectItem>

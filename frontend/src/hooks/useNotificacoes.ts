@@ -2,7 +2,7 @@
 import { useState, useEffect, useCallback } from "react"
 import api from "@/services/api"
 import { useUserStore } from "@/stores/userStore"
-import { connectSocket, disconnectSocket, getSocket } from "@/services/socket"
+import { connectSocket, getSocket } from "@/services/socket"
 
 type Notificacao = {
   id: string;
@@ -19,7 +19,7 @@ export function useNotificacoes() {
   const [notificacoes, setNotificacoes] = useState<Notificacao[] | null>(null)
   const [naoLidas, setNaoLidas] = useState<number | null>(0)
   const [isLoading, setIsLoading] = useState(false)
-  const [error, setError] = useState<any>(null)
+  const [error, setError] = useState<unknown>(null)
 
   const fetchData = useCallback(async () => {
     if (loading || !isAuthenticated) return
@@ -28,7 +28,7 @@ export function useNotificacoes() {
       const res = await api.get("/api/notificacoes")
       setNotificacoes(res.data.notificacoes)
       setNaoLidas(res.data.naoLidas)
-    } catch (err: any) {
+    } catch (err: unknown) {
       setError(err)
     } finally {
       setIsLoading(false)

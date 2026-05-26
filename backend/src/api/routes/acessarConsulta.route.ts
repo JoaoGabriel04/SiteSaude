@@ -1,5 +1,5 @@
 import { Router } from 'express';
-import { AcessarConsultaService } from '../../services/AcessarConsultaService.js';
+import { AcessarConsultaService } from '../../services/acessar-consulta.service.js';
 import { acessarConsultaSchema } from '../../schemas/AcessarConsultaSchema.js';
 import { validate } from '../middlewares/validate.js';
 

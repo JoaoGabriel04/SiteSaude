@@ -14,7 +14,12 @@ agendaRouter.get(
   authorize(Role.MEDICO),
   agendaController.listarMeusAgendamentos
 );
-agendaRouter.get("/agendamentos", agendaController.getAgendamentos);
+agendaRouter.get(
+  "/agendamentos",
+  authToken,
+  authorize(Role.ATENDENTE, Role.ADMIN),
+  agendaController.getAgendamentos
+);
 
 agendaRouter.post("/agendamento", authToken, authorize(Role.ATENDENTE, Role.ADMIN), agendaController.registerAgenda);
 

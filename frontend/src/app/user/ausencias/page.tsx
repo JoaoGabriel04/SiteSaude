@@ -87,8 +87,9 @@ export default function AusenciasPage() {
       setDataInicio("")
       setDataFim("")
       mutateSolicitacoes()
-    } catch (error: any) {
-      toast.error(error?.response?.data?.message || "Erro ao enviar solicitação")
+    } catch (error: unknown) {
+      const apiError = error as { response?: { data?: { message?: string; error?: string } } };
+      toast.error(apiError.response?.data?.message || "Erro ao enviar solicitação")
     } finally {
       setIsSubmitting(false)
     }
@@ -108,8 +109,9 @@ export default function AusenciasPage() {
       await api.delete(`/api/medico/excecao/${id}`)
       toast.success("Ausência removida com sucesso")
       mutateSolicitacoes()
-    } catch (error: any) {
-      toast.error(error?.response?.data?.message || "Erro ao excluir")
+    } catch (error: unknown) {
+      const apiError = error as { response?: { data?: { message?: string; error?: string } } };
+      toast.error(apiError.response?.data?.message || "Erro ao excluir")
     }
   }
 
@@ -121,8 +123,9 @@ export default function AusenciasPage() {
       toast.success("Ausência removida com sucesso")
       setDeleteId(null)
       mutateSolicitacoes()
-    } catch (error: any) {
-      toast.error(error?.response?.data?.message || "Erro ao excluir")
+    } catch (error: unknown) {
+      const apiError = error as { response?: { data?: { message?: string; error?: string } } };
+      toast.error(apiError.response?.data?.message || "Erro ao excluir")
     } finally {
       setIsSubmitting(false)
     }

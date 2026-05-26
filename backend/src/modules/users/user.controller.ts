@@ -1,6 +1,6 @@
 import { NextFunction, Request, Response } from "express";
-import UserRepository from "../../repositories/UserRepository.js";
-import { UserService } from "../../services/UserService.js";
+import UserRepository from "../../repositories/user.repository.js";
+import { UserService } from "../../services/user.service.js";
 import { Role, Sexo } from "../../../generated/prisma/index.js";
 
 const userService = new UserService(new UserRepository());

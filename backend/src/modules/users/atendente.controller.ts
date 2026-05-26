@@ -1,8 +1,8 @@
 import { NextFunction, Request, Response } from "express"
-import { UserService } from "../../services/UserService.js"
-import UserRepository from "../../repositories/UserRepository.js"
-import AgendaRepository from "../../repositories/AgendaRepository.js";
-import { AgendaService } from "../../services/AgendaService.js";
+import { UserService } from "../../services/user.service.js"
+import UserRepository from "../../repositories/user.repository.js"
+import AgendaRepository from "../../repositories/agenda.repository.js";
+import { AgendaService } from "../../services/agenda.service.js";
 
 const userService = new UserService(new UserRepository());
 const agendaService = new AgendaService(new AgendaRepository(), new UserRepository());

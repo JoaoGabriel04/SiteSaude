@@ -1,6 +1,6 @@
 import { NextFunction, Request, Response } from "express";
-import NotificacaoRepository from "../../repositories/NotificacaoRepository.js";
-import { NotificacaoService } from "../../services/NotificacaoService.js";
+import NotificacaoRepository from "../../repositories/notificacao.repository.js";
+import { NotificacaoService } from "../../services/notificacao.service.js";
 
 const notificacaoRepo = new NotificacaoRepository();
 const notificacaoService = new NotificacaoService(notificacaoRepo);
@@ -8,10 +8,7 @@ const notificacaoService = new NotificacaoService(notificacaoRepo);
 export class NotificacaoController {
 
   async buscarNotificacoes(req: Request, res: Response, next: NextFunction) {
-    const userId = (req as any).user?.id;
-    if (!userId) {
-      return res.status(401).json({ error: "Unauthorized" });
-    }
+    const userId = req.user!.id;
 
     try {
       await notificacaoService.deleteOldRead(userId);
@@ -34,10 +31,7 @@ export class NotificacaoController {
   }
 
   async marcarTodasComoLidas(req: Request, res: Response, next: NextFunction) {
-    const userId = (req as any).user?.id;
-    if (!userId) {
-      return res.status(401).json({ error: "Unauthorized" });
-    }
+    const userId = req.user!.id;
 
     try {
       await notificacaoService.marcarTodasComoLidas(userId);

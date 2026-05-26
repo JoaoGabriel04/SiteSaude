@@ -1,4 +1,4 @@
-import NotificacaoRepository from "../repositories/NotificacaoRepository.js";
+import NotificacaoRepository from "../repositories/notificacao.repository.js";
 import { enviarEmailSolicitacaoAprovada, enviarEmailSolicitacaoNegada } from "../lib/email.js";
 import { emitirNotificacao } from "../lib/socket.js";
 

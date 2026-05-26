@@ -30,9 +30,9 @@ const menuOptions: MenuOption[] = [
   { text: "Dashboard", url: "/user/dashboard", icon: Gauge, group: "GERAL" },
   { text: "Pacientes", url: "/user/pacientes", icon: Users, group: "CADASTROS" },
   { text: "Profissionais", url: "/user/profissionais", icon: UserStar, group: "CADASTROS" },
-  { text: "Agendamentos", url: "/user/agendamentos", icon: Calendar, group: "AGENDA" },
-  { text: "Finalizados", url: "/user/finalizados", icon: Archive, group: "AGENDA" },
-  { text: "Cancelados", url: "/user/cancelados", icon: XCircle, group: "AGENDA" },
+  { text: "Agendamentos", url: "/user/agendamentos", icon: Calendar, roles: [Role.ADMIN, Role.ATENDENTE], group: "AGENDA" },
+  { text: "Finalizados", url: "/user/finalizados", icon: Archive, roles: [Role.ADMIN, Role.ATENDENTE], group: "AGENDA" },
+  { text: "Cancelados", url: "/user/cancelados", icon: XCircle, roles: [Role.ADMIN, Role.ATENDENTE], group: "AGENDA" },
   {
     text: "Meus Agendamentos",
     url: "/user/meusAgendamentos",

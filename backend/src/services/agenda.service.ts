@@ -1,13 +1,13 @@
-import AgendaRepository from "../repositories/AgendaRepository.js";
-import UserRepository from "../repositories/UserRepository.js";
+import AgendaRepository from "../repositories/agenda.repository.js";
+import UserRepository from "../repositories/user.repository.js";
 import { AppError } from "../errors/AppError.js";
 
 import {
   StatusAtendimento,
   StatusUrgencia,
   TipoAtendimento,
-  Prisma,
 } from "../../generated/prisma/index.js";
+import type { Prisma } from "../../generated/prisma/index.js";
 
 export class AgendaService {
   constructor(
@@ -27,7 +27,7 @@ export class AgendaService {
     page?: number;
   }) {
     const { busca, docId, status, statusUrgencia, data, page = 1 } = params;
-    const where: any = {};
+    const where: Prisma.AgendaWhereInput = {};
 
     if (docId) {
       where.docId = docId;
@@ -36,14 +36,14 @@ export class AgendaService {
     // Por padrão, trazer apenas agendamentos ativos (não FINALIZADO, não CANCELADO)
     // Se o usuário filtrar explicitamente por status, usa o filtro dele
     if (status && status !== "TODOS") {
-      where.status = status;
+      where.status = status as StatusAtendimento;
     } else {
       // Excluir finalizados e cancelados por padrão
-      where.status = { notIn: ["FINALIZADO", "CANCELADO"] };
+      where.status = { notIn: [StatusAtendimento.FINALIZADO, StatusAtendimento.CANCELADO] };
     }
 
     if (statusUrgencia && statusUrgencia !== "TODOS") {
-      where.statusUrgencia = statusUrgencia;
+      where.statusUrgencia = statusUrgencia as StatusUrgencia;
     }
 
     if (data) {
@@ -76,7 +76,7 @@ export class AgendaService {
   async registerAgenda(data: Prisma.AgendaUncheckedCreateInput) {
     let horarioNorm: Date;
     
-    const horarioValue = data.horario_atend as any;
+    const horarioValue = data.horario_atend as string | number | Date;
     
     if (typeof horarioValue === 'number') {
       // Frontend enviou timestamp
@@ -95,8 +95,8 @@ export class AgendaService {
       } else {
         horarioNorm = new Date(horarioValue);
       }
-    } else if (horarioValue && typeof horarioValue === 'object') {
-      const d = horarioValue as Date;
+    } else if (horarioValue instanceof Date) {
+      const d = horarioValue;
       if (!isNaN(d.getTime())) {
         horarioNorm = new Date(Date.UTC(d.getUTCFullYear(), d.getUTCMonth(), d.getUTCDate(), d.getUTCHours(), d.getUTCMinutes()));
       } else {

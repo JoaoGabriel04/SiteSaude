@@ -1,6 +1,6 @@
 import { User } from "@/types/user";
 import { Badge } from "@/components/ui/badge";
-import { Stethoscope, ClipboardList, Calendar, User2 } from "lucide-react";
+import { Stethoscope, ClipboardList, Calendar } from "lucide-react";
 import { useUserStore } from "@/stores/userStore";
 import AusenciasManager from "./AusenciasManager";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";

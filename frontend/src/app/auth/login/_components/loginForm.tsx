@@ -34,8 +34,9 @@ export default function LoginForm() {
 
       toast.success("Login realizado com sucesso!");
       router.replace("/user/dashboard");
-    } catch (error: any) {
-      const message = error?.response?.data?.message ?? "Email ou senha incorretos";
+    } catch (error: unknown) {
+      const err = error as { response?: { data?: { message?: string } } };
+      const message = err?.response?.data?.message ?? "Email ou senha incorretos";
       toast.error(message);
     }
   }

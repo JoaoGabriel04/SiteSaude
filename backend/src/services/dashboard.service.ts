@@ -1,4 +1,4 @@
-import { DashboardRepository } from "../repositories/DashboardRepository.js";
+import { DashboardRepository } from "../repositories/dashboard.repository.js";
 import { Role } from "../../generated/prisma/index.js";
 
 export class DashboardService {

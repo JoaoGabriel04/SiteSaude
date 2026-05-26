@@ -36,7 +36,7 @@ export function useSolicitacoesPendentes() {
   const { isAuthenticated, loading } = useUserStore()
   const [solicitacoes, setSolicitacoes] = useState<Solicitacao[] | null>(null)
   const [isLoading, setIsLoading] = useState(false)
-  const [error, setError] = useState<any>(null)
+  const [error, setError] = useState<unknown>(null)
 
   useEffect(() => {
     if (loading || !isAuthenticated) return
@@ -46,7 +46,7 @@ export function useSolicitacoesPendentes() {
       try {
         const res = await api.get("/api/medico/solicitacoes")
         setSolicitacoes(res.data)
-      } catch (err: any) {
+      } catch (err: unknown) {
         setError(err)
       } finally {
         setIsLoading(false)
@@ -62,7 +62,7 @@ export function useSolicitacoesPendentes() {
       try {
         const res = await api.get("/api/medico/solicitacoes")
         setSolicitacoes(res.data)
-      } catch (err: any) {
+      } catch (err: unknown) {
         setError(err)
       } finally {
         setIsLoading(false)
@@ -78,7 +78,7 @@ export function useMinhasSolicitacoes(docId: string) {
   const { isAuthenticated, loading } = useUserStore()
   const [solicitacoes, setSolicitacoes] = useState<Solicitacao[] | null>(null)
   const [isLoading, setIsLoading] = useState(false)
-  const [error, setError] = useState<any>(null)
+  const [error, setError] = useState<unknown>(null)
 
   useEffect(() => {
     if (loading || !isAuthenticated || !docId) return
@@ -88,7 +88,7 @@ export function useMinhasSolicitacoes(docId: string) {
       try {
         const res = await api.get(`/api/medico/minhas-solicitacoes/${docId}`)
         setSolicitacoes(res.data)
-      } catch (err: any) {
+      } catch (err: unknown) {
         setError(err)
       } finally {
         setIsLoading(false)
@@ -105,7 +105,7 @@ export function useMinhasSolicitacoes(docId: string) {
       try {
         const res = await api.get(`/api/medico/minhas-solicitacoes/${docId}`)
         setSolicitacoes(res.data)
-      } catch (err: any) {
+      } catch (err: unknown) {
         setError(err)
       } finally {
         setIsLoading(false)
@@ -121,7 +121,7 @@ export function useExcecoesAprovadas(docId: string) {
   const { isAuthenticated, loading } = useUserStore()
   const [excecoes, setExcecoes] = useState<Solicitacao[] | null>(null)
   const [isLoading, setIsLoading] = useState(false)
-  const [error, setError] = useState<any>(null)
+  const [error, setError] = useState<unknown>(null)
 
   useEffect(() => {
     if (loading || !isAuthenticated || !docId) return
@@ -131,7 +131,7 @@ export function useExcecoesAprovadas(docId: string) {
       try {
         const res = await api.get(`/api/medico/excecao/${docId}`)
         setExcecoes(res.data)
-      } catch (err: any) {
+      } catch (err: unknown) {
         setError(err)
       } finally {
         setIsLoading(false)
@@ -148,7 +148,7 @@ export function useExcecoesAprovadas(docId: string) {
       try {
         const res = await api.get(`/api/medico/excecao/${docId}`)
         setExcecoes(res.data)
-      } catch (err: any) {
+      } catch (err: unknown) {
         setError(err)
       } finally {
         setIsLoading(false)

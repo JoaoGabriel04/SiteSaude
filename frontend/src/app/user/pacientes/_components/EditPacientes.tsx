@@ -67,8 +67,9 @@ export default function EditPacientes({ paciente, onClose, onSuccess }: EditPaci
       await api.patch(`/api/atendente/paciente/${paciente.id}`, data);
       toast.success("Paciente atualizado com sucesso!");
       onSuccess();
-    } catch (error: any) {
-      const message = error?.response?.data?.message ?? "Erro ao atualizar paciente";
+    } catch (error: unknown) {
+      const apiError = error as { response?: { data?: { message?: string; error?: string } } };
+      const message = apiError.response?.data?.message ?? "Erro ao atualizar paciente";
       toast.error(message);
     }
   }
@@ -79,8 +80,9 @@ export default function EditPacientes({ paciente, onClose, onSuccess }: EditPaci
       await api.delete(`/api/atendente/paciente/${paciente.id}`);
       toast.success("Paciente excluído com sucesso!");
       onSuccess();
-    } catch (error: any) {
-      const message = error?.response?.data?.message ?? "Erro ao excluir paciente";
+    } catch (error: unknown) {
+      const apiError = error as { response?: { data?: { message?: string; error?: string } } };
+      const message = apiError.response?.data?.message ?? "Erro ao excluir paciente";
       toast.error(message);
     } finally {
       setIsDeleting(false);

@@ -15,12 +15,26 @@ import {
   AlertCircle,
   TrendingUp,
   ClipboardCheck,
-  PlusIcon,
   UserPlus,
   CalendarPlus,
   ArrowRight,
   Clock,
 } from "lucide-react";
+
+type AgendamentoHoje = {
+  id: string;
+  horario_atend: string;
+  statusUrgencia: string;
+  paciente: { nome: string; fone: string };
+  medico: { user: { nome: string }; especialidade: string };
+};
+
+type MedicoHoje = {
+  userId: string;
+  especialidade: string;
+  user: { nome: string; avatar?: string | null };
+  disponibilidades?: { horaInicio: string; horaFim: string }[];
+};
 
 function getSaudacao() {
   const h = new Date().getHours();
@@ -201,7 +215,7 @@ export default function Dashboard() {
             </div>
           ) : (
             <div className="flex flex-col gap-2">
-              {agendamentosHoje.map((ag: any) => (
+              {agendamentosHoje.map((ag: AgendamentoHoje) => (
                 <div
                   key={ag.id}
                   className="flex items-center gap-3 p-2 rounded-md hover:bg-zinc-100 transition cursor-pointer"
@@ -267,7 +281,7 @@ export default function Dashboard() {
             </div>
           ) : (
             <div className="flex flex-col gap-2">
-              {medicosHoje.map((med: any) => (
+              {medicosHoje.map((med: MedicoHoje) => (
                 <div
                   key={med.userId}
                   className="flex items-center gap-3 p-2 rounded-md hover:bg-zinc-100 transition"

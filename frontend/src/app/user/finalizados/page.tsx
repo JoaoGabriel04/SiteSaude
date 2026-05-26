@@ -83,8 +83,9 @@ export default function Finalizados() {
       setOpenConfirm(false);
       setAgendamentoParaExcluir(null);
       mutate();
-    } catch (err: any) {
-      toast.error(err?.response?.data?.error || "Erro ao excluir");
+    } catch (err: unknown) {
+      const apiError = err as { response?: { data?: { message?: string; error?: string } } };
+      toast.error(apiError.response?.data?.error || "Erro ao excluir");
     }
   }
 
@@ -165,7 +166,7 @@ export default function Finalizados() {
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {agendaData.map((agenda: any) => (
+                  {agendaData.map((agenda: AgendaData) => (
                     <TableRow key={agenda.id}>
                       <TableCell>
                         <div className="flex items-center gap-2">

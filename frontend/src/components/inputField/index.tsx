@@ -1,16 +1,14 @@
 'use client'
 import { Field, FieldDescription, FieldLabel } from "@/components/ui/field"
 import { InputGroup, InputGroupAddon, InputGroupInput } from "@/components/ui/input-group"
-import { LoginFormData } from "@/schemas/loginSchema"
-import { RegisterFormPatient } from "@/schemas/registerSchema"
 import { EyeIcon, EyeOffIcon } from "lucide-react"
 import { useState, InputHTMLAttributes } from "react"
-import { UseFormRegister } from "react-hook-form"
+import { UseFormRegisterReturn } from "react-hook-form"
 
 interface InputFieldProps extends InputHTMLAttributes<HTMLInputElement> {
   id: string
   label: string
-  register?: ReturnType<UseFormRegister<any>>
+  register?: UseFormRegisterReturn<string>
   errorInvalid?: boolean
   errorMessage?: string
   mask?: "phone" | "cpf" | "numbers" | "cns"

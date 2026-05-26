@@ -1,24 +1,28 @@
-import Joi from "joi"
-import { validationCPF, validarCNS } from "../utils/validaCpfCns.js"
+import { z } from "zod";
+import { validationCPF, validarCNS } from "../utils/validaCpfCns.js";
 
-export const registerPatient = Joi.object({
+export const registerPatient = z.object({
+  nome: z.string().min(3).max(100),
 
-        nome: Joi.string().min(3).max(100).required(),
+  cpf: z
+    .string()
+    .refine((val) => {
+      try { validationCPF(val); return true; } catch { return false; }
+    }, "CPF inválido")
+    .transform((val) => val.replace(/\D/g, "")),
 
-        cpf: Joi.string().required().custom(validationCPF)
-            .messages({
-                "any.invalid": "CPF inválido"
-            }),
+  cartaoSus: z
+    .string()
+    .refine((val) => {
+      try { validarCNS(val); return true; } catch { return false; }
+    }, "Cartão do SUS inválido")
+    .transform((val) => val.replace(/\D/g, "")),
 
-        cartaoSus: Joi.string().required().custom(validarCNS)
-            .messages({
-                "any.invalid": "Cartão do SUS inválido"
-            }),
+  nascimento: z.string()
+    .refine((v) => !isNaN(new Date(v).getTime()), { message: "Data de nascimento inválida" })
+    .transform((v) => new Date(v).toISOString()),
 
-        nascimento: Joi.date().iso().required(),
+  email: z.string().email().optional(),
 
-        email: Joi.string().email(),
-
-        fone: Joi.string().pattern(/^\(?\d{2}\)?\s?\d{4,5}-?\d{4}$/).required(),
-
-    })
+  fone: z.string().regex(/^\(?\d{2}\)?\s?\d{4,5}-?\d{4}$/),
+});

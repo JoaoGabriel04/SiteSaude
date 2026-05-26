@@ -1,15 +1,6 @@
-import Joi from "joi";
+import { z } from "zod";
 
-export const loginUser = Joi.object({
-    email: Joi.string().email().required()
-        .messages({
-            "string.email": "Email inválido",
-                "string.empty": "Email é obrigatório"
-            }),
-        password: Joi.string().min(8).required()
-            .messages({
-                "any.required": "Senha obrigatório",
-                "string.empty": "Senha está faltando",
-                "string.min": "Senha curta demais"
-            })
-    })
+export const loginUser = z.object({
+  email: z.string().email("Email inválido"),
+  password: z.string().min(8, "Senha deve ter no mínimo 8 caracteres"),
+});

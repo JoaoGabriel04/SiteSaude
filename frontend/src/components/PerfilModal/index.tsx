@@ -47,9 +47,9 @@ export default function PerfilModal({ isOpen, onClose }: PerfilModalProps) {
       setAvatarPreview(null)
       setAvatarFile(null)
       setRole(user.role || "")
-      setEspecialidade((user as any).medico?.especialidade || null)
-      setCrm((user as any).medico?.crm || null)
-      setSetor((user as any).atendente?.setor || null)
+      setEspecialidade(user.medico?.especialidade || null)
+      setCrm(user.medico?.crm || null)
+      setSetor(user.atendente?.setor || null)
     }
   }, [isOpen, user])
 

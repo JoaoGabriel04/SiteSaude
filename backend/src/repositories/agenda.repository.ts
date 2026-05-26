@@ -4,6 +4,7 @@ import {
   StatusUrgencia,
   TipoAtendimento,
 } from "../../generated/prisma/index.js";
+import type { Prisma } from "../../generated/prisma/index.js";
 
 export default class AgendaRepository {
   
@@ -49,7 +50,7 @@ export default class AgendaRepository {
   /* =======================
      QUERIES (gerais)
   ======================= */
-  async findAgendamentos(where: any, page: number) {
+  async findAgendamentos(where: Prisma.AgendaWhereInput, page: number) {
     const limit = 12;
     return prisma.agenda.findMany({
       where,
@@ -199,12 +200,12 @@ export default class AgendaRepository {
     limite30.setDate(limite30.getDate() + 30);
     limite30.setHours(23, 59, 59, 999);
 
-    let dataFilter: any = {};
+    let dataFilter: Prisma.DateTimeFilter | {} = {};
     if (periodo === "hoje") dataFilter = { gte: hoje, lt: amanha };
     else if (periodo === "posteriores") dataFilter = { gte: amanha, lte: limite30 };
     else if (periodo === "passados") dataFilter = { lt: hoje };
 
-    const where: any = {
+    const where: Prisma.AgendaWhereInput = {
       docId,
       ...(Object.keys(dataFilter).length && { horario_atend: dataFilter }),
       // Por padrão, excluír FINALIZADO - para aparecer apenas na página de Finalizados

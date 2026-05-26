@@ -1,6 +1,6 @@
 import { Router, Request, Response } from "express";
 import { upload } from "../../lib/multer.js";
-import { UploadService } from "../../services/UploadService.js";
+import { UploadService } from "../../services/upload.service.js";
 import { authToken } from "../middlewares/authenticate.js";
 import { AppError } from "../../errors/AppError.js";
 

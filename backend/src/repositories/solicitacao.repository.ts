@@ -1,5 +1,6 @@
 import { prisma } from "../lib/prisma.js";
 import { StatusSolicitacao } from "../../generated/prisma/index.js";
+import type { Prisma } from "../../generated/prisma/index.js";
 
 export default class SolicitacaoRepository {
 
@@ -136,7 +137,7 @@ export default class SolicitacaoRepository {
       const end = new Date(data);
       end.setHours(23, 59, 59, 999);
 
-      const where: any = {
+      const where: Prisma.SolicitacaoAusenciaWhereInput = {
         docId,
         status: "APROVADO",
         dias: {

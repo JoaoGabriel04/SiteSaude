@@ -113,7 +113,7 @@ export default function EditProfissional({ profissional, onClose, onSuccess }: E
         if (!avatarUrl) return;
       }
 
-      const payload: any = {
+      const payload: Record<string, unknown> = {
         nome: data.nome,
         email: data.email,
         nascimento: data.nascimento,
@@ -127,9 +127,10 @@ export default function EditProfissional({ profissional, onClose, onSuccess }: E
       await api.patch(`/api/atendente/profissional/${profissional.id}`, payload);
       toast.success("Profissional atualizado com sucesso!");
       onSuccess();
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.log("errors:", form.formState.errors);
-      const message = error?.response?.data?.message ?? "Erro ao atualizar profissional";
+      const apiError = error as { response?: { data?: { message?: string; error?: string } } };
+      const message = apiError.response?.data?.message ?? "Erro ao atualizar profissional";
       toast.error(message);
     }
   }
@@ -140,8 +141,9 @@ export default function EditProfissional({ profissional, onClose, onSuccess }: E
       await api.delete(`/api/atendente/profissional/${profissional.id}`);
       toast.success("Profissional excluído com sucesso!");
       onSuccess();
-    } catch (error: any) {
-      const message = error?.response?.data?.message ?? "Erro ao excluir profissional";
+    } catch (error: unknown) {
+      const apiError = error as { response?: { data?: { message?: string; error?: string } } };
+      const message = apiError.response?.data?.message ?? "Erro ao excluir profissional";
       toast.error(message);
     } finally {
       setIsDeleting(false);

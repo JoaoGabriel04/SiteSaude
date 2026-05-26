@@ -1,5 +1,5 @@
 import { Request, Response, NextFunction } from "express";
-import { DashboardService } from "../../services/DashboardService.js";
+import { DashboardService } from "../../services/dashboard.service.js";
 import { Role } from "../../../generated/prisma/index.js";
 
 const service = new DashboardService();

@@ -88,8 +88,9 @@ export default function Cancelados() {
       setOpenConfirm(false);
       setAgendamentoParaExcluir(null);
       mutate();
-    } catch (err: any) {
-      toast.error(err?.response?.data?.error || "Erro ao excluir");
+    } catch (err: unknown) {
+      const apiError = err as { response?: { data?: { message?: string; error?: string } } };
+      toast.error(apiError.response?.data?.error || "Erro ao excluir");
     }
   }
 
@@ -102,8 +103,9 @@ export default function Cancelados() {
       setOpenConfirmRestaurar(false);
       setAgendamentoParaRestaurar(null);
       mutate();
-    } catch (err: any) {
-      toast.error(err?.response?.data?.error || "Erro ao restaurar");
+    } catch (err: unknown) {
+      const apiError = err as { response?: { data?: { message?: string; error?: string } } };
+      toast.error(apiError.response?.data?.error || "Erro ao restaurar");
     }
   }
 

@@ -104,8 +104,9 @@ export default function MeusAgendamentos() {
       await api.patch(`/api/agenda/${id}/finalizar`);
       toast.success("Agendamento finalizado!");
       refreshAll();
-    } catch (err: any) {
-      toast.error(err?.response?.data?.error || "Erro ao finalizar");
+    } catch (err: unknown) {
+      const apiError = err as { response?: { data?: { message?: string; error?: string } } };
+      toast.error(apiError.response?.data?.error || "Erro ao finalizar");
     }
   }
 
@@ -116,8 +117,9 @@ export default function MeusAgendamentos() {
       await api.patch(`/agendamentos/${id}/cancelar`, { cancelReason: motivo });
       toast.success("Agendamento cancelado!");
       refreshAll();
-    } catch (err: any) {
-      toast.error(err?.response?.data?.error || "Erro ao cancelar");
+    } catch (err: unknown) {
+      const apiError = err as { response?: { data?: { message?: string; error?: string } } };
+      toast.error(apiError.response?.data?.error || "Erro ao cancelar");
     }
   }
 

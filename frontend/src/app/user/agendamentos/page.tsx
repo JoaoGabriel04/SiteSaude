@@ -6,7 +6,7 @@ import { useEffect, useState, useMemo } from "react";
 import Title1 from "@/components/Title1";
 import Subtitle from "@/components/Subtitle";
 import { Button } from "@/components/ui/button";
-import { PlusIcon, XCircle, Eye, Phone, CalendarDays, Mail, CreditCard, User, AlertTriangle, FileText, Stethoscope, Timer, Info } from "lucide-react";
+import { PlusIcon, XCircle, Eye, Phone, CalendarDays, Mail, CreditCard, User, FileText, Stethoscope, Timer, Info } from "lucide-react";
 import Modal from "@/components/Modal";
 import { Card } from "@/components/ui/card";
 import { InputField } from "@/components/inputField";
@@ -127,8 +127,9 @@ export default function Agendamentos() {
       await api.patch(`/api/agenda/${id}/cancelar`, { cancelReason: motivo });
       toast.success("Agendamento cancelado!");
       mutate();
-    } catch (err: any) {
-      toast.error(err?.response?.data?.error || "Erro ao cancelar");
+    } catch (err: unknown) {
+      const apiError = err as { response?: { data?: { message?: string; error?: string } } };
+      toast.error(apiError.response?.data?.error || "Erro ao cancelar");
     }
   }
 
@@ -145,10 +146,10 @@ export default function Agendamentos() {
       return { ...a, displayStatus };
     });
 
-    const overdue = processed.filter((p) => (p as any).displayStatus === "ATRASADO");
+    const overdue = processed.filter((p) => p.displayStatus === "ATRASADO");
     const main = processed
-      .filter((p) => (p as any).displayStatus !== "ATRASADO")
-      .sort((a: any, b: any) => {
+      .filter((p) => p.displayStatus !== "ATRASADO")
+      .sort((a, b) => {
         const da = String(a.displayStatus);
         const db = String(b.displayStatus);
         const pa = statusOrder[da] ?? 99;
@@ -253,7 +254,7 @@ export default function Agendamentos() {
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {mainList.map((agenda: any) => (
+                  {mainList.map((agenda: AgendaData) => (
                     <TableRow key={agenda.id}>
                       <TableCell>
                         <div className="flex items-center gap-2">
@@ -348,7 +349,7 @@ export default function Agendamentos() {
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {overdueList.map((agenda: any) => (
+                  {overdueList.map((agenda: AgendaData) => (
                     <TableRow key={agenda.id}>
                       <TableCell>
                         <div className="flex items-center gap-2">

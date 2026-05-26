@@ -1,6 +1,6 @@
 import { CookieOptions, NextFunction, Request, Response } from "express";
-import { AuthService } from "../../services/AuthService.js";
-import UserRepository from "../../repositories/UserRepository.js";
+import { AuthService } from "../../services/auth.service.js";
+import UserRepository from "../../repositories/user.repository.js";
 
 const authService = new AuthService(new UserRepository());
 

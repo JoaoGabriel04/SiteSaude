@@ -1,8 +1,8 @@
 import { NextFunction, Request, Response } from "express";
-import { AgendaService } from "../../services/AgendaService.js";
-import AgendaRepository from "../../repositories/AgendaRepository.js";
+import { AgendaService } from "../../services/agenda.service.js";
+import AgendaRepository from "../../repositories/agenda.repository.js";
 import { StatusAtendimento } from "../../../generated/prisma/index.js";
-import UserRepository from "../../repositories/UserRepository.js";
+import UserRepository from "../../repositories/user.repository.js";
 
 const agendaService = new AgendaService(new AgendaRepository(), new UserRepository());
 
@@ -60,7 +60,7 @@ export class AgendaController {
       const result = await agendaService.listarMeusAgendamentos({
         docId,
         busca,
-        periodo: periodo as any,
+        periodo: periodo as "hoje" | "posteriores" | "passados" | "todos",
         status: status as StatusAtendimento | undefined,
         page: parseInt(page),
         limit: parseInt(limit),

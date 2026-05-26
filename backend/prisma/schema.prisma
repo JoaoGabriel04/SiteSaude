@@ -106,29 +106,29 @@ model ExcecaoMedico {
   status          StatusSolicitacao @default(PENDENTE)
   observacaoAdmin String?
   aprovadoPorId   String?
-  dataSolicitacao DateTime @default(now())
+  dataSolicitacao DateTime          @default(now())
   dataResposta    DateTime?
 
-  medico       Doctor @relation(fields: [docId], references: [userId])
-  aprovadoPor  User?  @relation("AprovadoPor", fields: [aprovadoPorId], references: [id])
+  medico      Doctor @relation(fields: [docId], references: [userId])
+  aprovadoPor User?  @relation("AprovadoPor", fields: [aprovadoPorId], references: [id])
 
   @@unique([docId, data])
   @@map("excecoes_medico")
 }
 
 model SolicitacaoAusencia {
-  id     String   @id @default(uuid())
+  id     String  @id @default(uuid())
   docId  String
   motivo String?
 
   status          StatusSolicitacao @default(PENDENTE)
   observacaoAdmin String?
   aprovadoPorId   String?
-  dataSolicitacao DateTime @default(now())
+  dataSolicitacao DateTime          @default(now())
   dataResposta    DateTime?
 
-  medico       Doctor @relation(fields: [docId], references: [userId])
-  aprovadoPor  User?  @relation("AprovadoPorSolicitacao", fields: [aprovadoPorId], references: [id])
+  medico      Doctor @relation(fields: [docId], references: [userId])
+  aprovadoPor User?  @relation("AprovadoPorSolicitacao", fields: [aprovadoPorId], references: [id])
 
   dias SolicitacaoAusenciaDia[]
 
@@ -136,9 +136,9 @@ model SolicitacaoAusencia {
 }
 
 model SolicitacaoAusenciaDia {
-  id             String   @id @default(uuid())
-  solicitacaoId  String
-  data           DateTime
+  id            String   @id @default(uuid())
+  solicitacaoId String
+  data          DateTime
 
   solicitacao SolicitacaoAusencia @relation(fields: [solicitacaoId], references: [id], onDelete: Cascade)
 
@@ -151,7 +151,7 @@ model Notificacao {
   userId    String
   titulo    String
   mensagem  String
-  tipo      String   // "SOLICITACAO_APROVADA", "SOLICITACAO_NEGADA", etc.
+  tipo      String // "SOLICITACAO_APROVADA", "SOLICITACAO_NEGADA", etc.
   lida      Boolean  @default(false)
   createdAt DateTime @default(now())
 
@@ -167,7 +167,7 @@ model User {
   nascimento DateTime
   fone       String   @db.VarChar(11)
   email      String   @unique
-  password   String   @db.VarChar(60)
+  password   String   @db.VarChar(255)
   avatar     String?
 
   role Role
@@ -175,10 +175,10 @@ model User {
   medico    Doctor?
   atendente Attend?
 
-  createdAgendas  Agenda[] @relation("CreatedBy")
-  canceledAgendas Agenda[] @relation("CanceledBy")
-  notificacoes    Notificacao[]
-  excecoesAprovadas ExcecaoMedico[] @relation("AprovadoPor")
+  createdAgendas        Agenda[]              @relation("CreatedBy")
+  canceledAgendas       Agenda[]              @relation("CanceledBy")
+  notificacoes          Notificacao[]
+  excecoesAprovadas     ExcecaoMedico[]       @relation("AprovadoPor")
   solicitacoesAprovadas SolicitacaoAusencia[] @relation("AprovadoPorSolicitacao")
 
   createdAt DateTime @default(now())

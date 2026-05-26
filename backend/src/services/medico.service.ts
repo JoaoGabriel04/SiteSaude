@@ -1,22 +1,21 @@
 import { AppError } from "../errors/AppError.js";
-import MedicoRepository from "../repositories/MedicoRepository.js";
-import SolicitacaoRepository from "../repositories/SolicitacaoRepository.js";
-import AgendaRepository from "../repositories/AgendaRepository.js";
-import NotificacaoRepository from "../repositories/NotificacaoRepository.js";
-import { NotificacaoService } from "./NotificacaoService.js";
+import MedicoRepository from "../repositories/medico.repository.js";
+import SolicitacaoRepository from "../repositories/solicitacao.repository.js";
+import AgendaRepository from "../repositories/agenda.repository.js";
+import NotificacaoRepository from "../repositories/notificacao.repository.js";
+import { NotificacaoService } from "./notificacao.service.js";
 
 export class MedicoService {
   private solicitacaoRepo: SolicitacaoRepository;
-  
+  private notificacaoService: NotificacaoService;
+
   constructor(
     private medicoRepo: MedicoRepository,
     private agendaRepo: AgendaRepository,
-    private notificacaoService?: NotificacaoService
+    notificacaoService?: NotificacaoService
   ) {
-    if (!notificacaoService) {
-      const notificacaoRepo = new NotificacaoRepository();
-      this.notificacaoService = new NotificacaoService(notificacaoRepo);
-    }
+    const notificacaoRepo = new NotificacaoRepository();
+    this.notificacaoService = notificacaoService ?? new NotificacaoService(notificacaoRepo);
     this.solicitacaoRepo = new SolicitacaoRepository();
   }
 
@@ -323,7 +322,7 @@ return {
       const dataFim = new Date(solicNew.dias[solicNew.dias.length - 1].data).toLocaleDateString("pt-BR");
 
       if (solicNew.medico?.user) {
-        await this.notificacaoService!.notificarSolicitacaoAprovada(
+        await this.notificacaoService.notificarSolicitacaoAprovada(
           solicNew.medico.user.id,
           solicNew.medico.user.email,
           solicNew.medico.user.nome,
@@ -346,15 +345,14 @@ return {
 
     await this.medicoRepo.aprovarSolicitacao(id, aprovadoPorId);
 
-    const medico = solicitacao.medico as any;
-    if (medico?.user) {
+    if (solicitacao.medico?.user) {
       const dataInicio = new Date(solicitacao.data).toLocaleDateString("pt-BR");
       const dataFim = new Date(solicitacao.data).toLocaleDateString("pt-BR");
       
-      await this.notificacaoService!.notificarSolicitacaoAprovada(
-        medico.user.id,
-        medico.user.email,
-        medico.user.nome,
+      await this.notificacaoService.notificarSolicitacaoAprovada(
+        solicitacao.medico.user.id,
+        solicitacao.medico.user.email,
+        solicitacao.medico.user.nome,
         solicitacao.motivo || "Ausência",
         dataInicio,
         dataFim
@@ -377,7 +375,7 @@ return {
       const dataFim = new Date(solicNew.dias[solicNew.dias.length - 1].data).toLocaleDateString("pt-BR");
 
       if (solicNew.medico?.user) {
-        await this.notificacaoService!.notificarSolicitacaoNegada(
+        await this.notificacaoService.notificarSolicitacaoNegada(
           solicNew.medico.user.id,
           solicNew.medico.user.email,
           solicNew.medico.user.nome,
@@ -401,15 +399,14 @@ return {
 
     await this.medicoRepo.negarSolicitacao(id, aprovadoPorId, observacao);
 
-    const medico = solicitacao.medico as any;
-    if (medico?.user) {
+    if (solicitacao.medico?.user) {
       const dataInicio = new Date(solicitacao.data).toLocaleDateString("pt-BR");
       const dataFim = new Date(solicitacao.data).toLocaleDateString("pt-BR");
       
-      await this.notificacaoService!.notificarSolicitacaoNegada(
-        medico.user.id,
-        medico.user.email,
-        medico.user.nome,
+      await this.notificacaoService.notificarSolicitacaoNegada(
+        solicitacao.medico.user.id,
+        solicitacao.medico.user.email,
+        solicitacao.medico.user.nome,
         solicitacao.motivo || "Ausência",
         dataInicio,
         dataFim,

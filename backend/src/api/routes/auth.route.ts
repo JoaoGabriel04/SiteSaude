@@ -4,10 +4,7 @@ import { validate } from "../middlewares/validate.js";
 import { registerUser } from "../../schemas/registerUserSchema.js";
 import { loginUser } from "../../schemas/loginUserSchema.js";
 
-import { createRequire } from "module";
-const require = createRequire(import.meta.url);
-
-const rateLimit = require("express-rate-limit");
+import rateLimit from "express-rate-limit";
 
 const authRouter = Router();
 const controller = new AuthController();

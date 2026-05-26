@@ -22,7 +22,7 @@ async function main() {
       nome: "Administrador",
       email: emailAdmin ?? "admin@saude.com",
       password: senhaHash,
-      cpf: "00000000000",
+      cpf: "99999999999",
       nascimento: new Date("1990-01-01"),
       fone: "00000000000",
       role: Role.ADMIN,
