@@ -56,15 +56,9 @@ export class AuthController {
   async refreshToken(req: Request, res: Response, next: NextFunction) {
     try {
       const refreshToken = req.cookies.refresh_token;
-      const csrfCookie = req.cookies.csrf_token;
-      const csrfHeader = req.headers["x-csrf-token"];
 
       if (!refreshToken) {
         return res.status(401).json({ error: "Refresh token ausente" });
-      }
-
-      if (!csrfCookie || !csrfHeader || String(csrfHeader) !== String(csrfCookie)) {
-        return res.status(403).json({ error: "CSRF token inválido" });
       }
 
       const result = await authService.refreshToken(refreshToken);
