@@ -68,7 +68,7 @@ const sexoLabels: Record<string, string> = {
 export class AcessarConsultaService {
     private pacienteRepository = new PacienteRepository();
 
-    async execute({ nomeCompleto, cpf }: AcessarConsultaInput): Promise<AcessarConsultaResult> {
+    async execute({ cpf }: AcessarConsultaInput): Promise<AcessarConsultaResult> {
         const cpfLimpo = cpf.replace(/\D/g, '');
 
         const paciente = await this.pacienteRepository.findByCpf(cpfLimpo);
