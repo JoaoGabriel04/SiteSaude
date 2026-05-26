@@ -11,7 +11,7 @@ let io: Server;
 export function configureSocket(server: HTTPServer): Server {
   io = new Server(server, {
     cors: {
-      origin: ["http://localhost:3000", "https://medflowgra.vercel.app"],
+      origin: ["http://localhost:3000", "https://medflowgra.vercel.app", "https://medflowgra.uk", "https://www.medflowgra.uk"],
       credentials: true,
     },
   });
