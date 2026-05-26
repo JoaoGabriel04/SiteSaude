@@ -38,7 +38,7 @@ export default function ProfissionalDetails({
       <div className="flex items-center gap-3 pb-3 border-b">
         <div className="w-12 h-12 rounded-full bg-zinc-200 flex items-center justify-center">
           <Avatar className="w-full h-full">
-            <AvatarImage src={profissional.avatar ?? ""} />
+            <AvatarImage src={profissional.avatar ? profissional.avatar : '/images/avatar-1.png'} />
             <AvatarFallback>{profissional.nome.charAt(0)}</AvatarFallback>
           </Avatar>
         </div>

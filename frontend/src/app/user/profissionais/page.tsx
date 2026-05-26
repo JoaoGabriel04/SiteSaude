@@ -175,7 +175,7 @@ export default function ProfissionaisPage() {
                       <TableCell>
                         <div className="flex items-center gap-2">
                           <Avatar className="w-8 h-8">
-                            <AvatarImage src={prof.avatar ?? ""} />
+                            <AvatarImage src={prof.avatar ? prof.avatar : '/images/avatar-1.png'} />
                             <AvatarFallback>{prof.nome.charAt(0)}</AvatarFallback>
                           </Avatar>
                           <span className="truncate">{prof.nome}</span>
