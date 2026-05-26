@@ -18,6 +18,7 @@ const PORT = process.env.PORT || 7000;
 const urlsAllowed = [
   "http://localhost:3000",
   "https://medflowgra.vercel.app",
+  "https://www.medflowgra.uk"
 ]
 
 app.use(helmet());
