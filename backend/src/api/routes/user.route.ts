@@ -9,8 +9,8 @@ const controller = new UserController();
 
 userRouter.get("/me", authToken, controller.getProfile);
 
-userRouter.get("/", authToken, authorize(Role.ADMIN), controller.getAll);
-userRouter.get("/search/profissionais", authToken, authorize(Role.ADMIN, Role.ATENDENTE), controller.getProfissionais);
+userRouter.get("/", authToken, authorize(Role.ADMIN, Role.ATENDENTE, Role.MEDICO), controller.getAll);
+userRouter.get("/search/profissionais", authToken, authorize(Role.ADMIN, Role.ATENDENTE, Role.MEDICO), controller.getProfissionais);
 userRouter.get("/search/pacientes", authToken, authorize(Role.ADMIN, Role.ATENDENTE), controller.getPacient);
 userRouter.put("/profile", authToken, controller.updateProfile);
 
