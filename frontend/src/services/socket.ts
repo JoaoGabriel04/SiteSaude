@@ -9,7 +9,7 @@ export function getSocket(): Socket {
   if (!socket) {
     const url = process.env.NEXT_PUBLIC_API_URL || "http://localhost:7000"
     socket = io(url, {
-      auth: { token: getAccessToken() },
+      auth: (cb: (data: { token: string | null }) => void) => cb({ token: getAccessToken() }),
       autoConnect: false,
       reconnection: true,
       reconnectionDelay: 1000,
@@ -22,7 +22,6 @@ export function getSocket(): Socket {
 export function connectSocket() {
   const s = getSocket()
   if (!s.connected) {
-    s.auth = { token: getAccessToken() }
     s.connect()
   }
 }
