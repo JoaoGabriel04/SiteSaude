@@ -20,7 +20,7 @@ O projeto é composto por:
 ## 1️⃣ Clone o repositório
 
 ```bash
-git clone https://github.com/RicardoAlSi/SiteSaude.git
+git clone https://github.com/JoaoGabriel04/SiteSaude.git
 cd SiteSaude
 ```
 
